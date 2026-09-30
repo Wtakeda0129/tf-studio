@@ -44,6 +44,9 @@ jobs:
       - name: Build and publish
         run: |
           set +e +o pipefail
+          # use a signing certificate only when one is configured: an empty CSC_LINK makes electron-builder
+          # resolve it to the working directory and fail with "<dir> not a file"
+          if [ -n "$CERT_P12_BASE64" ]; then export CSC_LINK="$CERT_P12_BASE64" CSC_KEY_PASSWORD="$CERT_PASSWORD"; else export CSC_IDENTITY_AUTO_DISCOVERY=false; fi
           npx electron-builder --config electron-builder.config.js ${{ matrix.target }} --publish always > build.log 2>&1
           code=$?
           cat build.log
@@ -58,8 +61,8 @@ jobs:
           GH_OWNER: ${{ github.repository_owner }}
           GH_REPO: ${{ github.event.repository.name }}
           # macOS signing + notarization (optional; unsigned builds are produced when these are not set)
-          CSC_LINK: ${{ matrix.os == 'macos-latest' && secrets.MAC_CERT_P12_BASE64 || secrets.WIN_CERT_P12_BASE64 }}
-          CSC_KEY_PASSWORD: ${{ matrix.os == 'macos-latest' && secrets.MAC_CERT_PASSWORD || secrets.WIN_CERT_PASSWORD }}
+          CERT_P12_BASE64: ${{ matrix.os == 'macos-latest' && secrets.MAC_CERT_P12_BASE64 || secrets.WIN_CERT_P12_BASE64 }}
+          CERT_PASSWORD: ${{ matrix.os == 'macos-latest' && secrets.MAC_CERT_PASSWORD || secrets.WIN_CERT_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
