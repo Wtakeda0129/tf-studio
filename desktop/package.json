@@ -1,0 +1,23 @@
+{
+  "name": "tf-studio",
+  "productName": "Tf Studio",
+  "version": "1.0.0",
+  "description": "Tf Studio (Thermal Fingerprint): compute and fit glass relaxation dynamics with structural relaxation models",
+  "author": "Wataru Takeda (University of Arizona, Lucas group)",
+  "license": "UNLICENSED",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "sync": "bash sync_apps.sh",
+    "dist": "electron-builder --config electron-builder.config.js --mac --publish never",
+    "release": "electron-builder --config electron-builder.config.js --mac --publish always"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  },
+  "homepage": "https://github.com/Wtakeda0129/tf-studio"
+}

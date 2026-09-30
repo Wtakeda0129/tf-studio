@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tf Studio · Explorer</title>
+<style>
+:root{
+  --bg:#f5f6f8; --panel:#ffffff; --ink:#1b2430; --muted:#5d6b7c; --line:#dfe3e9; --grid:#e9ecf1;
+  --accent:#2a6fdb; --accent-ink:#ffffff; --cool:#2a6fdb; --heat:#d9480f; --eq:#7a8696; --warn:#b42318; --warnbg:#fdecea;
+  --c1:#2a6fdb; --c2:#d9480f; --c3:#2b9348; --mTL:#2a6fdb; --mTNM:#d9480f; --mRP:#2b9348; --c4:#8e44ad; --c5:#b8860b; --c6:#0e8f9c;
+  --shadow:0 1px 2px rgba(20,30,50,.06),0 4px 14px rgba(20,30,50,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161c; --panel:#1a2029; --ink:#e6ebf2; --muted:#93a1b3; --line:#2c3543; --grid:#252d39;
+    --accent:#5b9bff; --accent-ink:#0b1220; --cool:#5b9bff; --heat:#ff8a4c; --eq:#8b98a9; --warn:#ff8f85; --warnbg:#3a1d1b;
+    --c1:#5b9bff; --c2:#ff8a4c; --c3:#5fd17f; --mTL:#5b9bff; --mTNM:#ff8a4c; --mRP:#5fd17f; --c4:#c08be0; --c5:#e3b341; --c6:#4fd0dc;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12161c; --panel:#1a2029; --ink:#e6ebf2; --muted:#93a1b3; --line:#2c3543; --grid:#252d39;
+  --accent:#5b9bff; --accent-ink:#0b1220; --cool:#5b9bff; --heat:#ff8a4c; --eq:#8b98a9; --warn:#ff8f85; --warnbg:#3a1d1b;
+  --c1:#5b9bff; --c2:#ff8a4c; --c3:#5fd17f; --mTL:#5b9bff; --mTNM:#ff8a4c; --mRP:#5fd17f; --c4:#c08be0; --c5:#e3b341; --c6:#4fd0dc; --shadow:none;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:10}
+header h1{font-size:17px;margin:0;font-weight:650;letter-spacing:.1px}
+header .sub{color:var(--muted);font-size:12.5px}
+header .sp{flex:1}
+button,select,input{font:inherit;color:inherit}
+.btn{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.small{padding:3px 8px;font-size:12.5px}
+.btn:disabled{opacity:.5;cursor:default}
+main{display:grid;grid-template-columns:360px minmax(0,1fr);gap:16px;padding:16px 20px;max-width:1700px;margin:0 auto}
+@media (max-width:980px){main{grid-template-columns:1fr;padding:12px 16px}}
+aside .card{margin-bottom:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.card>h2{margin:0;padding:10px 14px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:650;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.card .body{padding:12px 14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+label.f{display:block;font-size:12px;color:var(--muted);line-height:1.3}
+label.f>input,label.f>select{display:block;margin-top:4px}
+label.f span.u{color:var(--muted);font-weight:400}
+label.f input,label.f select,.seg input,.seg select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font-size:13.5px}
+label.f input:focus,.seg input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:0}
+.full{grid-column:1/-1}
+.range{display:flex;align-items:center;gap:8px}
+.range input[type=range]{flex:1;accent-color:var(--accent);padding:0}
+.range input[type=number]{width:78px}
+.seg{display:grid;grid-template-columns:78px 1fr 1fr 26px;gap:6px;align-items:end;margin-bottom:8px;padding:8px;border:1px solid var(--line);border-radius:9px;background:color-mix(in srgb,var(--bg) 60%,var(--panel))}
+.seg label{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.seg .x{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:0 4px;align-self:center}
+.seg .x:hover{color:var(--warn)}
+.tabs{display:flex;gap:4px;padding:8px 10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tab{padding:8px 14px;border:none;background:none;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;font-weight:600}
+.tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+.plots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:14px}
+@media (max-width:1250px){.plots{grid-template-columns:1fr}}
+.plotcard{border:1px solid var(--line);border-radius:10px;padding:8px 10px 6px;position:relative;min-width:0}
+.plotcard h3{margin:0 0 2px;font-size:13px;font-weight:650;display:flex;justify-content:space-between;align-items:center}
+.plotcard h3 .tools{display:flex;gap:4px}
+.plotcard svg{width:100%;height:auto;display:block;overflow:visible}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin-top:2px}
+.legend i{display:inline-block;width:18px;height:0;border-top:2.5px solid;vertical-align:middle;margin-right:5px}
+.legend i.dash{border-top-style:dashed}
+.legend i.dot{width:8px;height:8px;border-radius:50%;border:none;background:currentColor}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;z-index:5;display:none}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;padding:0 14px 14px}
+.stat{border:1px solid var(--line);border-radius:9px;padding:7px 10px}
+.stat b{display:block;font-size:17px;font-weight:650;font-variant-numeric:tabular-nums}
+.stat span{font-size:11.5px;color:var(--muted)}
+.banner{margin:12px 14px 0;padding:8px 12px;border-radius:8px;background:var(--warnbg);color:var(--warn);display:none;font-weight:550}
+.note{font-size:12px;color:var(--muted);margin:8px 0 0}
+.scrub{padding:12px 14px 0;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+.scrub input[type=range]{width:100%;accent-color:var(--accent)}
+.derived{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:12.5px;font-variant-numeric:tabular-nums}
+.derived dt{color:var(--muted)} .derived dd{margin:0;text-align:right}
+details summary{cursor:pointer;color:var(--muted);font-size:12.5px}
+.eqn{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.6;color:var(--ink);background:var(--bg);border-radius:8px;padding:8px 10px;margin-top:8px;overflow-x:auto;white-space:pre}
+footer{padding:6px 20px 24px;color:var(--muted);font-size:12px;text-align:center}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chk{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.axis text{fill:var(--muted);font-size:11px}
+.models{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.mtog{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 6px;font-size:13px;font-weight:600;cursor:pointer;user-select:none}
+.mtog input{accent-color:var(--mc);margin:0}
+.mtog .sw{width:10px;height:10px;border-radius:50%;background:var(--mc)}
+.mtog:has(input:not(:checked)){opacity:.55}
+details.msec{border:1px solid var(--line);border-radius:10px;margin-top:10px;border-left:4px solid var(--mc)}
+details.msec>summary{padding:8px 12px;font-weight:650;color:var(--ink);font-size:13px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.msec>summary::-webkit-details-marker{display:none}
+details.msec>summary::after{content:"▾";color:var(--muted)}
+details.msec:not([open])>summary::after{content:"▸"}
+details.msec>.inner{padding:0 12px 12px}
+details.msec.off{opacity:.5}
+.sub2{font-size:11.5px;color:var(--muted);font-weight:500}
+.linkrow{grid-column:1/-1;margin:-2px 0 0}
+label.f input:disabled{opacity:.6}
+.dhead{grid-column:1/-1;font-weight:650;color:var(--ink);margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
+.dhead:first-child{border-top:none;margin-top:0;padding-top:0}
+.empty{display:flex;align-items:center;justify-content:center;height:220px;color:var(--muted);font-size:13px;text-align:center;padding:20px}
+.axlabel{fill:var(--ink);font-size:12px}
+
+/* ---- compact app layout ---- */
+body{display:flex;flex-direction:column;min-height:100vh;font-size:13px}
+header{padding:7px 16px;gap:12px}
+header h1{font-size:15.5px}
+.brand{display:flex;align-items:baseline;gap:7px;color:inherit;text-decoration:none}.brand span{font-size:12.5px;color:var(--muted);font-weight:600}
+header .sub{font-size:12px}
+main{grid-template-columns:330px minmax(0,1fr);gap:12px;padding:10px 14px;max-width:none;width:100%}
+@media (min-width:981px){
+  body{height:100vh;overflow:hidden}
+  main{flex:1;min-height:0}
+  aside{overflow-y:auto;min-height:0;padding-right:4px;scrollbar-gutter:stable}
+  #results{overflow-y:auto;min-height:0}
+}
+@media (max-width:980px){main{grid-template-columns:1fr}}
+aside .card{margin-bottom:10px}
+details.card>summary.h2{list-style:none;cursor:pointer;margin:0;padding:8px 12px;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:650;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+details.card>summary.h2::-webkit-details-marker{display:none}
+details.card>summary.h2::before{content:"▾";font-size:11px}
+details.card:not([open])>summary.h2::before{content:"▸"}
+details.card:not([open])>summary.h2{border-bottom:none}
+details.card>summary.h2 .sub2{text-transform:none;letter-spacing:0;margin-left:auto;white-space:nowrap}
+@media (max-width:700px){header .sub{display:none}}
+.card .body{padding:10px 12px}
+.grid2{gap:7px 10px}
+label.f{font-size:11.5px}
+label.f>input,label.f>select{margin-top:3px}
+label.f input,label.f select,.seg input,.seg select{padding:4px 7px;font-size:13px;border-radius:6px}
+.range input[type=number]{width:66px}
+.note{font-size:11.5px;margin:6px 0 0;line-height:1.4}
+.chk{font-size:12px}
+.models{margin-bottom:8px}
+.mtog{padding:2px 9px 2px 5px;font-size:12.5px}
+details.msec{margin-top:8px}
+details.msec>summary{padding:6px 10px;font-size:12.5px}
+details.msec>.inner{padding:0 10px 10px}
+.seg{grid-template-columns:72px 1fr 1fr 22px;gap:5px;margin-bottom:6px;padding:6px}
+.seg label{font-size:10.5px}
+#results{display:flex;flex-direction:column;align-self:stretch}
+.rhead{position:sticky;top:0;z-index:4;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;padding:0 10px;border-radius:12px 12px 0 0}
+.rhead .tabs{border-bottom:none;padding:6px 0 0}
+.tab{padding:7px 11px;font-size:13px}
+.toolbar{display:flex;align-items:center;gap:6px;padding:6px 0;flex-wrap:wrap}
+.vsep{width:1px;height:18px;background:var(--line)}
+.stats{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;padding:10px 12px 0}
+.stat{padding:4px 9px}
+.stat b{font-size:14px}
+.stat span{font-size:11px}
+.plots{gap:10px;padding:10px 12px 12px}
+.plotcard{padding:6px 8px 4px}
+.plotcard h3{font-size:12.5px}
+.plotcard svg{max-height:max(230px,calc((100vh - 370px)/2))}
+.plotcard.isempty{display:none}
+.plotcard .empty{height:180px}
+.scrub{padding:10px 12px 0}
+.banner{margin:8px 12px 0}
+.parpane{padding:14px 16px}
+.parpane .derived{grid-template-columns:repeat(auto-fill,minmax(210px,1fr)) ;gap:6px 18px;display:grid}
+.dgroup{border:1px solid var(--line);border-radius:9px;padding:8px 10px;border-left:4px solid var(--mc)}
+.dgroup h4{margin:0 0 4px;font-size:12.5px}
+.dgroup dl{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;margin:0;font-size:12px;font-variant-numeric:tabular-nums}
+.dgroup dt{color:var(--muted)} .dgroup dd{margin:0;text-align:right}
+@media (min-width:1900px){#tab-dyn.plots,#tab-dist .plots{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html" title="Tf Studio home"><h1>Tf Studio</h1><span>Explorer</span></a>
+  <span class="sub">Takeda–Lucas (JCP 160, 174504, 2024) · TNM · RelaxPy (MAP)</span>
+  <span class="sp"></span>
+  <label class="chk">T axis
+    <select id="unit" class="btn small"><option value="K">K</option><option value="C">°C</option></select></label>
+  <button class="btn small" id="themeBtn" title="Toggle light / dark">◐</button>
+</header>
+
+<main>
+<aside>
+  <details class="card" id="dataCard" open>
+    <summary class="h2">Measured DSC <span class="sub2">Ge–As–Se, 10 K/min</span></summary>
+    <div class="body">
+      <label class="f">Composition
+        <select id="ds-comp"><option value="">— none —</option></select></label>
+      <div class="row" style="margin-top:8px">
+        <label class="chk"><input type="checkbox" id="ds-showC" checked> cooling scan</label>
+        <label class="chk"><input type="checkbox" id="ds-showH" checked> heating scan</label>
+        <label class="chk"><input type="checkbox" id="ds-hist" checked> set thermal history to match</label>
+      </div>
+      <p class="note" id="ds-info"></p>
+      <details style="margin-top:8px" id="ds-rangeBox"><summary>Baseline windows for C<sub>p</sub> normalisation (°C)</summary>
+        <div style="margin-top:8px;display:grid;grid-template-columns:46px repeat(4,minmax(0,1fr));gap:3px;align-items:end" id="ds-ranges"></div>
+        <div class="row" style="margin-top:8px"><button class="btn small" id="ds-resetR">Reset to saved windows</button></div>
+        <p class="note">dT<sub>f</sub>/dT = (HF − HF<sub>g</sub>)/(HF<sub>l</sub> − HF<sub>g</sub>), with HF<sub>g</sub>, HF<sub>l</sub> linear fits inside the glass / liquid windows. Data are shown and fitted between the lower glass bound and the upper liquid bound.</p>
+      </details>
+      <details style="margin-top:8px" id="ds-fitBox"><summary>Fit a model to this composition</summary>
+        <div class="grid2" style="margin-top:8px">
+          <label class="f">Model<select id="fit-model"><option value="TL">TL</option><option value="TNM">TNM</option><option value="RP">RelaxPy</option></select></label>
+          <label class="f">Scans used<select id="fit-scans"><option value="both">cooling + heating</option><option value="heating">heating only</option><option value="cooling">cooling only</option></select></label>
+          <div class="full row" id="fit-free"></div>
+        </div>
+        <div class="row" style="margin-top:10px"><button class="btn primary small" id="fit-go">Fit</button><button class="btn small" id="fit-stop" disabled>Stop</button><button class="btn small" id="fit-undo" disabled>Undo fit</button></div>
+        <p class="note" id="fit-status"></p>
+      </details>
+    </div>
+  </details>
+
+  <details class="card" open>
+    <summary class="h2">Material &amp; models</summary>
+    <div class="body">
+      <div class="models">
+        <label class="mtog" style="--mc:var(--mTL)"><input type="checkbox" id="use-TL" checked><span class="sw"></span>TL</label>
+        <label class="mtog" style="--mc:var(--mTNM)"><input type="checkbox" id="use-TNM"><span class="sw"></span>TNM</label>
+        <label class="mtog" style="--mc:var(--mRP)"><input type="checkbox" id="use-RP"><span class="sw"></span>RelaxPy</label>
+      </div>
+      <div class="grid2">
+        <label class="f full">Material preset <span class="u">(Table I, JCP 2024 · T<sub>g</sub>, m shared by all models unless unlinked)</span>
+          <select id="preset"></select></label>
+        <label class="f">T<sub>g</sub> <span class="u">(K, τ = 100 s)</span><input id="Tg" type="number" step="any"></label>
+        <label class="f">Fragility m<input id="m" type="number" step="any"></label>
+      </div>
+
+      <details class="msec" id="sec-TL" style="--mc:var(--mTL)" open><summary>Takeda–Lucas (TL) <span class="sub2">heterogeneous AG</span></summary><div class="inner">
+      <div class="grid2">
+        <label class="f">log<sub>10</sub> τ<sub>0</sub> <span class="u">(s)</span><input id="l10" type="number" step="any"></label>
+        <label class="f">β<sub>0</sub> <span class="u">(local, 0–1)</span><input id="b0" type="number" step="0.01" min="0.05" max="1"></label>
+        <div class="full">
+          <label class="f">Distribution shape f <span class="u">(0.10 – 0.99)</span></label>
+          <div class="range"><input id="fr" type="range" min="0.10" max="0.99" step="0.01"><input id="f" type="number" step="0.01" min="0.1" max="0.99" style="padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--bg)"></div>
+        </div>
+        <label class="f">N <span class="u">(T<sub>v,i</sub> domains)</span><input id="N" type="number" step="10" min="20" max="400"></label>
+      </div></div></details>
+
+      <details class="msec" id="sec-TNM" style="--mc:var(--mTNM)"><summary>Tool–Narayanaswamy–Moynihan <span class="sub2">TNM</span></summary><div class="inner">
+      <div class="grid2">
+        <label class="chk linkrow"><input type="checkbox" id="tnm-link" checked> <span>Use shared T<sub>g</sub> and m</span></label>
+        <label class="f">T<sub>g</sub> <span class="u">(K)</span><input id="tnm-Tg" type="number" step="any"></label>
+        <label class="f">m <span class="u">(Δh/R = m ln10 T<sub>g</sub>)</span><input id="tnm-m" type="number" step="any"></label>
+        <label class="f">Nonlinearity x <span class="u">(0–1)</span><input id="tnm-x" type="number" step="0.01" min="0" max="1" value="0.5"></label>
+        <label class="f">β <span class="u">(KWW)</span><input id="tnm-b" type="number" step="0.01" min="0.1" max="1" value="0.55"></label>
+        <label class="f full">Relaxation kernel
+          <select id="tnm-k"><option value="exact">Exact KWW (Moynihan summation, O(n²))</option><option value="prony">Prony series (fast)</option></select></label>
+      </div>
+      <p class="note">τ = A exp[xΔh/RT + (1−x)Δh/RT<sub>f</sub>], with A fixed so that τ(T<sub>g</sub>) = 100 s.</p>
+      </div></details>
+
+      <details class="msec" id="sec-RP" style="--mc:var(--mRP)"><summary>RelaxPy <span class="sub2">MAP viscosity + Prony</span></summary><div class="inner">
+      <div class="grid2">
+        <label class="chk linkrow"><input type="checkbox" id="rp-link" checked> <span>Use shared T<sub>g</sub> and m</span></label>
+        <label class="f">T<sub>g</sub> <span class="u">(K, η = 10¹² Pa·s)</span><input id="rp-Tg" type="number" step="any"></label>
+        <label class="f">m<input id="rp-m" type="number" step="any"></label>
+        <label class="f">log<sub>10</sub> η<sub>∞</sub> <span class="u">(Pa·s)</span><input id="rp-ei" type="number" step="any" value="-2.9"></label>
+        <label class="f">log<sub>10</sub> K<sub>s</sub> <span class="u">(Pa)</span><input id="rp-ks" type="number" step="any" value="10.544068"></label>
+        <label class="f">A<input id="rp-A" type="number" step="any" value="45.19"></label>
+        <label class="f">B = ΔH/(k ln10) <span class="u">(K)</span><input id="rp-B" type="number" step="any" value="4136.7"></label>
+        <label class="f">C = S∞/(k ln10)<input id="rp-C" type="number" step="any" value="135.09"></label>
+        <label class="f">Ergodicity exponent p<input id="rp-p" type="number" step="any" value="10.88"></label>
+        <label class="chk full"><input type="checkbox" id="rp-Aauto" checked> <span>A from continuity η<sub>ne</sub> = η<sub>eq</sub> at T = T<sub>f</sub> = T<sub>g</sub></span></label>
+        <label class="chk full"><input type="checkbox" id="rp-pauto" checked> p = 0.3082·m (RelaxPy default)</label>
+        <label class="f">Stretching β<select id="rp-beta"><option value="3/7">3/7 (RelaxPy table)</option><option value="1/2">1/2 (RelaxPy table)</option><option value="3/5">3/5 (RelaxPy table)</option><option value="custom">custom (fitted Prony)</option></select></label>
+        <label class="f" id="rp-N-l">Prony terms N<input id="rp-N" type="number" min="1" max="12" step="1" value="8"></label>
+        <label class="f" id="rp-bc-l" hidden>custom β<input id="rp-bc" type="number" min="0.1" max="1" step="0.01" value="0.5"></label>
+        <div class="full row"><button class="btn small" id="rp-example">Load RelaxPy example glass</button></div>
+      </div>
+      <p class="note">A, B, C, p are material-specific (defaults: RelaxPy's example glass). K<sub>s</sub> = 35 GPa gives τ<sub>K</sub>(T<sub>g</sub>) ≈ 29 s; set log K<sub>s</sub> = 10 for τ(T<sub>g</sub>) = 100 s like TL/TNM.</p>
+      </div></details>
+    </div>
+  </details>
+
+  <details class="card" open>
+    <summary class="h2">Thermal history</summary>
+    <div class="body">
+      <div class="grid2">
+        <label class="f">Protocol<select id="proto"></select></label>
+        <label class="f" title="System starts equilibrated: T_f = T_0">Start T<sub>0</sub> <span class="u">(K, T<sub>f</sub> = T<sub>0</sub>)</span><input id="T0" type="number" step="any"></label>
+      </div>
+      <div id="segs" style="margin-top:8px"></div>
+            <div class="row" style="margin-top:2px">
+        <button class="btn small" data-add="ramp">+ Ramp</button>
+        <button class="btn small" data-add="hold">+ Hold</button>
+        <button class="btn small" data-add="jump">+ T-jump</button>
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <label class="f" title="Ramps use uniform ΔT steps (Δt = ΔT/rate)">Ramp step ΔT <span class="u">(K)</span><input id="dT" type="number" step="0.1" min="0.01" value="0.5"></label>
+        <label class="f" title="Holds use logarithmic time steps starting at ≈0.1 s">Hold points / decade<input id="ppd" type="number" step="1" min="2" max="50" value="10"></label>
+      </div>
+    </div>
+  </details>
+</aside>
+
+<section class="card" id="results">
+  <div class="rhead">
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" aria-selected="true" data-tab="cal">Calorimetry</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="dyn">Relaxation dynamics</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="dist">Distributions</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="hist">Time history</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="par">Parameters</button>
+    </div>
+    <div class="toolbar">
+      <button class="btn primary small" id="runBtn">Run</button>
+      <label class="chk" title="Re-run automatically when inputs change"><input type="checkbox" id="auto" checked> auto</label>
+      <span class="vsep"></span>
+      <button class="btn small" id="pinBtn" title="Keep the current curves as a dashed overlay">Pin</button>
+      <button class="btn small" id="clearBtn">Clear pins</button>
+      <span class="vsep"></span>
+      <button class="btn small" id="csvBtn" title="Download results as CSV">CSV</button>
+      <label class="btn small" style="cursor:pointer" title="Overlay a two-column (T, Cp) file">Overlay Cp…<input id="expFile" type="file" accept=".csv,.txt,.dat" hidden></label>
+      <button class="btn small" id="expClear" style="display:none">Remove overlay</button>
+    </div>
+  </div>
+  <p class="note" id="expNote" style="display:none;margin:6px 12px 0"></p>
+  <div class="banner" id="err"></div>
+  <div class="stats" id="stats"></div>
+
+  <div id="tab-cal" class="plots">
+    <div class="plotcard" id="p-cp"></div>
+    <div class="plotcard" id="p-tf"></div>
+    <div class="plotcard" id="p-res"></div>
+    <div class="plotcard" id="p-tau2"></div>
+  </div>
+  <div id="tab-dyn" class="plots" hidden>
+    <div class="plotcard" id="p-tau"></div>
+    <div class="plotcard" id="p-sig"></div>
+    <div class="plotcard" id="p-eta"></div>
+    <div class="plotcard" id="p-comp"></div>
+  </div>
+  <div id="tab-dist" hidden>
+    <div class="scrub">
+      <div class="row"><button class="btn small" id="playBtn">▶ Play</button></div>
+      <input type="range" id="snap" min="0" max="1" value="0" step="1">
+      <div id="snapInfo" style="font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:200px;text-align:right"></div>
+    </div>
+    <div class="stats" id="snapStats" style="padding-top:10px"></div>
+    <div class="plots" style="padding-top:0">
+      <div class="plotcard" id="p-G"></div>
+      <div class="plotcard" id="p-Y"></div>
+      <div class="plotcard" id="p-Tfi"></div>
+      <div class="plotcard" id="p-chi"></div>
+      <div class="plotcard" id="p-beta"></div>
+    </div>
+  </div>
+  <div id="tab-hist" class="plots" hidden>
+    <div class="plotcard" id="p-Tt"></div>
+    <div class="plotcard" id="p-dTf"></div>
+    <div class="full" style="grid-column:1/-1"><label class="chk"><input type="checkbox" id="logt"> Logarithmic time axis (skips t = 0)</label></div>
+  </div>
+  <div id="tab-par" hidden class="parpane">
+    <div class="derived" id="derived"></div>
+    <details open style="margin-top:12px"><summary>Model equations used</summary>
+      <div class="eqn">T_f,i(t_j) = T_i(t_j) − [T_i(t_j) − T_f,i(t_j−1)] · exp[−(Δt_j/τ_i)^β0]
+⟨T_f⟩ = Σ_i Y_i T_f,i         (weights = equilibrium weights Y_i)
+T_i = T (2 − T_v,i/⟨T_v⟩)         (local temperature)
+τ_i = τ0 exp[ D T_v,i / (T (1 − T_v,i/⟨T_f⟩)) ]
+X_i ∝ Y_i (T/D) (1 − T_v/⟨T_f⟩)²
+τ_eff = exp[Σ X_i ln τ_i]
+C_p,norm = d⟨T_f⟩/dT
+D = ln²(100/τ0)/(m ln10 − ln(100/τ0))
+T_v = T_g [1 − ln(100/τ0)/(m ln10)]</div>
+<div class="eqn">TNM
+τ = A exp[ xΔh/RT + (1−x)Δh/RT_f ],  Δh/R = m ln10 T_g,  ln A = ln100 − Δh/RT_g
+exact:  T_f(t_n) = T_0 + Σ_j ΔT_j {1 − exp[−(Σ_{k=j..n} Δt_k/τ_k)^β]}
+Prony:  T_f,i(t_j) = T − (T − T_f,i) exp(−k_i Δt/τ),  T_f = Σ w_i T_f,i</div>
+<div class="eqn">RelaxPy (MAP)
+log η = y log η_eq(T_f) + (1−y) log η_ne(T,T_f),  y = [min(T,T_f)/max(T,T_f)]^p
+log η_eq = log η∞ + (12 − log η∞)(T_g/T_f) exp[(m/(12−log η∞) − 1)(T_g/T_f − 1)]
+log η_ne = A + B/T − C exp[−(T_g/T_f)(m/(12−log η∞) − 1)]
+τ_K = η/K_s;  T_f,i(t_j) = T − (T − T_f,i) exp(−k_i Δt/τ_K),  T_f = Σ w_i T_f,i</div>
+    </details>
+    <p class="note" style="margin-top:12px"><span id="geasseNote">GeAsSe data: <code>system/GeAsSe</code> (equal-rate DSC, manual baseline windows, TL fits from the 0.5/1/5 K/min series). </span>Runs entirely in your browser — no data leaves this page. TL: line-by-line port of <code>TL_model.py</code> with the embedded <code>lntau_Glntau</code> β library. RelaxPy: port of <code>RelaxPy-v01.py</code> (Wilkinson, Mauro &amp; Mauro, SoftwareX 2018) with its Prony table. TNM: Moynihan et al. (1976).</p>
+  </div>
+</section>
+</main>
+
+<script>
+/*%%CORE%%*/
+</script>
+<script>
+/*%%MODELS%%*/
+</script>
+<script>
+const LIBRARY = /*%%LIB%%*/;
+TL.setLibrary(LIBRARY);
+MODELS.setTables(/*%%PRONYFIT%%*/, /*%%PRONYRP%%*/);
+const GEASSE_DATA = /*%%GEASSE%%*/;
+</script>
+<script>
+/*%%APP%%*/
+</script>
+</body>
+</html>

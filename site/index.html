@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tf Studio · Thermal Fingerprint</title>
+<meta name="description" content="Tf Studio — simulate and fit glass relaxation with the heterogeneous Takeda–Lucas model, TNM and RelaxPy, for DSC, MDSC, enthalpy, volume and annealing data. Runs in your browser.">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root{--bg:#f5f6f8;--panel:#ffffff;--ink:#16202c;--muted:#5d6b7c;--line:#dfe3e9;--accent:#2a6fdb;--accent2:#d9480f;--soft:#eef1f5;--hero:#16284a;--hero-ink:#ffffff;--hero-muted:#b7c4d8}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#10141a;--panel:#1a2029;--ink:#e6ebf2;--muted:#93a1b3;--line:#2c3543;--accent:#5b9bff;--accent2:#ff8a4c;--soft:#161b22;--hero:#0f1c33;--hero-ink:#ffffff;--hero-muted:#a9b8cf}}
+:root[data-theme=dark]{--bg:#10141a;--panel:#1a2029;--ink:#e6ebf2;--muted:#93a1b3;--line:#2c3543;--accent:#5b9bff;--accent2:#ff8a4c;--soft:#161b22;--hero:#0f1c33;--hero-ink:#ffffff;--hero-muted:#a9b8cf}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--accent)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.hero{background:var(--hero);color:var(--hero-ink);padding:40px 0 44px}
+.brand{display:flex;align-items:center;gap:16px}
+.brand img{width:72px;height:72px}
+.brand h1{margin:0;font-size:34px;letter-spacing:-.3px;font-weight:720}
+.brand h1 i{font-family:Georgia,"Times New Roman",serif;font-weight:700}
+.brand p{margin:2px 0 0;color:var(--hero-muted);font-size:15px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.lead{font-size:19px;max-width:760px;margin:22px 0 0;color:#e7edf6}
+.lead b{color:#fff}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;font-weight:650;text-decoration:none;border:1px solid transparent;font-size:15px;cursor:pointer}
+.btn.primary{background:#fff;color:#16284a}
+.btn.ghost{border-color:rgba(255,255,255,.35);color:#fff;background:transparent;font:inherit;font-weight:650}
+.btn:hover{filter:brightness(.95)}
+main{padding:34px 0 20px}
+h2{font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:30px 0 12px}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.tools{grid-template-columns:1fr}.brand h1{font-size:28px}}
+.tool{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 20px 18px;transition:border-color .12s, box-shadow .12s;cursor:pointer;text-align:left;font:inherit}
+.tool:hover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.tool .name{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:700}
+.tool .tag{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.tool p{color:var(--muted);margin:8px 0 10px}
+.tool ul{margin:0;padding-left:18px;color:var(--ink);font-size:14px}
+.tool .go{margin-top:12px;color:var(--accent);font-weight:650;font-size:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:760px){.grid3{grid-template-columns:1fr}}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.box b{display:block;margin-bottom:4px}
+.box span{color:var(--muted);font-size:14px}
+.cite{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px 16px}
+.cite p{margin:10px 0;font-size:14px}
+footer{border-top:1px solid var(--line);margin-top:34px;padding:18px 0 34px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.desktop-only{display:none}
+body.desktop .web-only{display:none}
+body.desktop .desktop-only{display:inline-flex}
+body.desktop .hero{padding:26px 0 28px}
+body.desktop .lead{font-size:16px;margin-top:14px}
+</style>
+</head>
+<body>
+<section class="hero">
+  <div class="wrap">
+    <div class="brand"><img src="icon.png" alt=""><div><h1><i>T</i><sub style="font-family:Georgia,serif;font-style:italic;font-size:.62em">f</sub> Studio</h1><p>Thermal Fingerprint</p></div></div>
+    <p class="lead">Every glass carries the <b>thermal fingerprint</b> of how it was made, written in its fictive temperature. Tf Studio simulates and fits that history, using the heterogeneous <b>Takeda–Lucas</b> model alongside <b>TNM</b> and <b>RelaxPy</b>, for DSC, MDSC, enthalpy, volume and annealing data.</p>
+    <div class="cta">
+      <a class="btn primary" href="explorer.html" data-tool="explorer">Open Explorer</a>
+      <a class="btn ghost" href="fitter.html" data-tool="fitter">Open Fitter</a>
+      <a class="btn ghost web-only" href="https://github.com/Wtakeda0129/tf-studio/releases/latest">Download for macOS</a>
+      <button class="btn ghost desktop-only" id="upd" type="button">Check for updates</button>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <h2>Tools</h2>
+  <div class="tools">
+    <a class="tool" href="explorer.html" data-tool="explorer">
+      <div class="name">Explorer <span class="tag">quick look</span></div>
+      <p>See how a glass responds to a cool–heat scan, an anneal or a T-jump, in real time as you move the parameters.</p>
+      <ul><li>Heat capacity, fictive temperature, relaxation time, δT<sub>f</sub></li><li>Relaxation-time distributions and β<sub>KWW</sub>(T) from the TL model</li><li>TL, TNM and RelaxPy side by side</li></ul>
+      <div class="go">Open Explorer →</div>
+    </a>
+    <a class="tool" href="fitter.html" data-tool="fitter">
+      <div class="name">Fitter <span class="tag">step by step</span></div>
+      <p>Program any thermal history, load your measurements, then compute with chosen parameters or fit them.</p>
+      <ul><li>Ramps, anneals with log-spaced times, T-jumps, MDSC modulation</li><li>DSC, MDSC C<sub>p</sub>′/C<sub>p</sub>″, enthalpy, volume, T<sub>f</sub>, annealing data</li><li>Bounded local / global fits, errors, correlations, AIC/BIC</li></ul>
+      <div class="go">Open Fitter →</div>
+    </a>
+  </div>
+
+  <h2>Models</h2>
+  <div class="grid3">
+    <div class="box"><b>Takeda–Lucas (TL)</b><span>Heterogeneous Adam–Gibbs domains with a distribution of T<sub>v</sub>; temperature-dependent nonexponentiality and enthalpy fluctuation.</span></div>
+    <div class="box"><b>Tool–Narayanaswamy–Moynihan</b><span>Single fictive temperature with nonlinearity x and a KWW kernel (exact summation or Prony series).</span></div>
+    <div class="box"><b>RelaxPy (MAP)</b><span>Mauro–Allan–Potuzak nonequilibrium viscosity with Prony-series fictive-temperature components.</span></div>
+  </div>
+
+  <h2>How to cite</h2>
+  <div class="cite">
+    <p>W. Takeda and P. Lucas, “A model of heterogeneous undercooled liquid and glass accounting for temperature-dependent nonexponentiality and enthalpy fluctuation,” <i>J. Chem. Phys.</i> <b>160</b>, 174504 (2024). <a href="https://doi.org/10.1063/5.0196812">doi:10.1063/5.0196812</a></p>
+    <p>W. Takeda and P. Lucas, “Relationship between enthalpy fluctuation and nonexponential relaxation in glass-forming liquids,” <i>Mater. Adv.</i> <b>7</b>, 5729 (2026). <a href="https://doi.org/10.1039/d6ma00442c">doi:10.1039/d6ma00442c</a></p>
+    <p style="color:var(--muted)">RelaxPy: C. J. Wilkinson, Y. Z. Mauro and J. C. Mauro, <i>SoftwareX</i> (2018).</p>
+  </div>
+
+  <footer>
+    <span>Tf Studio <span id="ver"></span>· Lucas group, Materials Science &amp; Engineering, University of Arizona</span>
+    <span class="web-only">Everything runs in your browser. No data leaves your computer. · <a href="https://github.com/Wtakeda0129/tf-studio">Source on GitHub</a></span>
+  </footer>
+</main>
+<script>
+// Inside the desktop app, the preload script exposes window.desktop: open tools in their own windows.
+if (window.desktop) {
+  document.body.classList.add("desktop");
+  document.querySelectorAll("[data-tool]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); window.desktop.openTool(a.dataset.tool); }));
+  document.getElementById("upd").addEventListener("click", () => window.desktop.checkUpdates());
+  window.desktop.version().then(v => { document.getElementById("ver").textContent = "v" + v + " "; });
+}
+</script>
+</body>
+</html>

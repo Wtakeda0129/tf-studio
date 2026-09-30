@@ -1,0 +1,9 @@
+node_modules/
+desktop/dist/
+desktop/app/
+.DS_Store
+__pycache__/
+# unpublished experimental data — never commit
+src/explorer/geasse_data.json
+src/fitter/examples.json
+system/

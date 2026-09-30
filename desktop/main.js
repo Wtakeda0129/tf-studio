@@ -1,0 +1,82 @@
+// Tf Studio (Thermal Fingerprint) — Electron shell
+// Opens a launcher window; each tool (TL Model Explorer, Relaxation Fitter) is a self-contained HTML page in ./app.
+// Updates: electron-updater checks the "publish" feed configured in package.json (GitHub Releases by default).
+const { app, BrowserWindow, Menu, dialog, shell, ipcMain } = require("electron");
+const path = require("path");
+let autoUpdater = null;
+try { autoUpdater = require("electron-updater").autoUpdater; } catch (e) { autoUpdater = null; }
+
+const TOOLS = {
+  explorer: { file: "explorer.html", title: "Tf Studio · Explorer" },
+  fitter: { file: "fitter.html", title: "Tf Studio · Fitter" },
+};
+let launcher = null;
+const toolWindows = {};
+
+function openLauncher() {
+  if (launcher && !launcher.isDestroyed()) { launcher.focus(); return; }
+  launcher = new BrowserWindow({ width: 980, height: 720, minWidth: 700, minHeight: 500, title: "Tf Studio",
+    webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true } });
+  launcher.loadFile(path.join(__dirname, "app", "index.html"));
+  launcher.webContents.on("will-navigate", (e, url) => { if (/^https?:/.test(url)) { e.preventDefault(); shell.openExternal(url); } });
+  launcher.on("closed", () => { launcher = null; });
+}
+function openTool(key) {
+  const t = TOOLS[key]; if (!t) return;
+  const w0 = toolWindows[key]; if (w0 && !w0.isDestroyed()) { w0.focus(); return; }
+  const w = new BrowserWindow({ width: 1500, height: 950, minWidth: 900, minHeight: 600, title: t.title, webPreferences: { contextIsolation: true } });
+  w.loadFile(path.join(__dirname, "app", t.file));
+  // external links open in the default browser
+  w.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url)) shell.openExternal(url); return { action: "deny" }; });
+  w.on("page-title-updated", e => e.preventDefault());   // keep the tool name in the title bar
+  // the "Tf Studio" logo in each tool links to index.html: bring up the launcher instead of navigating away
+  w.webContents.on("will-navigate", (e, url) => { if (/index\.html$/.test(url)) { e.preventDefault(); openLauncher(); } else if (/^https?:/.test(url)) { e.preventDefault(); shell.openExternal(url); } });
+  toolWindows[key] = w; w.on("closed", () => { delete toolWindows[key]; });
+}
+
+/* ---------------- updates ---------------- */
+let manualCheck = false;
+function setupUpdater() {
+  if (!autoUpdater || !app.isPackaged) return;
+  autoUpdater.autoDownload = true;
+  autoUpdater.on("update-available", info => { if (manualCheck) dialog.showMessageBox({ message: `Version ${info.version} is available and is downloading in the background.` }); });
+  autoUpdater.on("update-not-available", () => { if (manualCheck) dialog.showMessageBox({ message: `You are up to date (version ${app.getVersion()}).` }); manualCheck = false; });
+  autoUpdater.on("error", err => { if (manualCheck) dialog.showMessageBox({ type: "warning", message: "Could not check for updates.", detail: String(err && err.message || err) }); manualCheck = false; });
+  autoUpdater.on("update-downloaded", info => {
+    manualCheck = false;
+    dialog.showMessageBox({ type: "info", buttons: ["Restart now", "Later"], defaultId: 0, message: `Version ${info.version} has been downloaded.`, detail: "Restart the app to install the update." })
+      .then(r => { if (r.response === 0) autoUpdater.quitAndInstall(); });
+  });
+  autoUpdater.checkForUpdates().catch(() => {});
+  setInterval(() => autoUpdater.checkForUpdates().catch(() => {}), 6 * 3600 * 1000);
+}
+function checkForUpdatesManually() {
+  if (!app.isPackaged || !autoUpdater) { dialog.showMessageBox({ message: "Update checks run only in the installed app." }); return; }
+  manualCheck = true; autoUpdater.checkForUpdates().catch(() => {});
+}
+
+/* ---------------- menu ---------------- */
+function buildMenu() {
+  const isMac = process.platform === "darwin";
+  const template = [
+    ...(isMac ? [{ label: app.name, submenu: [{ role: "about" }, { label: "Check for Updates…", click: checkForUpdatesManually }, { type: "separator" }, { role: "hide" }, { role: "hideOthers" }, { role: "unhide" }, { type: "separator" }, { role: "quit" }] }] : []),
+    { label: "File", submenu: [
+      { label: "Launcher", accelerator: "CmdOrCtrl+0", click: openLauncher },
+      { label: "Explorer", accelerator: "CmdOrCtrl+1", click: () => openTool("explorer") },
+      { label: "Fitter", accelerator: "CmdOrCtrl+2", click: () => openTool("fitter") },
+      { type: "separator" }, isMac ? { role: "close" } : { role: "quit" } ] },
+    { role: "editMenu" },
+    { label: "View", submenu: [{ role: "reload" }, { role: "toggleDevTools" }, { type: "separator" }, { role: "resetZoom" }, { role: "zoomIn" }, { role: "zoomOut" }, { type: "separator" }, { role: "togglefullscreen" }] },
+    { role: "windowMenu" },
+    { role: "help", submenu: [...(isMac ? [] : [{ label: "Check for Updates…", click: checkForUpdatesManually }])] },
+  ];
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+ipcMain.handle("open-tool", (_e, key) => openTool(key));
+ipcMain.handle("app-version", () => app.getVersion());
+ipcMain.handle("check-updates", () => checkForUpdatesManually());
+
+app.whenReady().then(() => { buildMenu(); openLauncher(); setupUpdater(); });
+app.on("activate", () => { if (BrowserWindow.getAllWindows().length === 0) openLauncher(); });
+app.on("window-all-closed", () => { if (process.platform !== "darwin") app.quit(); });
