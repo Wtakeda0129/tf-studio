@@ -42,6 +42,7 @@ module.exports = {
   // builds upload into a draft; the release workflow publishes it only after all platforms are done, so an
   // update check never sees a half-uploaded release (e.g. the DMG without latest-mac.yml)
   publish: [{ provider: "github", owner: PUBLISH_OWNER, repo: PUBLISH_REPO, releaseType: "draft" }],
-  // tells the app whether this macOS build carries a Developer ID signature (needed to install updates in place)
-  extraMetadata: { macSigned: !!process.env.CSC_LINK },
+  // tells the app whether this macOS build has a stable signature (Developer ID or the self-signed Tf Studio
+  // certificate), which is what installing an update in place needs
+  extraMetadata: { macSigned: !!(process.env.CSC_LINK || process.env.TF_SIGN_IDENTITY) },
 };

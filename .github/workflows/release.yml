@@ -40,6 +40,26 @@ jobs:
           sudo mdutil -a -i off || true
           # XProtect / Spotlight scanning keeps freshly mounted DMG volumes busy; stop them for the duration of the build
           ( for i in $(seq 1 180); do sudo pkill -9 XProtect >/dev/null 2>&1 || true; sudo pkill -9 mds_stores >/dev/null 2>&1 || true; sleep 5; done ) &
+      - name: Import the self-signed code-signing certificate (macOS)
+        if: matrix.os == 'macos-latest'
+        env:
+          P12: ${{ secrets.MAC_SELFSIGN_P12 }}
+        run: |
+          if [ -z "$P12" ]; then echo "::notice title=signing::No MAC_SELFSIGN_P12 secret, so the macOS app gets an ad-hoc signature"; exit 0; fi
+          KC="$RUNNER_TEMP/tfsign.keychain-db"; KCPW=$(uuidgen)
+          printf '%s' "$P12" | tr -d ' \r\n' | base64 --decode > "$RUNNER_TEMP/tf.p12"
+          security create-keychain -p "$KCPW" "$KC"
+          security set-keychain-settings -lut 21600 "$KC"
+          security unlock-keychain -p "$KCPW" "$KC"
+          security import "$RUNNER_TEMP/tf.p12" -k "$KC" -P tfstudio -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KCPW" "$KC" > /dev/null
+          security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+          rm -f "$RUNNER_TEMP/tf.p12"
+          HASH=$(security find-certificate -c "Tf Studio (self-signed)" -Z "$KC" | awk '/SHA-1/{print $NF}')
+          if [ -z "$HASH" ]; then echo "::error title=signing::certificate 'Tf Studio (self-signed)' not found in the secret"; exit 1; fi
+          echo "::notice title=signing::Signing with the Tf Studio certificate $HASH"
+          echo "TF_SIGN_IDENTITY=$HASH" >> "$GITHUB_ENV"
+          echo "TF_SIGN_KEYCHAIN=$KC" >> "$GITHUB_ENV"
       - name: Build and publish
         run: |
           set +e +o pipefail

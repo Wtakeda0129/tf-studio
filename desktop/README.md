@@ -31,6 +31,14 @@ Until a Developer ID certificate is configured, the macOS app has only an ad-hoc
 
 **Auto-update does not work in these builds.** macOS only installs an update if it is signed with the same Developer ID as the installed app.
 
+### Self-signed certificate (free, current setup)
+
+Without a Developer ID, the release workflow can sign every macOS build with the same self-signed certificate
+(secret `MAC_SELFSIGN_P12`: a base64-encoded `.p12` with password `tfstudio` and the certificate name
+`Tf Studio (self-signed)`). Every version then carries the same signature, so installed copies can install updates
+in place ("Restart now"). First-time users still see the "unidentified developer" warning and use **Open Anyway**
+once. Without the secret, builds fall back to an ad-hoc signature and the app points to the download page instead.
+
 ## 2. Real releases with automatic updates
 
 ### What you need (one time)

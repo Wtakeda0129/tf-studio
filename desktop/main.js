@@ -63,9 +63,18 @@ function setupUpdater() {
     if (manualCheck) dialog.showMessageBox({ message: `Version ${info.version} is available and is downloading in the background.` });
   });
   autoUpdater.on("update-not-available", () => { if (manualCheck) dialog.showMessageBox({ message: `You are up to date (version ${app.getVersion()}).` }); manualCheck = false; });
-  autoUpdater.on("error", err => { if (manualCheck) dialog.showMessageBox({ type: "warning", message: "Could not check for updates.", detail: String(err && err.message || err) }); manualCheck = false; });
+  let downloaded = null;
+  autoUpdater.on("error", err => {
+    // an update was downloaded but macOS refused to install it (signature mismatch): offer the download page
+    if (downloaded && process.platform === "darwin") {
+      dialog.showMessageBox({ type: "warning", buttons: ["Download", "Later"], defaultId: 0, message: `Tf Studio ${downloaded} could not be installed automatically.`, detail: "Download the new DMG and drag Tf Studio into Applications, replacing the old copy.\n\n" + String(err && err.message || err) })
+        .then(r => { if (r.response === 0) shell.openExternal(RELEASES_URL); });
+      downloaded = null; manualCheck = false; return;
+    }
+    if (manualCheck) dialog.showMessageBox({ type: "warning", message: "Could not check for updates.", detail: String(err && err.message || err) }); manualCheck = false;
+  });
   autoUpdater.on("update-downloaded", info => {
-    manualCheck = false;
+    manualCheck = false; downloaded = info.version;
     dialog.showMessageBox({ type: "info", buttons: ["Restart now", "Later"], defaultId: 0, message: `Version ${info.version} has been downloaded.`, detail: "Restart the app to install the update." })
       .then(r => { if (r.response === 0) autoUpdater.quitAndInstall(); });
   });

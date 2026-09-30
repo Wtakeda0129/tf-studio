@@ -1,6 +1,9 @@
-// afterPack hook: without a Developer ID certificate, electron-builder leaves the macOS app unsigned, and an unsigned
-// Apple-silicon app refuses to start ("damaged"). Give the final (universal) app an ad-hoc signature instead.
-// With CSC_LINK set, electron-builder signs (and notarizes) the app itself, and this hook does nothing.
+// afterPack hook (macOS): sign the final (universal) app when electron-builder itself does not sign it.
+//  - TF_SIGN_IDENTITY set (the release workflow imported the self-signed "Tf Studio" certificate into
+//    TF_SIGN_KEYCHAIN): sign with that certificate. Every release then carries the same signature, which is
+//    what macOS needs to install an update in place ("Restart now").
+//  - otherwise: ad-hoc signature, so the app at least starts on Apple silicon (updates cannot install in place).
+// With CSC_LINK set (a real Developer ID), electron-builder signs and notarizes itself and this hook does nothing.
 const { execFileSync } = require("child_process");
 const path = require("path");
 exports.default = async function (context) {
@@ -8,7 +11,11 @@ exports.default = async function (context) {
   if (process.env.CSC_LINK) return;
   if (/-temp$/.test(context.appOutDir)) return;            // per-arch halves of a universal build: sign only the merged app
   const app = path.join(context.appOutDir, `${context.packager.appInfo.productFilename}.app`);
-  console.log(`  • ad-hoc signing ${app}`);
-  execFileSync("codesign", ["--force", "--deep", "--sign", "-", app], { stdio: "inherit" });
-  execFileSync("codesign", ["--verify", "--deep", "--strict", app], { stdio: "inherit" });
+  const id = process.env.TF_SIGN_IDENTITY, kc = process.env.TF_SIGN_KEYCHAIN;
+  const args = ["--force", "--deep", "--timestamp=none", "--sign", id || "-"];
+  if (id && kc) args.push("--keychain", kc);
+  console.log(`  • ${id ? "signing with the Tf Studio certificate" : "ad-hoc signing"} ${app}`);
+  execFileSync("codesign", [...args, app], { stdio: "inherit" });
+  execFileSync("codesign", ["--verify", "--deep", "--strict", "--verbose=2", app], { stdio: "inherit" });
+  execFileSync("codesign", ["--display", "--requirements", "-", app], { stdio: "inherit" });
 };
