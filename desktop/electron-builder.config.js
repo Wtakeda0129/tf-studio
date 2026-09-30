@@ -9,6 +9,7 @@ module.exports = {
   copyright: "© 2026 Wataru Takeda, University of Arizona",
   files: ["main.js", "preload.js", "app/**/*"],
   directories: { buildResources: "build", output: "dist" },
+  afterPack: "build/adhoc-sign.js",   // ad-hoc signature for unsigned macOS builds (see the file)
   mac: {
     category: "public.app-category.education",
     icon: "build/icon.png",
