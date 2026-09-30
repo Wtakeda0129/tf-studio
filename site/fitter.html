@@ -970,7 +970,11 @@ function freeList(model) { const P = S.P[model]; return E.MODELDEFS[model].param
 function recompile() { try { S.hist = E.compile(S.T0, S.segs); S.histErr = null; } catch (e) { S.hist = null; S.histErr = e.message; } S.dirtySim = true; }
 function dsFilter(ds) { const x = [], y = []; for (let i = 0; i < ds.xAll.length; i++) { const X = ds.xAll[i], Y = ds.yAll[i]; if (!isFinite(X) || !isFinite(Y)) continue; if (isFinite(ds.xmin) && X < ds.xmin) continue; if (isFinite(ds.xmax) && X > ds.xmax) continue; x.push(X); y.push(Y); } ds.x = x; ds.y = y; }
 function activeDatasets() { return S.datasets.filter(d => d.enabled && d.x.length >= 2); }
-function simulateNow() {
+// Nothing is computed while the history, data or parameters are edited: the model runs only when the user clicks
+// Compute or Run fit in step 4 (runModel). Every edit just invalidates the previous result (simulateNow = invalidate).
+function invalidate() { S.sim = null; S.evalRes = null; S.simErr = null; S.fitRes = null; S.compRes = null; S.dirtySim = true; }
+const simulateNow = invalidate;
+function runModel() {
   S.sim = null; S.evalRes = null; S.simErr = null;
   if (!S.hist) { S.simErr = S.histErr || "no thermal history"; return; }
   const t0 = performance.now();
@@ -982,9 +986,10 @@ function simulateNow() {
   } catch (e) { S.simErr = e.message; S.sim = null; }
   S.simMs = performance.now() - t0; S.dirtySim = false;
 }
-function evalFor(ds) { if (!S.evalRes) return null; const act = activeDatasets(); const j = act.indexOf(ds); return j >= 0 ? S.evalRes.perDs[j] : null; }
+function evalFor(ds) { if (!S.evalRes || S.step !== 4) return null; const act = activeDatasets(); const j = act.indexOf(ds); return j >= 0 ? S.evalRes.perDs[j] : null; }
 let simTimer = null;
-function scheduleSim(renderRightFn) { clearTimeout(simTimer); simTimer = setTimeout(() => { if (S.live || S.step >= 3) simulateNow(); renderStepper(); (renderRightFn || renderRight)(); }, 180); }
+function scheduleSim() { invalidate(); renderStepper(); if (S.step === 4) refresh4(); }
+function refresh4() { const rb = $("#resBox"); if (rb) rb.innerHTML = ""; const st = $("#cStat"); if (st) st.textContent = "Parameters changed. Click Compute to run the model."; renderStepper(); renderRight4(); }
 function dl(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
 
 /* ================= stepper / layout ================= */
@@ -997,7 +1002,7 @@ function renderStepper() {
   const CR = curRes(); $("#st4").textContent = CR ? `${CR.kind === "fit" ? "fitted" : "computed"}${CR.perDs.length ? ` · R² ${CR.R2tot.toFixed(4)}` : ""}` : (S.sim ? "simulated" : "not run");
   $$(".step").forEach(b => b.classList.toggle("done", (+b.dataset.step === 1 && !!h) || (+b.dataset.step === 2 && nd > 0) || (+b.dataset.step === 4 && !!curRes())));
 }
-function go(step) { S.step = step; if (step >= 3 && S.dirtySim) simulateNow(); if (step === 4 && S.mode4 === "compute") computeNow(); render(); $("#left").scrollTop = 0; $("#right").scrollTop = 0; }
+function go(step) { S.step = step; render(); $("#left").scrollTop = 0; $("#right").scrollTop = 0; }
 function render() { renderStepper(); [null, renderLeft1, renderLeft2, renderLeft3, renderLeft4][S.step](); renderRight(); }
 function renderRight() { [null, renderRight1, renderRight2, renderRight3, renderRight4][S.step](); }
 function navbar(prev, next, nextLabel) { return `<div class="navbar">${prev ? `<button class="btn" data-go="${prev}">← Back</button>` : "<span></span>"}${next ? `<button class="btn primary" data-go="${next}">${nextLabel || "Next →"}</button>` : ""}</div>`; }
@@ -1017,10 +1022,11 @@ function histPlotCfg(opts) {
   S.segs.forEach((s, si) => { const inf = h.info[si]; if (!inf.n) return; const a = Math.max(0, inf.i0 - 1), x = [], y = []; for (let i = a; i <= inf.i1; i++) { x.push(tx[i]); y.push(tU(h.T[i])); }
     series.push({ name: "", x, y, color: css(segColor(si)), w: si === S.selSeg ? 2.6 : 1.6 });
     if (!many && opts.dots !== false) series.push({ name: "", x: x.slice(1), y: y.slice(1), color: css(segColor(si)), pts: true, r: si === S.selSeg ? 2.2 : 1.5, op: .9 }); });
-  if (S.sim && opts.tf !== false) series.push({ name: `T_f (${MODEL_NAMES[S.model]})`, x: tx, y: Array.from(S.sim.Tf, tU), color: css("--ink"), w: 1.6, dash: "5 3" });
+  const showTf = S.sim && S.step === 4 && opts.tf !== false;
+  if (showTf) series.push({ name: `T_f (${MODEL_NAMES[S.model]})`, x: tx, y: Array.from(S.sim.Tf, tU), color: css("--ink"), w: 1.6, dash: "5 3" });
   const bands = []; const sel = opts.band !== undefined ? opts.band : S.selSeg; const inf = h.info[sel];
   if (inf && inf.n) bands.push({ x0: S.logt ? Math.max(inf.tstart, h.t[Math.max(1, inf.i0)] * 0.9) : inf.tstart, x1: inf.tend, color: css(segColor(sel)) });
-  return { title: opts.title || "Temperature program" + (S.sim ? " and fictive temperature" : ""), xlabel: "time (s)", ylabel: `T (${uL()})`, xlog: S.logt, series, bands, xshort: "t", yshort: "T" };
+  return { title: opts.title || "Temperature program" + (showTf ? " and fictive temperature" : ""), xlabel: "time (s)", ylabel: `T (${uL()})`, xlog: S.logt, series, bands, xshort: "t", yshort: "T" };
 }
 function dtPlotCfg() {
   const h = S.hist; if (!h) return null; const series = [];
@@ -1115,15 +1121,13 @@ function histSummary() {
   return `<div class="stat"><b>${h.T.length.toLocaleString()}</b><span>simulation steps</span></div><div class="stat"><b>${E.fmtTime(h.t[h.t.length - 1])}</b><span>total time</span></div><div class="stat"><b>${S.sim ? nf(S.simMs, 3) + " ms" : "–"}</b><span>${MODEL_NAMES[S.model]} run time</span></div>`;
 }
 function renderRight1() {
-  $("#right").innerHTML = `<div class="rhead"><h3>Preview</h3><span class="spacer"></span>
+  $("#right").innerHTML = `<div class="rhead"><h3>Thermal history</h3><span class="spacer"></span>
     <label class="chk"><input type="checkbox" id="logt" ${S.logt ? "checked" : ""}> log time axis</label>
-    <label class="chk" title="Re-run the model after every change"><input type="checkbox" id="live" ${S.live ? "checked" : ""}> live ${MODEL_NAMES[S.model]} preview</label>
-    <button class="btn small" id="simBtn">Simulate</button><button class="btn small" id="csvSim" ${S.sim ? "" : "disabled"}>Export CSV</button></div>
-    ${S.histErr ? `<div class="banner err">${esc(S.histErr)}</div>` : ""}${simStatus()}
-    <div class="plots">${card("p1T")}${card("p1dt")}</div><div style="height:10px"></div>${S.sim ? simOverviewHTML("o1") : ""}`;
+</div>
+    ${S.histErr ? `<div class="banner err">${esc(S.histErr)}</div>` : ""}
+    <div class="plots">${card("p1T")}${card("p1dt")}</div>${notYet()}`;
   if (!S.hist) return;
   P("p1T", histPlotCfg()); P("p1dt", dtPlotCfg());
-  if (S.sim) { simOverviewPlot("o1"); const t = document.getElementById("o1Tt"); if (t) t.remove(); }
 }
 function onSegInput(t, isChange) {
   const i = +t.dataset.i, k = t.dataset.k, s = S.segs[i]; if (!s) return;
@@ -1139,8 +1143,8 @@ function onSegInput(t, isChange) {
   S.segs.forEach((_, j) => { const el = document.getElementById("res-" + j); if (el) el.innerHTML = segRes(j); const d = document.querySelector(`[data-selseg="${j}"]`); if (d) d.textContent = segLabel(j); });
   $$(".seg").forEach(el => { const j = +el.dataset.seg; el.classList.toggle("sel", j === S.selSeg); el.style.setProperty("--pc", css(segColor(j))); el.querySelector(".pill").style.setProperty("--pc", css(segColor(j))); });
   const sm = $("#histSummary"); if (sm) sm.innerHTML = histSummary();
+  S.sim = null; S.evalRes = null; S.simErr = null; S.dirtySim = true;
   renderStepper(); P("p1T", histPlotCfg()); P("p1dt", dtPlotCfg());
-  if (S.live) scheduleSim(() => { renderRight1(); const sm2 = $("#histSummary"); if (sm2) sm2.innerHTML = histSummary(); });
 }
 
 /* ================= STEP 2: data ================= */
@@ -1221,8 +1225,8 @@ function renderLeft2() {
 }
 function renderRight2() {
   const ds = S.datasets[S.selDs];
-  if (!ds) { $("#right").innerHTML = `<div class="rhead"><h3>Data</h3></div><div class="empty">Add a dataset or load an example to see it here, together with the current model and the linked part of the thermal history.</div><div style="height:10px"></div><div class="plots">${card("p2T")}</div>`; if (S.hist) P("p2T", histPlotCfg({ tf: false })); return; }
-  $("#right").innerHTML = `<div class="rhead"><h3>${esc(ds.name)}</h3><span class="spacer"></span><button class="btn small" id="simBtn">Simulate</button></div>${simStatus()}
+  if (!ds) { $("#right").innerHTML = `<div class="rhead"><h3>Data</h3></div><div class="empty">Add a dataset or load an example to see it here, together with the linked part of the thermal history.</div><div style="height:10px"></div><div class="plots">${card("p2T")}</div>`; if (S.hist) P("p2T", histPlotCfg({ tf: false })); return; }
+  $("#right").innerHTML = `<div class="rhead"><h3>${esc(ds.name)}</h3></div>
     <div class="plots">${card("p2d")}${card("p2T")}</div>
     <div class="card" style="margin-top:10px"><h2>First rows <span class="sub">${ds.x.length} of ${ds.xAll.length} points used</span></h2><div class="body" style="overflow-x:auto">
     <table class="dt"><tr><th>x (${E.KINDS[ds.kind].axis === "T" ? "K" : "s"})</th><th>y</th></tr>${ds.x.slice(0, 8).map((x, i) => `<tr><td>${nf(x, 6)}</td><td>${nf(ds.y[i], 6)}</td></tr>`).join("")}</table></div></div>`;
@@ -1257,7 +1261,7 @@ function commitEditor() {
       const conv = K.axis === "T" ? (ed.xunit === "C" ? v => v + 273.15 : v => v) : v => v * TIME_UNITS[ed.xunit];
       xAll = cx.map(conv); yAll = cy.map(v => v * (+ed.yscale || 1));
     } else {
-      if (!S.sim) simulateNow(); if (!S.sim) { msg.textContent = "Simulation failed — check the model."; return; }
+      runModel(); if (!S.sim) { msg.textContent = "Simulation failed — check the model."; return; }
       const raw = { cp_raw: "cp_norm", H_T: "tf_T", V_T: "tf_T", P_t: "tf_t" }[ed.kind] || ed.kind;
       const pr = E.predict({ kind: raw, seg: +ed.seg, x: [], y: [] }, S.hist, S.sim, S.segs); const c = pr.curve; if (!c || c.x.length < 2) { msg.textContent = "The linked segment gives no model curve."; return; }
       let lo = ed.syn.x0 === "" ? c.x[0] : +ed.syn.x0, hi = ed.syn.x1 === "" ? c.x[c.x.length - 1] : +ed.syn.x1; const n = Math.max(3, Math.round(+ed.syn.n || 80));
@@ -1302,11 +1306,13 @@ function renderLeft3() {
 }
 function renderRight3() {
   const act = activeDatasets();
-  $("#right").innerHTML = `<div class="rhead"><h3>${MODEL_NAMES[S.model]} with the current parameters</h3><span class="spacer"></span><label class="chk"><input type="checkbox" id="logt" ${S.logt ? "checked" : ""}> log time axis</label><button class="btn small" id="simBtn">Simulate</button><button class="btn small" id="csvSim" ${S.sim ? "" : "disabled"}>Export CSV</button></div>${simStatus()}
-    ${act.length ? `<div class="plots">${act.map((d, j) => card("p3d" + j)).join("")}</div><div style="height:10px"></div>` : ""}${simOverviewHTML("o3")}`;
+  $("#right").innerHTML = `<div class="rhead"><h3>Thermal history${act.length ? " and data" : ""}</h3><span class="spacer"></span><label class="chk"><input type="checkbox" id="logt" ${S.logt ? "checked" : ""}> log time axis</label></div>
+    <div class="plots">${card("p3T")}${act.map((d, j) => card("p3d" + j)).join("")}</div>${notYet()}`;
+  if (S.hist) P("p3T", histPlotCfg({ band: -1 }));
   act.forEach((d, j) => plotDataset("p3d" + j, d, S.datasets.indexOf(d)));
-  simOverviewPlot("o3");
 }
+// shown in steps 1–3: the model has not been run
+function notYet() { return `<div class="empty" style="margin-top:10px">The model runs only when you click <b>Compute</b> (or <b>Run fit</b>) in step 4. Until then only the thermal history${S.datasets.length ? " and the data are" : " is"} shown.</div>`; }
 
 /* ================= STEP 4: fit & evaluate ================= */
 function renderLeft4() {
@@ -1323,7 +1329,7 @@ function renderLeft4() {
       ${m === "TL" ? `<div class="grid2" style="margin-top:8px"><label class="f">N (T_v,i domains)<input type="number" id="cN" value="${Pm.opt.N}" min="20" max="400" step="10"></label></div>` : ""}
       ${m === "TNM" ? `<div class="grid2" style="margin-top:8px"><label class="f">Kernel<select id="tnmK"><option value="exact" ${Pm.opt.simKernel === "exact" ? "selected" : ""}>exact KWW summation</option><option value="prony" ${Pm.opt.simKernel === "prony" ? "selected" : ""}>Prony series</option></select></label></div>` : ""}
       ${m === "RP" ? `<div style="margin-top:8px"><label class="chk"><input type="checkbox" id="rpA" ${Pm.opt.Aauto ? "checked" : ""}> A from continuity at T_g</label><br><label class="chk"><input type="checkbox" id="rpP" ${Pm.opt.pauto ? "checked" : ""}> p = 0.3082·m</label></div>` : ""}
-      <div class="row" style="margin-top:10px"><button class="btn primary" id="cGo">Compute</button><label class="chk"><input type="checkbox" id="cAuto" ${S.autoComp ? "checked" : ""}> recompute on every change</label><span class="spacer"></span><button class="btn small" id="csvSim" ${S.sim ? "" : "disabled"}>Simulation (.csv)</button></div>
+      <div class="row" style="margin-top:10px"><button class="btn primary" id="cGo">Compute</button><span class="spacer"></span><button class="btn small" id="csvSim" ${S.sim ? "" : "disabled"}>Simulation (.csv)</button></div>
       <p class="note" id="cStat">${S.compRes ? esc(S.compRes.msg) : ""}</p>
       <p class="note">These are the same values as in step 3 (and are updated by a fit). ${activeDatasets().length ? "Active datasets are compared with the result below." : "No active datasets — the result is the simulation only."}</p>
     </div></div>
@@ -1374,6 +1380,15 @@ function resultsHTML(R) {
 }
 function renderRight4() {
   const act = activeDatasets(), R0 = curRes(), R = R0 && R0.kind === "fit" ? R0 : null;
+  if (!R0 || !S.sim) {   // nothing computed yet (or parameters changed since): history and data only
+    const what = S.mode4 === "fit" ? "<b>Run fit</b>" : "<b>Compute</b>";
+    $("#right").innerHTML = `<div class="rhead"><h3>Not computed yet</h3><span class="spacer"></span><label class="chk"><input type="checkbox" id="logt" ${S.logt ? "checked" : ""}> log time axis</label></div>${simStatus()}
+      <div class="empty" style="margin-bottom:10px">Click ${what} to run the ${MODEL_NAMES[S.model]} model with the thermal history${act.length ? " and compare it with the data" : ""}.</div>
+      <div class="plots">${card("p4T")}${act.map((d, j) => card("p4d" + j)).join("")}</div>`;
+    if (S.hist) P("p4T", histPlotCfg({ band: -1 }));
+    act.forEach((d, j) => plotDataset("p4d" + j, d, S.datasets.indexOf(d)));
+    return;
+  }
   $("#right").innerHTML = `<div class="rhead"><h3>${R ? "Fit result" : act.length ? `${MODEL_NAMES[S.model]} vs data (chosen parameters)` : `${MODEL_NAMES[S.model]} simulation`}</h3><span class="spacer"></span><label class="chk"><input type="checkbox" id="logt" ${S.logt ? "checked" : ""}> log time axis</label></div>${simStatus()}
     ${act.length ? `<div class="plots">${act.map((d, j) => card("p4d" + j)).join("")}</div><div style="height:10px"></div>` : ""}
     ${R ? `<div class="plots">${card("p4conv")}<div class="plotcard"><h3>Parameter correlation</h3><div id="corr" style="overflow-x:auto;padding:4px 0"></div></div></div><div style="height:10px"></div>` : ""}
@@ -1418,7 +1433,7 @@ function finishFit(model, free, act, res, msg) {
   const secs = (performance.now() - S.job.t0) / 1000; S.job = null;
   E.MODELDEFS[model].params.forEach(q => { S.P[model].v[q.k] = res.best[q.k]; });
   if (model === "RP") { if (S.P.RP.opt.Aauto) S.P.RP.v.A = MODELS.continuityA({ ...res.best }); if (S.P.RP.opt.pauto) S.P.RP.v.pexp = 0.3082153 * res.best.m; }
-  simulateNow();
+  runModel();
   let unc = null; try { unc = E.uncertainty(model, params(model), free, S.hist, S.segs, act, { perPoint: S.opts.perPoint }); } catch (e) { unc = null; }
   const M = metrics(model, free, act);
   S.fitRes = { kind: "fit", ...M, nev: res.nev, trace: res.trace && res.trace.length ? res.trace : [[0, M.fbest]], unc, secs, msg: `${msg} ${res.nev} model runs in ${nf(secs, 3)} s.` };
@@ -1426,7 +1441,7 @@ function finishFit(model, free, act, res, msg) {
 }
 // forward calculation with the chosen parameters (no fitting)
 function computeNow() {
-  const t0 = performance.now(); simulateNow();
+  const t0 = performance.now(); runModel();
   if (!S.sim) { S.compRes = null; return; }
   const act = activeDatasets(); act.forEach(E.dsPrepare);
   const M = metrics(S.model, [], act);
@@ -1526,15 +1541,14 @@ document.addEventListener("click", e => {
   if (t.id === "pNew") { if (confirm("Start a new project? Unsaved changes are lost.")) { S.P = freshParams(); S.model = "TL"; defaultHistory(189.73); S.datasets = []; S.selDs = -1; S.fitRes = null; S.compRes = null; S.fitUndo = null; recompile(); simulateNow(); go(1); } return; }
   if (t.id === "pSave") { saveProject(); return; }
   if (t.id === "themeBtn") { const r = document.documentElement, cur = r.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); r.dataset.theme = cur === "dark" ? "light" : "dark"; renderRight(); return; }
-  if (t.id === "simBtn") { simulateNow(); render(); return; }
   if (t.id === "csvSim") { exportSimCSV(); return; }
   // step 1
   if (t.dataset.add) { const last = S.hist ? S.hist.T[S.hist.T.length - 1] : S.T0, Tg = S.P[S.model].v.Tg;
     const seg = { ramp: { type: "ramp", T: +(last > Tg ? Tg - 60 : Tg + 40).toFixed(2), rate: 10, dT: 0.5 }, hold: { type: "hold", dur: 3600, n: 40, t1: 0.1 }, jump: { type: "jump", T: +(last + 10).toFixed(2) }, mdsc: { type: "mdsc", T: +(last > Tg ? Tg - 40 : Tg + 40).toFixed(2), rate: 2, A: 0.5, P: 60, ppp: 30 } }[t.dataset.add];
-    S.segs.push(seg); S.selSeg = S.segs.length - 1; recompile(); S.fitRes = null; S.compRes = null; if (S.live) simulateNow(); render(); return; }
-  if (t.dataset.del !== undefined) { const i = +t.dataset.del; S.segs.splice(i, 1); S.datasets.forEach(d => { if (d.seg > i) d.seg--; else if (d.seg === i) d.seg = -1; }); S.selSeg = Math.max(0, Math.min(S.selSeg, S.segs.length - 1)); recompile(); S.fitRes = null; S.compRes = null; if (S.live) simulateNow(); render(); return; }
-  if (t.dataset.dup !== undefined) { const i = +t.dataset.dup; S.segs.splice(i + 1, 0, JSON.parse(JSON.stringify(S.segs[i]))); S.datasets.forEach(d => { if (d.seg > i) d.seg++; }); S.selSeg = i + 1; recompile(); if (S.live) simulateNow(); render(); return; }
-  if (t.dataset.mv !== undefined) { const i = +t.dataset.mv, j = i + (+t.dataset.d); if (j < 0 || j >= S.segs.length) return; [S.segs[i], S.segs[j]] = [S.segs[j], S.segs[i]]; S.datasets.forEach(d => { if (d.seg === i) d.seg = j; else if (d.seg === j) d.seg = i; }); S.selSeg = j; recompile(); if (S.live) simulateNow(); render(); return; }
+    S.segs.push(seg); S.selSeg = S.segs.length - 1; recompile(); S.fitRes = null; S.compRes = null; invalidate(); render(); return; }
+  if (t.dataset.del !== undefined) { const i = +t.dataset.del; S.segs.splice(i, 1); S.datasets.forEach(d => { if (d.seg > i) d.seg--; else if (d.seg === i) d.seg = -1; }); S.selSeg = Math.max(0, Math.min(S.selSeg, S.segs.length - 1)); recompile(); S.fitRes = null; S.compRes = null; invalidate(); render(); return; }
+  if (t.dataset.dup !== undefined) { const i = +t.dataset.dup; S.segs.splice(i + 1, 0, JSON.parse(JSON.stringify(S.segs[i]))); S.datasets.forEach(d => { if (d.seg > i) d.seg++; }); S.selSeg = i + 1; recompile(); invalidate(); render(); return; }
+  if (t.dataset.mv !== undefined) { const i = +t.dataset.mv, j = i + (+t.dataset.d); if (j < 0 || j >= S.segs.length) return; [S.segs[i], S.segs[j]] = [S.segs[j], S.segs[i]]; S.datasets.forEach(d => { if (d.seg === i) d.seg = j; else if (d.seg === j) d.seg = i; }); S.selSeg = j; recompile(); invalidate(); render(); return; }
   if (t.dataset.selseg !== undefined) { S.selSeg = +t.dataset.selseg; $$(".seg").forEach(el => el.classList.toggle("sel", +el.dataset.seg === S.selSeg)); if (S.step === 1) { P("p1T", histPlotCfg()); P("p1dt", dtPlotCfg()); } return; }
   // step 2
   if (t.id === "dsAdd") { S.editor = newEditor(); renderLeft2(); return; }
@@ -1549,7 +1563,7 @@ document.addEventListener("click", e => {
   if (t.id === "autoB") { autoBounds(S.model); renderLeft3(); return; }
   if (t.id === "rpExample") { Object.assign(S.P.RP.v, { Tg: 734.5, m: 35.3, eta_inf: -2.9, A: 45.19, B: 4136.7, C: 135.09, pexp: 10.88, log10Ks: 10.544068, beta: 3 / 7 }); S.P.RP.opt.Aauto = false; S.P.RP.opt.pauto = false; autoBounds("RP"); scheduleSim(); renderLeft3(); return; }
   // step 4
-  if (t.dataset.mode4) { S.mode4 = t.dataset.mode4; if (S.mode4 === "compute") computeNow(); render(); return; }
+  if (t.dataset.mode4) { S.mode4 = t.dataset.mode4; render(); return; }
   if (t.id === "cGo") { computeNow(); render(); return; }
   if (t.id === "fGo") { runFit(); return; }
   if (t.id === "fStop") { if (S.job) S.job.stop = true; return; }
@@ -1560,7 +1574,7 @@ document.addEventListener("click", e => {
 document.addEventListener("input", e => {
   const t = e.target;
   if (t.dataset.i !== undefined && t.closest("#segList")) { onSegInput(t, false); return; }
-  if (t.id === "T0") { const v = parseFloat(t.value); if (isFinite(v)) { S.T0 = v; recompile(); S.fitRes = null; S.compRes = null; S.segs.forEach((_, j) => { const el = document.getElementById("res-" + j); if (el) el.innerHTML = segRes(j); }); renderStepper(); P("p1T", histPlotCfg()); P("p1dt", dtPlotCfg()); if (S.live) scheduleSim(renderRight1); } return; }
+  if (t.id === "T0") { const v = parseFloat(t.value); if (isFinite(v)) { S.T0 = v; recompile(); S.fitRes = null; S.compRes = null; S.segs.forEach((_, j) => { const el = document.getElementById("res-" + j); if (el) el.innerHTML = segRes(j); }); renderStepper(); invalidate(); renderStepper(); P("p1T", histPlotCfg()); P("p1dt", dtPlotCfg()); } return; }
   // editor fields
   if (S.editor && t.closest("#editor")) {
     const ed = S.editor, map = { edXmin: "xmin", edXmax: "xmax", edW: "weight", edYS: "yscale", edName: "name" };
@@ -1573,8 +1587,8 @@ document.addEventListener("input", e => {
   if (t.dataset.pv) { const v = parseFloat(t.value); if (isFinite(v)) { S.P[S.model].v[t.dataset.pv] = v; S.fitRes = null; S.compRes = null; scheduleSim(renderRight3); } return; }
   if (t.dataset.plo) { const v = parseFloat(t.value); if (isFinite(v)) S.P[S.model].lo[t.dataset.plo] = v; renderStepper(); return; }
   if (t.dataset.phi) { const v = parseFloat(t.value); if (isFinite(v)) S.P[S.model].hi[t.dataset.phi] = v; renderStepper(); return; }
-  if (t.dataset.cv) { const v = parseFloat(t.value); if (isFinite(v)) { S.P[S.model].v[t.dataset.cv] = v; S.fitRes = null; if (S.autoComp) scheduleCompute(); else { S.compRes = null; renderStepper(); } } return; }
-  if (t.id === "cN") { const v = Math.round(+t.value); if (v >= 20 && v <= 400) { S.P.TL.opt.N = v; if (S.autoComp) scheduleCompute(); } return; }
+  if (t.dataset.cv) { const v = parseFloat(t.value); if (isFinite(v)) { S.P[S.model].v[t.dataset.cv] = v; invalidate(); refresh4(); } return; }
+  if (t.id === "cN") { const v = Math.round(+t.value); if (v >= 20 && v <= 400) { S.P.TL.opt.N = v; invalidate(); refresh4(); } return; }
   if (t.id === "tlN") { const v = Math.round(+t.value); if (v >= 20 && v <= 400) { S.P.TL.opt.N = v; scheduleSim(renderRight3); } return; }
   if (t.id === "fMax") { S.opts.maxEval = Math.max(50, +t.value || 1500); return; }
 });
@@ -1583,7 +1597,6 @@ document.addEventListener("change", e => {
   if (t.dataset.i !== undefined && t.closest("#segList")) { onSegInput(t, true); return; }
   if (t.id === "tpl" && t.value) { const Tg = S.P[S.model].v.Tg; S.segs = TEMPLATES[t.value].f(Tg).map(s => { const o = { ...s }; if (o.T !== undefined) o.T = +o.T.toFixed(2); return o; }); S.T0 = +(t.value === "tjump" || t.value === "qiso" ? Tg + 5 : Tg + 40).toFixed(2); if (t.value === "qiso") S.T0 = +(Tg + 5).toFixed(2); S.selSeg = 0; S.datasets.forEach(d => { if (d.seg >= S.segs.length) d.seg = -1; }); recompile(); S.fitRes = null; S.compRes = null; simulateNow(); render(); return; }
   if (t.id === "logt") { S.logt = t.checked; renderRight(); return; }
-  if (t.id === "live") { S.live = t.checked; if (S.live) { simulateNow(); renderRight1(); } return; }
   if (t.id === "unit") { S.unit = t.value; renderRight(); return; }
   if (t.id === "pOpen") { const f = t.files[0]; if (!f) return; f.text().then(txt => { try { openProject(JSON.parse(txt)); go(1); } catch (err) { alert("Could not open project: " + err.message); } }); t.value = ""; return; }
   // datasets
@@ -1597,14 +1610,13 @@ document.addEventListener("change", e => {
     if (t.id === "edFile") { const f = t.files[0]; if (!f) return; f.text().then(txt => { ed.text = txt.length > 400000 ? txt.slice(0, 400000) : txt; ed.parsed = parseTable(txt); if (ed.parsed.cols.length < 2) ed.parsed = null; if (!ed.name) ed.name = f.name.replace(/\.[^.]+$/, ""); renderLeft2(); }); return; }
   }
   // model
-  if (t.id === "cModel") { S.model = t.value; S.fitRes = null; computeNow(); render(); return; }
-  if (t.id === "cAuto") { S.autoComp = t.checked; if (t.checked) { computeNow(); render(); } return; }
+  if (t.id === "cModel") { S.model = t.value; invalidate(); render(); return; }
   if (t.name === "model") { S.model = t.value; S.fitRes = null; S.compRes = null; simulateNow(); render(); return; }
   if (t.dataset.pf) { S.P[S.model].free[t.dataset.pf] = t.checked; t.closest("tr").classList.toggle("fixed", !t.checked); renderStepper(); return; }
   if (t.id === "tlPreset" && t.value) { const pr = TL_PRESETS[t.value], v = S.P.TL.v; [v.Tg, v.m, v.log10tau0, v.f, v.beta0] = pr; autoBounds("TL"); simulateNow(); render(); return; }
-  if (t.id === "tnmK") { S.P.TNM.opt.simKernel = t.value; if (S.step === 4) { computeNow(); render(); } else { simulateNow(); renderRight3(); } return; }
-  if (t.id === "rpA") { S.P.RP.opt.Aauto = t.checked; if (t.checked) S.P.RP.free.A = false; if (S.step === 4) computeNow(); else simulateNow(); render(); return; }
-  if (t.id === "rpP") { S.P.RP.opt.pauto = t.checked; if (t.checked) S.P.RP.free.pexp = false; if (S.step === 4) computeNow(); else simulateNow(); render(); return; }
+  if (t.id === "tnmK") { S.P.TNM.opt.simKernel = t.value; invalidate(); render(); return; }
+  if (t.id === "rpA") { S.P.RP.opt.Aauto = t.checked; if (t.checked) S.P.RP.free.A = false; invalidate(); render(); return; }
+  if (t.id === "rpP") { S.P.RP.opt.pauto = t.checked; if (t.checked) S.P.RP.free.pexp = false; invalidate(); render(); return; }
   // fit options
   if (t.id === "fMethod") { S.opts.method = t.value; if (t.value === "global" && S.opts.maxEval < 3000) { S.opts.maxEval = 3000; renderLeft4(); } return; }
   if (t.id === "fW") { S.opts.perPoint = t.value === "pt"; S.fitRes = null; S.compRes = null; simulateNow(); render(); return; }

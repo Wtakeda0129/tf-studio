@@ -4,15 +4,7 @@
 <p align="center"><b>Thermal Fingerprint</b>: compute and fit glass relaxation dynamics with structural relaxation models.</p>
 <p align="center"><a href="https://wtakeda0129.github.io/tf-studio/"><b>Open in your browser</b></a> · <a href="https://github.com/Wtakeda0129/tf-studio/releases/latest">Download for macOS / Windows</a></p>
 
-Every glass carries a thermal fingerprint of how it was made, written in its fictive temperature *T*<sub>f</sub>. Tf Studio simulates that history and fits it to measurements. It uses the heterogeneous **Takeda–Lucas (TL)** model, alongside the **Experiments (Learn, Part I)**
-- A. J. Kovacs, *Fortschr. Hochpolym.-Forsch.* **3**, 394–507 (1963). https://doi.org/10.1007/BFb0050366
-- A. J. Kovacs, J. J. Aklonis, J. M. Hutchinson and A. R. Ramos, *J. Polym. Sci. Polym. Phys. Ed.* **17**, 1097–1162 (1979).
-- P. B. Macedo and A. Napolitano, *J. Res. Natl. Bur. Stand.* **71A**, 231–238 (1967).
-- I. M. Hodge, "Enthalpy relaxation and recovery in amorphous materials," *J. Non-Cryst. Solids* **169**, 211 (1994).
-- J. E. K. Schawe, *Thermochim. Acta* **261**, 183–194 (1995). https://doi.org/10.1016/0040-6031(95)02315-S
-- J. M. Hutchinson and S. Montserrat, *J. Therm. Anal.* **47**, 103–115 (1996). https://doi.org/10.1007/BF01982690
-
-**Tool–Narayanaswamy–Moynihan (TNM)** model and **RelaxPy** (MAP viscosity).
+Every glass carries a thermal fingerprint of how it was made, written in its fictive temperature *T*<sub>f</sub>. Tf Studio simulates that history and fits it to measurements. It uses the heterogeneous **Takeda–Lucas (TL)** model, alongside the **Tool–Narayanaswamy–Moynihan (TNM)** model and **RelaxPy** (MAP viscosity).
 
 | Tool | What it does |
 |---|---|
@@ -35,12 +27,11 @@ desktop/              Electron desktop app (macOS dmg, Windows installer) with a
 
 The TL implementation is a line-by-line port of the reference Python code (`TL_model.py`). It agrees to 1 × 10⁻¹³ K on a glycerol cool/heat run. The embedded β-library contains the *G*(ln τ) tables for f = 0.10–0.99.
 
-## How to cite
+## References
 
+**Takeda–Lucas (TL) model**
 - W. Takeda and P. Lucas, "A model of heterogeneous undercooled liquid and glass accounting for temperature-dependent nonexponentiality and enthalpy fluctuation," *J. Chem. Phys.* **160**, 174504 (2024). https://doi.org/10.1063/5.0196812
 - W. Takeda and P. Lucas, "Relationship between enthalpy fluctuation and nonexponential relaxation in glass-forming liquids," *Mater. Adv.* **7**, 5729 (2026). https://doi.org/10.1039/d6ma00442c
-
-### Comparison models
 
 **Tool–Narayanaswamy–Moynihan (TNM)**
 - A. Q. Tool, *J. Am. Ceram. Soc.* **29**, 240–253 (1946).
@@ -55,6 +46,14 @@ The TL implementation is a line-by-line port of the reference Python code (`TL_m
 - J. C. Mauro and Y. Z. Mauro, "On the Prony series representation of stretched exponential relaxation," *Physica A* **506**, 75–87 (2018). https://doi.org/10.1016/j.physa.2018.04.047
 - J. C. Mauro, R. J. Loucks and P. K. Gupta, "Fictive temperature and the glassy state," *J. Am. Ceram. Soc.* **92**, 75–86 (2009). https://doi.org/10.1111/j.1551-2916.2008.02851.x
 - C. J. Wilkinson, Y. Z. Mauro and J. C. Mauro, "RelaxPy: Python code for modeling of glass relaxation behavior," *SoftwareX* **7**, 255–258 (2018). https://doi.org/10.1016/j.softx.2018.07.008
+
+**Experiments (Learn, Part I)**
+- A. J. Kovacs, *Fortschr. Hochpolym.-Forsch.* **3**, 394–507 (1963). https://doi.org/10.1007/BFb0050366
+- A. J. Kovacs, J. J. Aklonis, J. M. Hutchinson and A. R. Ramos, *J. Polym. Sci. Polym. Phys. Ed.* **17**, 1097–1162 (1979).
+- P. B. Macedo and A. Napolitano, *J. Res. Natl. Bur. Stand.* **71A**, 231–238 (1967).
+- I. M. Hodge, "Enthalpy relaxation and recovery in amorphous materials," *J. Non-Cryst. Solids* **169**, 211 (1994).
+- J. E. K. Schawe, *Thermochim. Acta* **261**, 183–194 (1995). https://doi.org/10.1016/0040-6031(95)02315-S
+- J. M. Hutchinson and S. Montserrat, *J. Therm. Anal.* **47**, 103–115 (1996). https://doi.org/10.1007/BF01982690
 
 ---
 Lucas group · Department of Materials Science and Engineering · University of Arizona
