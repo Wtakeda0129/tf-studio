@@ -1,4 +1,4 @@
-# Temporary: builds the macOS app without publishing and reports any error as an annotation (never fails the run).
+# Temporary (attempt 2): builds the macOS app without publishing and reports any error as an annotation (never fails the run).
 name: macOS build check
 on:
   push:
@@ -19,6 +19,11 @@ jobs:
           node-version: 22
       - run: npm ci 2>&1 | tail -20
       - run: bash sync_apps.sh
+      - name: Work around hdiutil "resource busy" on GitHub macOS runners
+        run: |
+          sudo mdutil -a -i off || true
+          # XProtect / Spotlight scanning keeps freshly mounted DMG volumes busy; stop them for the duration of the build
+          ( for i in $(seq 1 120); do sudo pkill -9 XProtect >/dev/null 2>&1 || true; sudo pkill -9 mds_stores >/dev/null 2>&1 || true; sleep 5; done ) &
       - name: Build (no publish)
         run: |
           set +e
