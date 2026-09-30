@@ -44,7 +44,7 @@ once. Without the secret, builds fall back to an ad-hoc signature and the app po
 ### What you need (one time)
 
 1. **Apple Developer Program membership** (Individual or through the university). It gives you a *Developer ID Application* certificate. Without it, macOS blocks the app for other users and auto-update cannot install anything.
-2. **This repository** (`Wtakeda0129/tf-studio`). The release workflow is already in `.github/workflows/release.yml`.
+2. **This repository** (`wtakeda-research/GARASU`). The release workflow is already in `.github/workflows/release.yml`.
 3. **Repository secrets**, set under GitHub → Settings → Secrets and variables → Actions:
 
 | Secret | What it is |

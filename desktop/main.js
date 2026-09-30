@@ -48,7 +48,7 @@ let manualCheck = false;
 // builds (no certificate configured) therefore point the user to the download page instead of downloading.
 let MAC_SIGNED = true; try { MAC_SIGNED = require("./package.json").macSigned !== false; } catch (e) {}
 const manualMac = () => process.platform === "darwin" && !MAC_SIGNED;
-const RELEASES_URL = "https://github.com/Wtakeda0129/tf-studio/releases/latest";
+const RELEASES_URL = "https://github.com/wtakeda-research/GARASU/releases/latest";
 let offered = null;
 function setupUpdater() {
   if (!autoUpdater || !app.isPackaged) return;

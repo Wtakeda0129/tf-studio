@@ -2,7 +2,7 @@
 
 <h1 align="center">GARASU <sup>beta</sup></h1>
 <p align="center"><b>G</b>lass <b>A</b>ging, <b>R</b>elaxation <b>A</b>nd <b>S</b>imulation <b>U</b>tility: compute and fit glass relaxation dynamics with structural relaxation models.</p>
-<p align="center"><a href="https://wtakeda0129.github.io/tf-studio/"><b>Open in your browser</b></a> · <a href="https://github.com/Wtakeda0129/tf-studio/releases/latest">Download for macOS / Windows</a></p>
+<p align="center"><a href="https://wtakeda-research.github.io/GARASU/"><b>Open in your browser</b></a> · <a href="https://github.com/wtakeda-research/GARASU/releases/latest">Download for macOS / Windows</a></p>
 
 Every glass carries a thermal fingerprint of how it was made, written in its fictive temperature *T*<sub>f</sub>. GARASU simulates that history and fits it to measurements. It uses the heterogeneous **Takeda–Lucas (TL)** model, alongside the **Tool–Narayanaswamy–Moynihan (TNM)** model and **RelaxPy** (MAP viscosity).
 
@@ -13,7 +13,7 @@ Every glass carries a thermal fingerprint of how it was made, written in its fic
 | **Data Analysis** | Raw DSC heat flow (heating or cooling): linear glass and liquid baselines, normalized C<sub>p</sub><sup>N</sup>, T<sub>f</sub>(T) and T<sub>f</sub>′ by area matching. Heating after annealing: scans aligned to the unaged reference, ΔHF(T), recovered enthalpy ΔH(t<sub>a</sub>), φ(t<sub>a</sub>) and a KWW fit. Volume, density or length during annealing: V(t) = V∞ + ΔV exp[−(t/τ)<sup>β</sup>] |
 | **Fitter** | Four steps: (1) program any thermal history: ramps, anneals with log-spaced times, T-jumps, MDSC. (2) Load DSC, MDSC C<sub>p</sub>′/C<sub>p</sub>″, enthalpy, volume, *T*<sub>f</sub> or annealing data. (3) Choose a model and set parameter bounds. (4) Compute with chosen parameters, or fit with Levenberg–Marquardt or differential evolution; get standard errors, correlations, AIC/BIC |
 
-📘 **Documentation:** [Quick Start (PDF)](https://wtakeda0129.github.io/tf-studio/docs/GARASU_Quick_Start.pdf) · [User Guide (PDF)](https://wtakeda0129.github.io/tf-studio/docs/GARASU_User_Guide.pdf) (sources in `docs/src`, rebuild with `node docs/src/build_docs.js`).
+📘 **Documentation:** [Quick Start (PDF)](https://wtakeda-research.github.io/GARASU/docs/GARASU_Quick_Start.pdf) · [User Guide (PDF)](https://wtakeda-research.github.io/GARASU/docs/GARASU_User_Guide.pdf) (sources in `docs/src`, rebuild with `node docs/src/build_docs.js`).
 
 GARASU is in beta: features and results may still change between versions. Everything runs locally, in the browser or in the desktop app. No data is uploaded. Equations in Learn are typeset with [KaTeX](https://katex.org) (MIT licence), bundled in `site/vendor/katex` so they also render offline.
 

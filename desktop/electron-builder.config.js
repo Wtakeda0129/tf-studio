@@ -1,6 +1,6 @@
 // electron-builder configuration (macOS dmg/zip and Windows NSIS installer). Edit PUBLISH_* (or set the env vars) before the first release.
-const PUBLISH_OWNER = process.env.GH_OWNER || "Wtakeda0129";
-const PUBLISH_REPO = process.env.GH_REPO || "tf-studio";
+const PUBLISH_OWNER = process.env.GH_OWNER || "wtakeda-research";
+const PUBLISH_REPO = process.env.GH_REPO || "GARASU";
 const canNotarize = !!(process.env.APPLE_ID && process.env.APPLE_APP_SPECIFIC_PASSWORD && process.env.APPLE_TEAM_ID);
 
 module.exports = {
