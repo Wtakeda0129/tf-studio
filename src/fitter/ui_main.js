@@ -244,9 +244,9 @@ function tlMap(prefix) {
 const TEMPLATES = {
   dsc: { name: "DSC cycle: cool → heat (10 K/min)", f: (Tg, q = 10) => [{ type: "ramp", T: Tg - 60, rate: q, dT: 0.5 }, { type: "ramp", T: Tg + 40, rate: q, dT: 0.5 }] },
   series: { name: "Cooling-rate series (0.5, 1, 5, 10 K/min), each heated at 10", f: Tg => [0.5, 1, 5, 10].flatMap(q => [{ type: "ramp", T: Tg - 60, rate: q, dT: 0.5 }, { type: "ramp", T: Tg + 40, rate: 10, dT: 0.5 }]) },
-  aging: { name: "Aging below T_g, then DSC heating", f: Tg => [{ type: "ramp", T: Tg - 15, rate: 10, dT: 0.5 }, { type: "hold", dur: 1e5, n: 60, t1: 0.1 }, { type: "ramp", T: Tg - 60, rate: 10, dT: 0.5 }, { type: "ramp", T: Tg + 40, rate: 10, dT: 0.5 }] },
-  kovacs: { name: "Kovacs memory: age, then up-jump and hold", f: Tg => [{ type: "ramp", T: Tg - 25, rate: 10, dT: 0.5 }, { type: "hold", dur: 3e4, n: 50, t1: 0.1 }, { type: "jump", T: Tg - 10 }, { type: "hold", dur: 1e5, n: 60, t1: 0.1 }] },
-  tjump: { name: "Isothermal T-jump (Kovacs asymmetry)", f: Tg => [{ type: "jump", T: Tg - 10 }, { type: "hold", dur: 1e5, n: 60, t1: 0.1 }] },
+  aging: { name: "Aging below T_g, then DSC heating", f: Tg => [{ type: "ramp", T: Tg - 15, rate: 10, dT: 0.5 }, { type: "hold", dur: 1e5, n: 100, t1: 0.1 }, { type: "ramp", T: Tg - 60, rate: 10, dT: 0.5 }, { type: "ramp", T: Tg + 40, rate: 10, dT: 0.5 }] },
+  kovacs: { name: "Kovacs memory: age, then up-jump and hold", f: Tg => [{ type: "ramp", T: Tg - 25, rate: 10, dT: 0.5 }, { type: "hold", dur: 3e4, n: 100, t1: 0.1 }, { type: "jump", T: Tg - 10 }, { type: "hold", dur: 1e5, n: 100, t1: 0.1 }] },
+  tjump: { name: "Isothermal T-jump (Kovacs asymmetry)", f: Tg => [{ type: "jump", T: Tg - 10 }, { type: "hold", dur: 1e5, n: 100, t1: 0.1 }] },
   mdsc: { name: "MDSC heating (2 K/min, ±0.5 K, 60 s) after cooling", f: Tg => [{ type: "ramp", T: Tg - 50, rate: 10, dT: 0.5 }, { type: "mdsc", T: Tg + 40, rate: 2, A: 0.5, P: 60, ppp: 30 }] },
   qiso: { name: "Quasi-isothermal MDSC steps", f: Tg => { const o = [{ type: "ramp", T: Tg - 20, rate: 10, dT: 0.5 }]; for (let T = Tg - 20; T <= Tg + 20; T += 5) { if (T > Tg - 20) o.push({ type: "jump", T }); o.push({ type: "mdsc", rate: 0, dur: 1200, T, A: 0.5, P: 100, ppp: 30 }); } return o; } },
 };
@@ -729,7 +729,7 @@ document.addEventListener("click", e => {
   if (t.id === "csvSim") { exportSimCSV(); return; }
   // step 1
   if (t.dataset.add) { const last = S.hist ? S.hist.T[S.hist.T.length - 1] : S.T0, Tg = S.P[S.model].v.Tg;
-    const seg = { ramp: { type: "ramp", T: +(last > Tg ? Tg - 60 : Tg + 40).toFixed(2), rate: 10, dT: 0.5 }, hold: { type: "hold", dur: 3600, n: 40, t1: 0.1 }, jump: { type: "jump", T: +(last + 10).toFixed(2) }, mdsc: { type: "mdsc", T: +(last > Tg ? Tg - 40 : Tg + 40).toFixed(2), rate: 2, A: 0.5, P: 60, ppp: 30 } }[t.dataset.add];
+    const seg = { ramp: { type: "ramp", T: +(last > Tg ? Tg - 60 : Tg + 40).toFixed(2), rate: 10, dT: 0.5 }, hold: { type: "hold", dur: 3600, n: 100, t1: 0.1 }, jump: { type: "jump", T: +(last + 10).toFixed(2) }, mdsc: { type: "mdsc", T: +(last > Tg ? Tg - 40 : Tg + 40).toFixed(2), rate: 2, A: 0.5, P: 60, ppp: 30 } }[t.dataset.add];
     S.segs.push(seg); S.selSeg = S.segs.length - 1; recompile(); S.fitRes = null; S.compRes = null; invalidate(); render(); return; }
   if (t.dataset.del !== undefined) { const i = +t.dataset.del; S.segs.splice(i, 1); S.datasets.forEach(d => { if (d.seg > i) d.seg--; else if (d.seg === i) d.seg = -1; }); S.selSeg = Math.max(0, Math.min(S.selSeg, S.segs.length - 1)); recompile(); S.fitRes = null; S.compRes = null; invalidate(); render(); return; }
   if (t.dataset.dup !== undefined) { const i = +t.dataset.dup; S.segs.splice(i + 1, 0, JSON.parse(JSON.stringify(S.segs[i]))); S.datasets.forEach(d => { if (d.seg > i) d.seg++; }); S.selSeg = i + 1; recompile(); invalidate(); render(); return; }

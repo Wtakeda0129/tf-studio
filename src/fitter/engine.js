@@ -94,8 +94,8 @@ const ENGINE = (function () {
       params: [
         { k: 'Tg', label: 'T_g', unit: 'K', v: 308.13, lo: 250, hi: 370, free: true, tip: 'η(T_g) = 10¹² Pa·s' },
         { k: 'm', label: 'm', unit: '', v: 64.14, lo: 15, hi: 150, free: true },
-        { k: 'B', label: 'B', unit: 'K', v: 4136.7, lo: 0, hi: 200000, free: true, tip: 'ΔH/(k ln10)' },
-        { k: 'C', label: 'C', unit: '', v: 135.09, lo: 0, hi: 3000, free: false, tip: 'S∞/(k ln10)' },
+        { k: 'B', label: 'B', unit: 'K', v: 9880.3, lo: 0, hi: 200000, free: true, tip: 'ΔH/(k ln10)' },
+        { k: 'C', label: 'C', unit: '', v: 0, lo: 0, hi: 3000, free: false, tip: 'S∞/(k ln10)' },
         { k: 'pexp', label: 'p', unit: '', v: 19.77, lo: 0.1, hi: 300, free: true, tip: 'ergodicity exponent' },
         { k: 'A', label: 'A', unit: '', v: 1.2, lo: -200, hi: 300, free: false, tip: 'set by continuity at T_g unless freed' },
         { k: 'eta_inf', label: 'log₁₀ η∞', unit: 'Pa·s', v: -2.9, lo: -8, hi: 2, free: false },
@@ -161,6 +161,14 @@ const ENGINE = (function () {
     return { x, y, Th: hist.T[r[1]], Tf0: sim.Tf[i0] };
   }
   // MDSC: complex normalized C_p per period window (Fourier ratio of dT_f/dt and dT/dt at ω)
+  // H_true/H_disc for a Debye element (time constant τ) driven by a staircase with step h and integrated exactly per step:
+  // H_disc = (1 − a)/(1 − a e^{−iωh}), a = e^{−h/τ}; H_true = 1/(1 + iωτ). Limits: e^{−iωh/2} for τ ≫ h, 1 for τ ≪ h.
+  function stepCorr(w, h, tau) {
+    if (!(tau > 0) || !isFinite(tau)) return [Math.cos(PHSIGN * w * h / 2), Math.sin(PHSIGN * w * h / 2)];
+    const eps = -Math.expm1(-h / tau), a = 1 - eps, th = w * h, sh = Math.sin(th / 2);
+    const nr = eps + 2 * a * sh * sh, ni = a * Math.sin(th), dr = eps, di = eps * w * tau, dd = dr * dr + di * di;
+    return [(nr * dr + ni * di) / dd, (ni * dr - nr * di) / dd];
+  }
   function mdscSeries(hist, sim, si, seg) {
     const r = segRange(hist, si); if (!r) return { T: [], re: [], im: [] };
     const ppp = Math.max(8, Math.round(seg.ppp || 40)), P = +seg.P, w = 2 * Math.PI / P;
@@ -178,8 +186,10 @@ const ENGINE = (function () {
       else for (let k = 0; k < ppp; k++) { const c = Math.cos(w * tt[k]), sn = Math.sin(w * tt[k]); xr += a[k] * c; xi -= a[k] * sn; yr += b[k] * c; yi -= b[k] * sn; }
       const den = yr * yr + yi * yi; if (!(den > 0)) continue;
       let Rr = (xr * yr + xi * yi) / den, Ri = (xi * yr - xr * yi) / den;
-      // the simulated input is a staircase holding T(t_i) over (t_i−1, t_i]; it leads the continuous sinusoid by Δt/2 → remove that phase
-      const ph = PHSIGN * w * (P / ppp) / 2, cph = Math.cos(ph), sph = Math.sin(ph); [Rr, Ri] = [Rr * cph - Ri * sph, Rr * sph + Ri * cph];
+      // the simulated input is a staircase and each step is integrated exactly, which adds a lag that depends on τ/Δt:
+      // Δt/2 when τ ≫ Δt, none when τ ≪ Δt (liquid). Remove it with the exact Debye factor at the window's mean ln τ.
+      let lt = 0; for (let k = 0; k < ppp; k++) lt += Math.log(sim.tau[i0 + s + k]);
+      const [cr, ci] = stepCorr(w, P / ppp, Math.exp(lt / ppp)); [Rr, Ri] = [Rr * cr - Ri * ci, Rr * ci + Ri * cr];
       out.T.push(Tsum / ppp); out.re.push(Rr); out.im.push(-Ri);
     }
     const ord = out.T.map((v, i) => i).sort((a, b) => out.T[a] - out.T[b]);
@@ -412,6 +422,6 @@ const ENGINE = (function () {
     return { best, fbest, nev, trace };
   }
 
-  return { fit, compile, describeSeg, fmtTime, MODELDEFS, simulate, KINDS, cpSeries, tSeries, holdSeries, mdscSeries, predict, evaluate, dsPrepare, toU, fromU, nelderMead, diffEvolution, mulberry, uncertainty, interp, lstsq };
+  return { fit, compile, describeSeg, fmtTime, MODELDEFS, simulate, KINDS, cpSeries, tSeries, holdSeries, mdscSeries, stepCorr, predict, evaluate, dsPrepare, toU, fromU, nelderMead, diffEvolution, mulberry, uncertainty, interp, lstsq };
 })();
 if (typeof module !== 'undefined') module.exports = ENGINE;

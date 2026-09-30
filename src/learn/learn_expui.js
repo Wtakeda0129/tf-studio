@@ -71,7 +71,7 @@
     const R = get("recovery", () => EXP.recovery(model));
     const all = R.runs.flatMap(r => r.heat.y);
     const lab = t => (t === 0 ? "unaged" : "t<sub>a</sub> = 10<sup>" + L10(t).toFixed(0) + "</sup> s");
-    $("#x-rec").innerHTML = svg({ W: 560, H: 260, xdom: [EXP.G.Tg - 40, EXP.G.Tg + 45], ydom: [Math.min(-0.05, ...all), Math.min(6, Math.max(...all) * 1.05)], xlabel: "T (K)", ylabel: "normalized C<tspan dy='3' font-size='9'>p</tspan>",
+    $("#x-rec").innerHTML = svg({ W: 560, H: 260, xdom: [EXP.G.Tg - 40, EXP.G.Tg + 45], ydom: [Math.min(-0.05, ...all), Math.max(...all) * 1.05], xlabel: "T (K)", ylabel: "normalized C<tspan dy='3' font-size='9'>p</tspan>",
       lines: R.runs.map((r, j) => ({ x: r.heat.x, y: r.heat.y, color: PAL[j], w: j ? 2 : 1.6, dash: j ? null : "5 4" })), vlines: [{ x: R.Ta, color: "var(--muted)", dash: "2 3", w: 1 }] })
       + leg(R.runs.map((r, j) => [PAL[j], lab(r.ta), !j]));
     const inf = R.dHinf;

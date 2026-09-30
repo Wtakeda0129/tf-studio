@@ -159,7 +159,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
 <div class="part" id="experiments">
   <span class="partlabel">Part I</span>
   <h2 class="parth">Experiments: how relaxation is measured</h2>
-  <p class="lede">Each experiment below comes with a live simulation of the same example glass (T<sub>g</sub> = 734.5 K, m = 35.3). The switch picks the model that runs it. The models themselves are explained in Part II.</p>
+  <p class="lede">Each experiment below comes with a live simulation of the same example glass, selenium (T<sub>g</sub> = 308.13 K, m = 64.14; TL parameters from Takeda &amp; Lucas, JCP 2024). The switch picks the model that runs it. The models themselves are explained in Part II.</p>
   <div class="modelsw" role="radiogroup" aria-label="Model used for the simulations">
     <span>Simulate with</span>
     <button type="button" data-m="TL" class="on" style="--mc:var(--mTL)">Takeda–Lucas</button>
@@ -202,7 +202,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
   <p><b>On heating</b>, the glass keeps its structure until \(\tau\) becomes short enough, and then catches up with the liquid. A glass cooled slowly (low \(T_f'\)) overshoots the liquid line: the enthalpy it lost is recovered in a peak. A glass cooled faster than it is heated relaxes first, which shows up as an exothermic dip below \(T_g\).</p>
   <p>Slower cooling gives a lower \(T_f'\), and Moynihan and co-workers showed that the cooling-rate dependence carries the activation energy. The fragility follows from it:</p>
   <div class="eq">$$\frac{d\ln|q_c|}{d(1/T_f')}\approx-\frac{\Delta h}{R},\qquad m\approx\frac{\Delta h}{R\,T_g\ln 10}.$$</div>
-  <p class="small">The relation is approximate. In the simulation, compare the apparent \(m\) with the input value of 35.3.</p>
+  <p class="small">The relation is approximate. In the simulation, compare the apparent \(m\) with the input value of 64.14.</p>
 </section>
 <div class="lab"><div class="cols2">
   <div class="card"><h4><span>Heating at 10 K/min after cooling at q<sub>c</sub></span></h4><p class="sub">Normalized C<sub>p</sub><sup>N</sup> = dT<sub>f</sub>/dT. Dashed: the 10 K/min cooling scan.</p><div id="x-dsc"></div></div>
@@ -341,13 +341,13 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
 <section id="compare">
   <div class="prose">
     <h2><span class="num">10</span>See the difference: where do the fictive temperatures sit?</h2>
-    <p>All three models run the same history on one example glass (RelaxPy's example: \(T_g\) = 734.5 K, \(m\) = 35.3). The glass is equilibrated at \(T_g\)+40 K, cooled to the annealing temperature \(T_a\), and held there. The TNM and MAP \(\beta\) is set to the TL model's \(\beta_{\mathrm{KWW}}(T_g)\), so all three share the same nonexponentiality at \(T_g\). Drag the slider, or press play, and watch how the fictive temperatures spread and come back together.</p>
+    <p>All three models run the same history on one example glass, selenium (\(T_g\) = 308.13 K, \(m\) = 64.14, \(\log_{10}\tau_0\) = −23.41, \(f\) = 0.59 from the TL fit in JCP 2024). For MAP the glassy viscosity is Arrhenius with \(B = x\,m\,T_g\) (\(x\) = 0.5, as in TNM) and \(C\) = 0. The glass is equilibrated at \(T_g\)+40 K, cooled to the annealing temperature \(T_a\), and held there. The TNM and MAP \(\beta\) is set to the TL model's \(\beta_{\mathrm{KWW}}(T_g)\), so all three share the same nonexponentiality at \(T_g\). Drag the slider, or press play, and watch how the fictive temperatures spread and come back together.</p>
   </div>
   <div class="lab" id="lab">
     <div class="ctrl">
       <label>Cooling rate <select id="q"><option value="0.1">0.1 K/min</option><option value="1">1 K/min</option><option value="10" selected>10 K/min</option><option value="100">100 K/min</option></select></label>
-      <label>Annealing temperature T<sub>a</sub> <span><input type="range" id="Ta" min="684.5" max="729.5" step="5" value="714.5"> <output id="TaO"></output></span></label>
-      <label>TL width f <span><input type="range" id="f" min="0.40" max="0.90" step="0.05" value="0.60"> <output id="fO"></output></span></label>
+      <label>Annealing temperature T<sub>a</sub> <span><input type="range" id="Ta" min="258.13" max="303.13" step="5" value="288.13"> <output id="TaO"></output></span></label>
+      <label>TL width f <span><input type="range" id="f" min="0.39" max="0.89" step="0.05" value="0.59"> <output id="fO"></output></span></label>
       <span class="small" id="betaNote"></span>
     </div>
     <div class="scrub">
@@ -369,10 +369,10 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
   <div class="prose">
     <h3>What to look for</h3>
     <ul>
-      <li><b>At the start (equilibrium liquid).</b> TNM and MAP have a single point: every \(T_{f,i}=T\). The TL distribution is already broad (\(\delta T_f\approx16\) K here) and centered on \(T\).</li>
+      <li><b>At the start (equilibrium liquid).</b> TNM and MAP have a single point: every \(T_{f,i}=T\). The TL distribution is already broad (\(\delta T_f\approx4\) K at \(T_g\)+40 K) and centered on \(T\).</li>
       <li><b>During cooling.</b> The MAP components separate as the slow terms freeze first, so MAP develops a spread <i>only</i> out of equilibrium. The TL distribution keeps its equilibrium shape until the slow domains fall out of equilibrium, and then it narrows as the fast domains keep following their targets.</li>
-      <li><b>After long annealing.</b> MAP collapses back to a single value at \(T_a\), while TL recovers its equilibrium width \(T_a\,\sigma(T_v)/\langle T_v\rangle\).</li>
-      <li><b>Change the cooling rate.</b> The two heterogeneous models respond in opposite ways. Faster cooling leaves a <i>wider</i> spread of Prony \(T_{f,i}\) in MAP, because the components freeze at more widely separated temperatures. In TL it leaves a <i>narrower</i> frozen distribution, further below the equilibrium width, because the distribution has less time to follow the cooling.</li>
+      <li><b>During annealing.</b> In both heterogeneous models \(\delta T_f\) first grows, because the fast components reach \(T_a\) while the slow ones are still frozen, and then decreases. Given enough time MAP collapses back to a single value at \(T_a\), while TL returns to its equilibrium width \(T_a\,\sigma(T_v)/\langle T_v\rangle\). At \(T_g\) − 20 K neither has finished within \(10^6\) s.</li>
+      <li><b>Change the cooling rate.</b> Faster cooling leaves a wider frozen spread in both heterogeneous models. In MAP the Prony components freeze at more widely separated temperatures. In TL the distribution has less time to narrow during cooling, so it stays closer to its equilibrium width (for Se at the end of cooling to 288 K: \(\delta T_f\) ≈ 1.4 K at 0.1 K/min and 2.4 K at 100 K/min, against 4.1 and 5.9 K for MAP).</li>
     </ul>
     <div class="cta"><a class="primary" href="explorer.html" data-tool="explorer">Open the Lab: DSC scans, anneals and T-jumps with all three models</a><a href="fitter.html" data-tool="fitter">Fit your own data</a></div>
   </div>
@@ -787,8 +787,8 @@ const ENGINE = (function () {
       params: [
         { k: 'Tg', label: 'T_g', unit: 'K', v: 308.13, lo: 250, hi: 370, free: true, tip: 'η(T_g) = 10¹² Pa·s' },
         { k: 'm', label: 'm', unit: '', v: 64.14, lo: 15, hi: 150, free: true },
-        { k: 'B', label: 'B', unit: 'K', v: 4136.7, lo: 0, hi: 200000, free: true, tip: 'ΔH/(k ln10)' },
-        { k: 'C', label: 'C', unit: '', v: 135.09, lo: 0, hi: 3000, free: false, tip: 'S∞/(k ln10)' },
+        { k: 'B', label: 'B', unit: 'K', v: 9880.3, lo: 0, hi: 200000, free: true, tip: 'ΔH/(k ln10)' },
+        { k: 'C', label: 'C', unit: '', v: 0, lo: 0, hi: 3000, free: false, tip: 'S∞/(k ln10)' },
         { k: 'pexp', label: 'p', unit: '', v: 19.77, lo: 0.1, hi: 300, free: true, tip: 'ergodicity exponent' },
         { k: 'A', label: 'A', unit: '', v: 1.2, lo: -200, hi: 300, free: false, tip: 'set by continuity at T_g unless freed' },
         { k: 'eta_inf', label: 'log₁₀ η∞', unit: 'Pa·s', v: -2.9, lo: -8, hi: 2, free: false },
@@ -854,6 +854,14 @@ const ENGINE = (function () {
     return { x, y, Th: hist.T[r[1]], Tf0: sim.Tf[i0] };
   }
   // MDSC: complex normalized C_p per period window (Fourier ratio of dT_f/dt and dT/dt at ω)
+  // H_true/H_disc for a Debye element (time constant τ) driven by a staircase with step h and integrated exactly per step:
+  // H_disc = (1 − a)/(1 − a e^{−iωh}), a = e^{−h/τ}; H_true = 1/(1 + iωτ). Limits: e^{−iωh/2} for τ ≫ h, 1 for τ ≪ h.
+  function stepCorr(w, h, tau) {
+    if (!(tau > 0) || !isFinite(tau)) return [Math.cos(PHSIGN * w * h / 2), Math.sin(PHSIGN * w * h / 2)];
+    const eps = -Math.expm1(-h / tau), a = 1 - eps, th = w * h, sh = Math.sin(th / 2);
+    const nr = eps + 2 * a * sh * sh, ni = a * Math.sin(th), dr = eps, di = eps * w * tau, dd = dr * dr + di * di;
+    return [(nr * dr + ni * di) / dd, (ni * dr - nr * di) / dd];
+  }
   function mdscSeries(hist, sim, si, seg) {
     const r = segRange(hist, si); if (!r) return { T: [], re: [], im: [] };
     const ppp = Math.max(8, Math.round(seg.ppp || 40)), P = +seg.P, w = 2 * Math.PI / P;
@@ -871,8 +879,10 @@ const ENGINE = (function () {
       else for (let k = 0; k < ppp; k++) { const c = Math.cos(w * tt[k]), sn = Math.sin(w * tt[k]); xr += a[k] * c; xi -= a[k] * sn; yr += b[k] * c; yi -= b[k] * sn; }
       const den = yr * yr + yi * yi; if (!(den > 0)) continue;
       let Rr = (xr * yr + xi * yi) / den, Ri = (xi * yr - xr * yi) / den;
-      // the simulated input is a staircase holding T(t_i) over (t_i−1, t_i]; it leads the continuous sinusoid by Δt/2 → remove that phase
-      const ph = PHSIGN * w * (P / ppp) / 2, cph = Math.cos(ph), sph = Math.sin(ph); [Rr, Ri] = [Rr * cph - Ri * sph, Rr * sph + Ri * cph];
+      // the simulated input is a staircase and each step is integrated exactly, which adds a lag that depends on τ/Δt:
+      // Δt/2 when τ ≫ Δt, none when τ ≪ Δt (liquid). Remove it with the exact Debye factor at the window's mean ln τ.
+      let lt = 0; for (let k = 0; k < ppp; k++) lt += Math.log(sim.tau[i0 + s + k]);
+      const [cr, ci] = stepCorr(w, P / ppp, Math.exp(lt / ppp)); [Rr, Ri] = [Rr * cr - Ri * ci, Rr * ci + Ri * cr];
       out.T.push(Tsum / ppp); out.re.push(Rr); out.im.push(-Ri);
     }
     const ord = out.T.map((v, i) => i).sort((a, b) => out.T[a] - out.T[b]);
@@ -1105,7 +1115,7 @@ const ENGINE = (function () {
     return { best, fbest, nev, trace };
   }
 
-  return { fit, compile, describeSeg, fmtTime, MODELDEFS, simulate, KINDS, cpSeries, tSeries, holdSeries, mdscSeries, predict, evaluate, dsPrepare, toU, fromU, nelderMead, diffEvolution, mulberry, uncertainty, interp, lstsq };
+  return { fit, compile, describeSeg, fmtTime, MODELDEFS, simulate, KINDS, cpSeries, tSeries, holdSeries, mdscSeries, stepCorr, predict, evaluate, dsPrepare, toU, fromU, nelderMead, diffEvolution, mulberry, uncertainty, interp, lstsq };
 })();
 if (false && typeof module !== 'undefined') module.exports = ENGINE;
 
@@ -1159,17 +1169,20 @@ const PLOT = (function () {
 /* Learn page: run TNM, MAP (RelaxPy) and TL on one example glass for a cool → anneal history,
    keeping every component fictive temperature so their distributions can be compared. */
 const LEARN = (function () {
-  const GLASS = { Tg: 734.5, m: 35.3 };                       // RelaxPy's example glass
-  const MAP0 = { eta_inf: -2.9, B: 4136.7, C: 135.09, log10Ks: 10 };  // log Ks = 10 → τ(T_g) = 100 s, like TL and TNM
-  const TL0 = { log10tau0: -14, beta0: 1, N: 200 };
+  // example glass: selenium, TL parameters of Takeda & Lucas, J. Chem. Phys. 160, 174504 (2024), Table I
+  const GLASS = { Tg: 308.13, m: 64.14 };
+  const TL0 = { log10tau0: -23.41, beta0: 1, N: 200 }, F0 = 0.59;
   const TNM_X = 0.5;
+  // MAP: log Ks = 10 → τ(T_g) = 100 s, like TL and TNM; glassy (isostructural) viscosity Arrhenius with
+  // B = x·m·T_g (x = 0.5, the TNM nonlinearity) and C = 0, so MAP and TNM share the same glassy activation energy
+  const MAP0 = { eta_inf: -2.9, B: +(TNM_X * 64.14 * 308.13).toFixed(1), C: 0, log10Ks: 10 };
 
-  // cool from Tg+40 to Ta at q (K/min) in 0.25 K steps, then hold at Ta with log-spaced times up to tmax
+  // cool from Tg+40 to Ta at q (K/min) in 0.5 K steps, then hold at Ta with log-spaced times up to tmax
   function history(q, Ta, tmax) {
-    const T = [], t = [], T0 = GLASS.Tg + 40, dT = 0.25, rate = q / 60;
+    const T = [], t = [], T0 = GLASS.Tg + 40, dT = 0.5, rate = q / 60;
     const nc = Math.max(2, Math.round((T0 - Ta) / dT));
     for (let i = 0; i <= nc; i++) { T.push(T0 - (T0 - Ta) * i / nc); t.push((T0 - T[i]) / rate); }
-    const tc = t[t.length - 1], na = 160;
+    const tc = t[t.length - 1], na = 100;
     for (let i = 1; i <= na; i++) { T.push(Ta); t.push(tc + Math.pow(10, -1 + (Math.log10(tmax) + 1) * i / na)); }
     return { T: Float64Array.from(T), t: Float64Array.from(t), nCool: nc + 1, tCool: tc };
   }
@@ -1203,21 +1216,22 @@ const LEARN = (function () {
     }
     return { H, beta, tl, tnm, map, sig, N, Y, w, NP };
   }
-  return { GLASS, MAP0, TL0, TNM_X, history, runAll, tlBeta, wstats };
+  return { GLASS, MAP0, TL0, F0, TNM_X, history, runAll, tlBeta, wstats };
 })();
 if (false && typeof module !== 'undefined') module.exports = LEARN;
 
 /* Learn page, Part I: simulated experiments (annealing, Kovacs, DSC, enthalpy recovery, MDSC)
    on the example glass, with any of the three models. Uses ENGINE (fitter engine), TL and MODELS. */
 const EXP = (function () {
-  const G = { Tg: 734.5, m: 35.3 };
-  const F = 0.6, X = 0.5;
+  const G = LEARN.GLASS;                 // selenium (see learn_core.js)
+  const F = LEARN.F0, X = LEARN.TNM_X;
   let BETA = null;
   function beta() { if (BETA == null) BETA = +LEARN.tlBeta(F, G.Tg).toFixed(2); return BETA; }
   function params(model) {
-    if (model === 'TL') return { ...G, log10tau0: -14, f: F, beta0: 1, N: 200 };
+    if (model === 'TL') return { ...G, ...LEARN.TL0, f: F };
     if (model === 'TNM') return { ...G, x: X, beta: beta() };
-    return { ...G, eta_inf: -2.9, log10Ks: 10, A: 0, B: 4136.7, C: 135.09, pexp: 0.3082153 * G.m, beta: beta(), Aauto: true, pauto: false };
+    const M = LEARN.MAP0;
+    return { ...G, eta_inf: M.eta_inf, log10Ks: M.log10Ks, A: 0, B: M.B, C: M.C, pexp: 0.3082153 * G.m, beta: beta(), Aauto: true, pauto: false };
   }
   const key = m => (m === 'MAP' ? 'RP' : m);
   function sim(model, T0, segs) {
@@ -1232,7 +1246,7 @@ const EXP = (function () {
   function anneal(model) {
     return [5, 10, 20].map(d => {
       const Ta = G.Tg - d, T0 = Ta + 10;
-      const r = sim(model, T0, [{ type: 'jump', T: Ta }, { type: 'hold', dur: 1e9, n: 220, t1: 1e-2 }]);
+      const r = sim(model, T0, [{ type: 'jump', T: Ta }, { type: 'hold', dur: 1e9, n: 100, t1: 1e-2 }]);
       const i0 = 1, t = [], phi = [];
       for (let i = i0 + 1; i < r.Tf.length; i++) { t.push(r.hist.t[i] - r.hist.t[i0]); phi.push((r.Tf[i] - Ta) / (T0 - Ta)); }
       const te = tauEq(model, Ta);
@@ -1248,7 +1262,7 @@ const EXP = (function () {
   function asym(model) {
     const T = G.Tg - 10;
     return [+5, -5].map(d => {
-      const r = sim(model, T + d, [{ type: 'jump', T }, { type: 'hold', dur: 1e9, n: 220, t1: 1e-2 }]);
+      const r = sim(model, T + d, [{ type: 'jump', T }, { type: 'hold', dur: 1e9, n: 100, t1: 1e-2 }]);
       const t = [], y = [];
       for (let i = 2; i < r.Tf.length; i++) { t.push(r.hist.t[i] - r.hist.t[1]); y.push(r.Tf[i] - T); }
       return { from: T + d, T, t, y };
@@ -1259,12 +1273,12 @@ const EXP = (function () {
     const T2 = G.Tg - 10, T0 = G.Tg + 10;
     return [10, 20, 30].map(d => {
       const T1 = T2 - d;
-      const r1 = sim(model, T0, [{ type: 'jump', T: T1 }, { type: 'hold', dur: 1e12, n: 400, t1: 1e-3 }]);
+      const r1 = sim(model, T0, [{ type: 'jump', T: T1 }, { type: 'hold', dur: 1e12, n: 100, t1: 1e-3 }]);
       let k = -1; for (let i = 2; i < r1.Tf.length; i++) if (r1.Tf[i] <= T2) { k = i; break; }
       if (k < 0) return null;
       const la = Math.log(r1.hist.t[k - 1] - r1.hist.t[1]), lb = Math.log(r1.hist.t[k] - r1.hist.t[1]), fa = r1.Tf[k - 1] - T2, fb = r1.Tf[k] - T2;
       const t1 = Math.exp(la + (lb - la) * fa / (fa - fb));
-      const r = sim(model, T0, [{ type: 'jump', T: T1 }, { type: 'hold', dur: t1, n: 160, t1: Math.min(1e-3, t1 / 10) }, { type: 'jump', T: T2 }, { type: 'hold', dur: 1e9, n: 220, t1: 1e-2 }]);
+      const r = sim(model, T0, [{ type: 'jump', T: T1 }, { type: 'hold', dur: t1, n: 100, t1: Math.min(1e-3, t1 / 10) }, { type: 'jump', T: T2 }, { type: 'hold', dur: 1e9, n: 100, t1: 1e-2 }]);
       const j = r.hist.info[2].i0, t = [], y = [];
       for (let i = j + 1; i < r.Tf.length; i++) { t.push(r.hist.t[i] - r.hist.t[j]); y.push(r.Tf[i] - T2); }
       let pk = 0, tp = 0; y.forEach((v, i) => { if (v > pk) { pk = v; tp = t[i]; } });
@@ -1294,14 +1308,14 @@ const EXP = (function () {
     const hi = G.Tg + 50, lo = G.Tg - 60, Ta = G.Tg - 20, times = [0, 1e2, 1e3, 1e4, 1e5, 1e6];
     const runs = times.map(ta => {
       const segs = [{ type: 'ramp', T: Ta, rate: 10, dT: 0.5 }];
-      if (ta > 0) segs.push({ type: 'hold', dur: ta, n: 80, t1: 1 });
+      if (ta > 0) segs.push({ type: 'hold', dur: ta, n: 100, t1: 1 });
       segs.push({ type: 'ramp', T: lo, rate: 10, dT: 0.5 }, { type: 'ramp', T: hi, rate: 10, dT: 0.5 });
       const r = sim(model, hi, segs), si = segs.length - 1;
       const Tf0 = r.Tf[r.hist.info[0].i1], TfA = ta > 0 ? r.Tf[r.hist.info[1].i1] : Tf0;
       return { ta, heat: ENGINE.cpSeries(r.hist, r, si), dH: Tf0 - TfA };
     });
     // continuous φ(t_a) during the anneal
-    const r = sim(model, hi, [{ type: 'ramp', T: Ta, rate: 10, dT: 0.5 }, { type: 'hold', dur: 1e9, n: 220, t1: 1e-1 }]);
+    const r = sim(model, hi, [{ type: 'ramp', T: Ta, rate: 10, dT: 0.5 }, { type: 'hold', dur: 1e9, n: 100, t1: 1e-1 }]);
     const i0 = r.hist.info[0].i1, Tf0 = r.Tf[i0], t = [], phi = [], dH = [];
     for (let i = i0 + 1; i < r.Tf.length; i++) { t.push(r.hist.t[i] - r.hist.t[i0]); phi.push((r.Tf[i] - Ta) / (Tf0 - Ta)); dH.push(Tf0 - r.Tf[i]); }
     return { Ta, runs, t, phi, dH, dHinf: Tf0 - Ta };
@@ -1317,8 +1331,8 @@ const EXP = (function () {
     // Each window: least-squares fit of v(t) = p0 + p1·(t − t̄) + C cos ωt + D sin ωt to dT_f/dt and to dT/dt.
     //   total C_p   = p0[dT_f/dt] / p0[dT/dt]            (underlying, period-averaged)
     //   complex C_p = (C − iD)[dT_f/dt] / (C − iD)[dT/dt] (ω component; same convention as the Fitter engine,
-    //                 incl. the half-step phase correction for the staircase input)
-    const inf = r.hist.info[si], i0 = Math.max(1, inf.i0), n = inf.i1 - i0 + 1, w = 2 * Math.PI / P, ph = -w * (P / ppp) / 2;
+    //                 incl. the τ-dependent correction for the staircase input, ENGINE.stepCorr)
+    const inf = r.hist.info[si], i0 = Math.max(1, inf.i0), n = inf.i1 - i0 + 1, w = 2 * Math.PI / P;
     const out = [];
     for (let s0 = 0; s0 + ppp <= n; s0 += ppp) {
       const tt = [], a = [], b = []; let Tm = 0;
@@ -1327,7 +1341,8 @@ const EXP = (function () {
       const fa = ENGINE.lstsq(X, a), fb = ENGINE.lstsq(X, b); if (!fa || !fb) continue;
       const xr = fa.b[2], xi = -fa.b[3], yr = fb.b[2], yi = -fb.b[3], den = yr * yr + yi * yi; if (!(den > 0)) continue;
       let Rr = (xr * yr + xi * yi) / den, Ri = (xi * yr - xr * yi) / den;
-      [Rr, Ri] = [Rr * Math.cos(ph) - Ri * Math.sin(ph), Rr * Math.sin(ph) + Ri * Math.cos(ph)];
+      let lt = 0; for (let k = 0; k < ppp; k++) lt += Math.log(r.tau[i0 + s0 + k]);
+      const [cr, ci] = ENGINE.stepCorr(w, P / ppp, Math.exp(lt / ppp)); [Rr, Ri] = [Rr * cr - Ri * ci, Rr * ci + Ri * cr];
       out.push({ T: Tm / ppp, total: fa.b[0] / fb.b[0], re: Rr, im: -Ri });
     }
     out.sort((u, v) => u.T - v.T);
@@ -1382,7 +1397,7 @@ if (false && typeof module !== 'undefined') module.exports = EXP;
       BETA = { f, Ts, b };
     }
     $("#step").max = n - 1;
-    $("#TaO").textContent = Ta + " K"; $("#fO").textContent = f.toFixed(2);
+    $("#TaO").textContent = Ta.toFixed(2) + " K"; $("#fO").textContent = f.toFixed(2);
     $("#betaNote").innerHTML = `TNM and MAP use β = ${R.beta.toFixed(2)} (the TL β<sub>KWW</sub> at T<sub>g</sub>), MAP with a ${R.NP}-term Prony series. TNM x = ${LEARN.TNM_X}.`;
     drawStatic();
   }
@@ -1555,7 +1570,7 @@ if (false && typeof module !== 'undefined') module.exports = EXP;
     const R = get("recovery", () => EXP.recovery(model));
     const all = R.runs.flatMap(r => r.heat.y);
     const lab = t => (t === 0 ? "unaged" : "t<sub>a</sub> = 10<sup>" + L10(t).toFixed(0) + "</sup> s");
-    $("#x-rec").innerHTML = svg({ W: 560, H: 260, xdom: [EXP.G.Tg - 40, EXP.G.Tg + 45], ydom: [Math.min(-0.05, ...all), Math.min(6, Math.max(...all) * 1.05)], xlabel: "T (K)", ylabel: "normalized C<tspan dy='3' font-size='9'>p</tspan>",
+    $("#x-rec").innerHTML = svg({ W: 560, H: 260, xdom: [EXP.G.Tg - 40, EXP.G.Tg + 45], ydom: [Math.min(-0.05, ...all), Math.max(...all) * 1.05], xlabel: "T (K)", ylabel: "normalized C<tspan dy='3' font-size='9'>p</tspan>",
       lines: R.runs.map((r, j) => ({ x: r.heat.x, y: r.heat.y, color: PAL[j], w: j ? 2 : 1.6, dash: j ? null : "5 4" })), vlines: [{ x: R.Ta, color: "var(--muted)", dash: "2 3", w: 1 }] })
       + leg(R.runs.map((r, j) => [PAL[j], lab(r.ta), !j]));
     const inf = R.dHinf;

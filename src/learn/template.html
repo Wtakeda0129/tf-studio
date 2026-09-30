@@ -159,7 +159,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
 <div class="part" id="experiments">
   <span class="partlabel">Part I</span>
   <h2 class="parth">Experiments: how relaxation is measured</h2>
-  <p class="lede">Each experiment below comes with a live simulation of the same example glass (T<sub>g</sub> = 734.5 K, m = 35.3). The switch picks the model that runs it. The models themselves are explained in Part II.</p>
+  <p class="lede">Each experiment below comes with a live simulation of the same example glass, selenium (T<sub>g</sub> = 308.13 K, m = 64.14; TL parameters from Takeda &amp; Lucas, JCP 2024). The switch picks the model that runs it. The models themselves are explained in Part II.</p>
   <div class="modelsw" role="radiogroup" aria-label="Model used for the simulations">
     <span>Simulate with</span>
     <button type="button" data-m="TL" class="on" style="--mc:var(--mTL)">Takeda–Lucas</button>
@@ -202,7 +202,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
   <p><b>On heating</b>, the glass keeps its structure until \(\tau\) becomes short enough, and then catches up with the liquid. A glass cooled slowly (low \(T_f'\)) overshoots the liquid line: the enthalpy it lost is recovered in a peak. A glass cooled faster than it is heated relaxes first, which shows up as an exothermic dip below \(T_g\).</p>
   <p>Slower cooling gives a lower \(T_f'\), and Moynihan and co-workers showed that the cooling-rate dependence carries the activation energy. The fragility follows from it:</p>
   <div class="eq">$$\frac{d\ln|q_c|}{d(1/T_f')}\approx-\frac{\Delta h}{R},\qquad m\approx\frac{\Delta h}{R\,T_g\ln 10}.$$</div>
-  <p class="small">The relation is approximate. In the simulation, compare the apparent \(m\) with the input value of 35.3.</p>
+  <p class="small">The relation is approximate. In the simulation, compare the apparent \(m\) with the input value of 64.14.</p>
 </section>
 <div class="lab"><div class="cols2">
   <div class="card"><h4><span>Heating at 10 K/min after cooling at q<sub>c</sub></span></h4><p class="sub">Normalized C<sub>p</sub><sup>N</sup> = dT<sub>f</sub>/dT. Dashed: the 10 K/min cooling scan.</p><div id="x-dsc"></div></div>
@@ -341,13 +341,13 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
 <section id="compare">
   <div class="prose">
     <h2><span class="num">10</span>See the difference: where do the fictive temperatures sit?</h2>
-    <p>All three models run the same history on one example glass (RelaxPy's example: \(T_g\) = 734.5 K, \(m\) = 35.3). The glass is equilibrated at \(T_g\)+40 K, cooled to the annealing temperature \(T_a\), and held there. The TNM and MAP \(\beta\) is set to the TL model's \(\beta_{\mathrm{KWW}}(T_g)\), so all three share the same nonexponentiality at \(T_g\). Drag the slider, or press play, and watch how the fictive temperatures spread and come back together.</p>
+    <p>All three models run the same history on one example glass, selenium (\(T_g\) = 308.13 K, \(m\) = 64.14, \(\log_{10}\tau_0\) = −23.41, \(f\) = 0.59 from the TL fit in JCP 2024). For MAP the glassy viscosity is Arrhenius with \(B = x\,m\,T_g\) (\(x\) = 0.5, as in TNM) and \(C\) = 0. The glass is equilibrated at \(T_g\)+40 K, cooled to the annealing temperature \(T_a\), and held there. The TNM and MAP \(\beta\) is set to the TL model's \(\beta_{\mathrm{KWW}}(T_g)\), so all three share the same nonexponentiality at \(T_g\). Drag the slider, or press play, and watch how the fictive temperatures spread and come back together.</p>
   </div>
   <div class="lab" id="lab">
     <div class="ctrl">
       <label>Cooling rate <select id="q"><option value="0.1">0.1 K/min</option><option value="1">1 K/min</option><option value="10" selected>10 K/min</option><option value="100">100 K/min</option></select></label>
-      <label>Annealing temperature T<sub>a</sub> <span><input type="range" id="Ta" min="684.5" max="729.5" step="5" value="714.5"> <output id="TaO"></output></span></label>
-      <label>TL width f <span><input type="range" id="f" min="0.40" max="0.90" step="0.05" value="0.60"> <output id="fO"></output></span></label>
+      <label>Annealing temperature T<sub>a</sub> <span><input type="range" id="Ta" min="258.13" max="303.13" step="5" value="288.13"> <output id="TaO"></output></span></label>
+      <label>TL width f <span><input type="range" id="f" min="0.39" max="0.89" step="0.05" value="0.59"> <output id="fO"></output></span></label>
       <span class="small" id="betaNote"></span>
     </div>
     <div class="scrub">
@@ -369,10 +369,10 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
   <div class="prose">
     <h3>What to look for</h3>
     <ul>
-      <li><b>At the start (equilibrium liquid).</b> TNM and MAP have a single point: every \(T_{f,i}=T\). The TL distribution is already broad (\(\delta T_f\approx16\) K here) and centered on \(T\).</li>
+      <li><b>At the start (equilibrium liquid).</b> TNM and MAP have a single point: every \(T_{f,i}=T\). The TL distribution is already broad (\(\delta T_f\approx4\) K at \(T_g\)+40 K) and centered on \(T\).</li>
       <li><b>During cooling.</b> The MAP components separate as the slow terms freeze first, so MAP develops a spread <i>only</i> out of equilibrium. The TL distribution keeps its equilibrium shape until the slow domains fall out of equilibrium, and then it narrows as the fast domains keep following their targets.</li>
-      <li><b>After long annealing.</b> MAP collapses back to a single value at \(T_a\), while TL recovers its equilibrium width \(T_a\,\sigma(T_v)/\langle T_v\rangle\).</li>
-      <li><b>Change the cooling rate.</b> The two heterogeneous models respond in opposite ways. Faster cooling leaves a <i>wider</i> spread of Prony \(T_{f,i}\) in MAP, because the components freeze at more widely separated temperatures. In TL it leaves a <i>narrower</i> frozen distribution, further below the equilibrium width, because the distribution has less time to follow the cooling.</li>
+      <li><b>During annealing.</b> In both heterogeneous models \(\delta T_f\) first grows, because the fast components reach \(T_a\) while the slow ones are still frozen, and then decreases. Given enough time MAP collapses back to a single value at \(T_a\), while TL returns to its equilibrium width \(T_a\,\sigma(T_v)/\langle T_v\rangle\). At \(T_g\) − 20 K neither has finished within \(10^6\) s.</li>
+      <li><b>Change the cooling rate.</b> Faster cooling leaves a wider frozen spread in both heterogeneous models. In MAP the Prony components freeze at more widely separated temperatures. In TL the distribution has less time to narrow during cooling, so it stays closer to its equilibrium width (for Se at the end of cooling to 288 K: \(\delta T_f\) ≈ 1.4 K at 0.1 K/min and 2.4 K at 100 K/min, against 4.1 and 5.9 K for MAP).</li>
     </ul>
     <div class="cta"><a class="primary" href="explorer.html" data-tool="explorer">Open the Lab: DSC scans, anneals and T-jumps with all three models</a><a href="fitter.html" data-tool="fitter">Fit your own data</a></div>
   </div>

@@ -41,7 +41,7 @@
       BETA = { f, Ts, b };
     }
     $("#step").max = n - 1;
-    $("#TaO").textContent = Ta + " K"; $("#fO").textContent = f.toFixed(2);
+    $("#TaO").textContent = Ta.toFixed(2) + " K"; $("#fO").textContent = f.toFixed(2);
     $("#betaNote").innerHTML = `TNM and MAP use β = ${R.beta.toFixed(2)} (the TL β<sub>KWW</sub> at T<sub>g</sub>), MAP with a ${R.NP}-term Prony series. TNM x = ${LEARN.TNM_X}.`;
     drawStatic();
   }

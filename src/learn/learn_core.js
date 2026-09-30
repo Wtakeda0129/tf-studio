@@ -1,17 +1,20 @@
 /* Learn page: run TNM, MAP (RelaxPy) and TL on one example glass for a cool → anneal history,
    keeping every component fictive temperature so their distributions can be compared. */
 const LEARN = (function () {
-  const GLASS = { Tg: 734.5, m: 35.3 };                       // RelaxPy's example glass
-  const MAP0 = { eta_inf: -2.9, B: 4136.7, C: 135.09, log10Ks: 10 };  // log Ks = 10 → τ(T_g) = 100 s, like TL and TNM
-  const TL0 = { log10tau0: -14, beta0: 1, N: 200 };
+  // example glass: selenium, TL parameters of Takeda & Lucas, J. Chem. Phys. 160, 174504 (2024), Table I
+  const GLASS = { Tg: 308.13, m: 64.14 };
+  const TL0 = { log10tau0: -23.41, beta0: 1, N: 200 }, F0 = 0.59;
   const TNM_X = 0.5;
+  // MAP: log Ks = 10 → τ(T_g) = 100 s, like TL and TNM; glassy (isostructural) viscosity Arrhenius with
+  // B = x·m·T_g (x = 0.5, the TNM nonlinearity) and C = 0, so MAP and TNM share the same glassy activation energy
+  const MAP0 = { eta_inf: -2.9, B: +(TNM_X * 64.14 * 308.13).toFixed(1), C: 0, log10Ks: 10 };
 
-  // cool from Tg+40 to Ta at q (K/min) in 0.25 K steps, then hold at Ta with log-spaced times up to tmax
+  // cool from Tg+40 to Ta at q (K/min) in 0.5 K steps, then hold at Ta with log-spaced times up to tmax
   function history(q, Ta, tmax) {
-    const T = [], t = [], T0 = GLASS.Tg + 40, dT = 0.25, rate = q / 60;
+    const T = [], t = [], T0 = GLASS.Tg + 40, dT = 0.5, rate = q / 60;
     const nc = Math.max(2, Math.round((T0 - Ta) / dT));
     for (let i = 0; i <= nc; i++) { T.push(T0 - (T0 - Ta) * i / nc); t.push((T0 - T[i]) / rate); }
-    const tc = t[t.length - 1], na = 160;
+    const tc = t[t.length - 1], na = 100;
     for (let i = 1; i <= na; i++) { T.push(Ta); t.push(tc + Math.pow(10, -1 + (Math.log10(tmax) + 1) * i / na)); }
     return { T: Float64Array.from(T), t: Float64Array.from(t), nCool: nc + 1, tCool: tc };
   }
@@ -45,6 +48,6 @@ const LEARN = (function () {
     }
     return { H, beta, tl, tnm, map, sig, N, Y, w, NP };
   }
-  return { GLASS, MAP0, TL0, TNM_X, history, runAll, tlBeta, wstats };
+  return { GLASS, MAP0, TL0, F0, TNM_X, history, runAll, tlBeta, wstats };
 })();
 if (typeof module !== 'undefined') module.exports = LEARN;

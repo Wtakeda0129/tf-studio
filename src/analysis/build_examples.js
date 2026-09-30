@@ -26,7 +26,7 @@ runs.push({ name: "Cooling 10 K/min", kind: "cool", q: 10, mass, ta: null, Ta: n
 const ref = scan([{ type: "ramp", T: lo, rate: 10, dT: 0.1 }, { type: "ramp", T: hi, rate: 10, dT: 0.1 }], 1, 10, 0.0012);
 runs.push({ name: "Heating 10 K/min (reference, unaged)", kind: "heat", q: 10, mass, ta: 0, Ta: null, ...ref });
 for (const ta of [1e2, 1e3, 1e4, 1e5]) {
-  const segs = [{ type: "ramp", T: Ta, rate: 10, dT: 0.1 }, { type: "hold", dur: ta, n: 60, t1: 0.1 }, { type: "ramp", T: lo, rate: 10, dT: 0.1 }, { type: "ramp", T: hi, rate: 10, dT: 0.1 }];
+  const segs = [{ type: "ramp", T: Ta, rate: 10, dT: 0.1 }, { type: "hold", dur: ta, n: 100, t1: 0.1 }, { type: "ramp", T: lo, rate: 10, dT: 0.1 }, { type: "ramp", T: hi, rate: 10, dT: 0.1 }];
     const sup = { 2: "²", 3: "³", 4: "⁴", 5: "⁵" }[Math.round(Math.log10(ta))];
   const hh = E.compile(p.Tg + 40, segs), ss = E.simulate("TL", p, hh, {});
   const truth = { Tf0: ss.Tf[hh.info[0].i1], TfA: ss.Tf[hh.info[1].i1] };

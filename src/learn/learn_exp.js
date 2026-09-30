@@ -1,14 +1,15 @@
 /* Learn page, Part I: simulated experiments (annealing, Kovacs, DSC, enthalpy recovery, MDSC)
    on the example glass, with any of the three models. Uses ENGINE (fitter engine), TL and MODELS. */
 const EXP = (function () {
-  const G = { Tg: 734.5, m: 35.3 };
-  const F = 0.6, X = 0.5;
+  const G = LEARN.GLASS;                 // selenium (see learn_core.js)
+  const F = LEARN.F0, X = LEARN.TNM_X;
   let BETA = null;
   function beta() { if (BETA == null) BETA = +LEARN.tlBeta(F, G.Tg).toFixed(2); return BETA; }
   function params(model) {
-    if (model === 'TL') return { ...G, log10tau0: -14, f: F, beta0: 1, N: 200 };
+    if (model === 'TL') return { ...G, ...LEARN.TL0, f: F };
     if (model === 'TNM') return { ...G, x: X, beta: beta() };
-    return { ...G, eta_inf: -2.9, log10Ks: 10, A: 0, B: 4136.7, C: 135.09, pexp: 0.3082153 * G.m, beta: beta(), Aauto: true, pauto: false };
+    const M = LEARN.MAP0;
+    return { ...G, eta_inf: M.eta_inf, log10Ks: M.log10Ks, A: 0, B: M.B, C: M.C, pexp: 0.3082153 * G.m, beta: beta(), Aauto: true, pauto: false };
   }
   const key = m => (m === 'MAP' ? 'RP' : m);
   function sim(model, T0, segs) {
@@ -23,7 +24,7 @@ const EXP = (function () {
   function anneal(model) {
     return [5, 10, 20].map(d => {
       const Ta = G.Tg - d, T0 = Ta + 10;
-      const r = sim(model, T0, [{ type: 'jump', T: Ta }, { type: 'hold', dur: 1e9, n: 220, t1: 1e-2 }]);
+      const r = sim(model, T0, [{ type: 'jump', T: Ta }, { type: 'hold', dur: 1e9, n: 100, t1: 1e-2 }]);
       const i0 = 1, t = [], phi = [];
       for (let i = i0 + 1; i < r.Tf.length; i++) { t.push(r.hist.t[i] - r.hist.t[i0]); phi.push((r.Tf[i] - Ta) / (T0 - Ta)); }
       const te = tauEq(model, Ta);
@@ -39,7 +40,7 @@ const EXP = (function () {
   function asym(model) {
     const T = G.Tg - 10;
     return [+5, -5].map(d => {
-      const r = sim(model, T + d, [{ type: 'jump', T }, { type: 'hold', dur: 1e9, n: 220, t1: 1e-2 }]);
+      const r = sim(model, T + d, [{ type: 'jump', T }, { type: 'hold', dur: 1e9, n: 100, t1: 1e-2 }]);
       const t = [], y = [];
       for (let i = 2; i < r.Tf.length; i++) { t.push(r.hist.t[i] - r.hist.t[1]); y.push(r.Tf[i] - T); }
       return { from: T + d, T, t, y };
@@ -50,12 +51,12 @@ const EXP = (function () {
     const T2 = G.Tg - 10, T0 = G.Tg + 10;
     return [10, 20, 30].map(d => {
       const T1 = T2 - d;
-      const r1 = sim(model, T0, [{ type: 'jump', T: T1 }, { type: 'hold', dur: 1e12, n: 400, t1: 1e-3 }]);
+      const r1 = sim(model, T0, [{ type: 'jump', T: T1 }, { type: 'hold', dur: 1e12, n: 100, t1: 1e-3 }]);
       let k = -1; for (let i = 2; i < r1.Tf.length; i++) if (r1.Tf[i] <= T2) { k = i; break; }
       if (k < 0) return null;
       const la = Math.log(r1.hist.t[k - 1] - r1.hist.t[1]), lb = Math.log(r1.hist.t[k] - r1.hist.t[1]), fa = r1.Tf[k - 1] - T2, fb = r1.Tf[k] - T2;
       const t1 = Math.exp(la + (lb - la) * fa / (fa - fb));
-      const r = sim(model, T0, [{ type: 'jump', T: T1 }, { type: 'hold', dur: t1, n: 160, t1: Math.min(1e-3, t1 / 10) }, { type: 'jump', T: T2 }, { type: 'hold', dur: 1e9, n: 220, t1: 1e-2 }]);
+      const r = sim(model, T0, [{ type: 'jump', T: T1 }, { type: 'hold', dur: t1, n: 100, t1: Math.min(1e-3, t1 / 10) }, { type: 'jump', T: T2 }, { type: 'hold', dur: 1e9, n: 100, t1: 1e-2 }]);
       const j = r.hist.info[2].i0, t = [], y = [];
       for (let i = j + 1; i < r.Tf.length; i++) { t.push(r.hist.t[i] - r.hist.t[j]); y.push(r.Tf[i] - T2); }
       let pk = 0, tp = 0; y.forEach((v, i) => { if (v > pk) { pk = v; tp = t[i]; } });
@@ -85,14 +86,14 @@ const EXP = (function () {
     const hi = G.Tg + 50, lo = G.Tg - 60, Ta = G.Tg - 20, times = [0, 1e2, 1e3, 1e4, 1e5, 1e6];
     const runs = times.map(ta => {
       const segs = [{ type: 'ramp', T: Ta, rate: 10, dT: 0.5 }];
-      if (ta > 0) segs.push({ type: 'hold', dur: ta, n: 80, t1: 1 });
+      if (ta > 0) segs.push({ type: 'hold', dur: ta, n: 100, t1: 1 });
       segs.push({ type: 'ramp', T: lo, rate: 10, dT: 0.5 }, { type: 'ramp', T: hi, rate: 10, dT: 0.5 });
       const r = sim(model, hi, segs), si = segs.length - 1;
       const Tf0 = r.Tf[r.hist.info[0].i1], TfA = ta > 0 ? r.Tf[r.hist.info[1].i1] : Tf0;
       return { ta, heat: ENGINE.cpSeries(r.hist, r, si), dH: Tf0 - TfA };
     });
     // continuous φ(t_a) during the anneal
-    const r = sim(model, hi, [{ type: 'ramp', T: Ta, rate: 10, dT: 0.5 }, { type: 'hold', dur: 1e9, n: 220, t1: 1e-1 }]);
+    const r = sim(model, hi, [{ type: 'ramp', T: Ta, rate: 10, dT: 0.5 }, { type: 'hold', dur: 1e9, n: 100, t1: 1e-1 }]);
     const i0 = r.hist.info[0].i1, Tf0 = r.Tf[i0], t = [], phi = [], dH = [];
     for (let i = i0 + 1; i < r.Tf.length; i++) { t.push(r.hist.t[i] - r.hist.t[i0]); phi.push((r.Tf[i] - Ta) / (Tf0 - Ta)); dH.push(Tf0 - r.Tf[i]); }
     return { Ta, runs, t, phi, dH, dHinf: Tf0 - Ta };
@@ -108,8 +109,8 @@ const EXP = (function () {
     // Each window: least-squares fit of v(t) = p0 + p1·(t − t̄) + C cos ωt + D sin ωt to dT_f/dt and to dT/dt.
     //   total C_p   = p0[dT_f/dt] / p0[dT/dt]            (underlying, period-averaged)
     //   complex C_p = (C − iD)[dT_f/dt] / (C − iD)[dT/dt] (ω component; same convention as the Fitter engine,
-    //                 incl. the half-step phase correction for the staircase input)
-    const inf = r.hist.info[si], i0 = Math.max(1, inf.i0), n = inf.i1 - i0 + 1, w = 2 * Math.PI / P, ph = -w * (P / ppp) / 2;
+    //                 incl. the τ-dependent correction for the staircase input, ENGINE.stepCorr)
+    const inf = r.hist.info[si], i0 = Math.max(1, inf.i0), n = inf.i1 - i0 + 1, w = 2 * Math.PI / P;
     const out = [];
     for (let s0 = 0; s0 + ppp <= n; s0 += ppp) {
       const tt = [], a = [], b = []; let Tm = 0;
@@ -118,7 +119,8 @@ const EXP = (function () {
       const fa = ENGINE.lstsq(X, a), fb = ENGINE.lstsq(X, b); if (!fa || !fb) continue;
       const xr = fa.b[2], xi = -fa.b[3], yr = fb.b[2], yi = -fb.b[3], den = yr * yr + yi * yi; if (!(den > 0)) continue;
       let Rr = (xr * yr + xi * yi) / den, Ri = (xi * yr - xr * yi) / den;
-      [Rr, Ri] = [Rr * Math.cos(ph) - Ri * Math.sin(ph), Rr * Math.sin(ph) + Ri * Math.cos(ph)];
+      let lt = 0; for (let k = 0; k < ppp; k++) lt += Math.log(r.tau[i0 + s0 + k]);
+      const [cr, ci] = ENGINE.stepCorr(w, P / ppp, Math.exp(lt / ppp)); [Rr, Ri] = [Rr * cr - Ri * ci, Rr * ci + Ri * cr];
       out.push({ T: Tm / ppp, total: fa.b[0] / fb.b[0], re: Rr, im: -Ri });
     }
     out.sort((u, v) => u.T - v.T);
