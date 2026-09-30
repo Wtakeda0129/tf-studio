@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Tf Studio User Guide</title><link rel="stylesheet" href="doc.css"></head>
+<body>
+
+
+
+<section>
+  <h1>Contents</h1>
+  <ul class="toc">
+    <li><span>1</span>What Tf Studio does</li>
+    <li><span>2</span>Getting Tf Studio: browser, Mac and Windows, updates</li>
+    <li><span>3</span>Controls shared by every tool</li>
+    <li><span>4</span>Learn: experiments and models, with live simulations</li>
+    <li><span>5</span>Lab: quick interactive runs</li>
+    <li><span>6</span>Fitter: thermal history → data → model → compute or fit</li>
+    <li class="sub"><span></span>6.1 Thermal history · 6.2 Experimental data · 6.3 Model and parameters · 6.4 Compute and fit · 6.5 Projects and examples</li>
+    <li><span>7</span>Data Analysis: raw heat flow, enthalpy recovery, property relaxation</li>
+    <li class="sub"><span></span>7.1 Heat-flow scans · 7.2 Enthalpy recovery · 7.3 Property relaxation · 7.4 From analysis to fit</li>
+    <li><span>8</span>Data files</li>
+    <li><span>9</span>Troubleshooting and questions</li>
+    <li><span>10</span>Reference: models, parameters and data types</li>
+    <li><span>11</span>How to cite, and references</li>
+  </ul>
+  <div class="box tip"><b class="t">In a hurry?</b><p>The separate <b>Quick Start</b> document takes you from installing to a first result in a few minutes. This guide explains every screen and option in detail.</p></div>
+</section>
+
+<!-- 1 -->
+<section class="chapter">
+  <h2>1 · What Tf Studio does</h2>
+  <p class="lead">Every glass carries a thermal fingerprint of how it was made, written in its fictive temperature <i>T</i><sub>f</sub>. Tf Studio simulates that history, analyzes your measurements, and fits relaxation models to them.</p>
+  <p>Tf Studio contains four tools. They open from the home page (web) or from the launcher (desktop app).</p>
+  <table>
+    <tr><th style="width:18%">Tool</th><th>Use it to…</th></tr>
+    <tr><td><b>Learn</b></td><td>understand the experiments (annealing, Kovacs jumps, DSC, enthalpy recovery, MDSC) and the models (TNM, MAP / RelaxPy, Takeda–Lucas), with live simulations on every topic.</td></tr>
+    <tr><td><b>Lab</b></td><td>try a cool–heat scan, an anneal or a T-jump interactively and compare the three models side by side.</td></tr>
+    <tr><td><b>Fitter</b></td><td>program any thermal history, load your data, then compute with chosen parameters or fit the parameters, with uncertainties.</td></tr>
+    <tr><td><b>Data Analysis</b></td><td>turn raw DSC heat flow into normalized C<sub>p</sub>, fictive temperatures and recovered enthalpy, and fit volume (or density, length…) relaxation during annealing.</td></tr>
+  </table>
+  <h3>The three models</h3>
+  <table>
+    <tr><th style="width:26%">Model</th><th>In one line</th></tr>
+    <tr><td><b>Takeda–Lucas (TL)</b></td><td>Heterogeneous domains, each with its own Vogel temperature and local fictive temperature <i>T</i><sub>f,i</sub>; the spread of <i>T</i><sub>f,i</sub> persists in equilibrium, giving temperature-dependent nonexponentiality and enthalpy fluctuation (J. Chem. Phys. 160, 174504, 2024).</td></tr>
+    <tr><td><b>Tool–Narayanaswamy–Moynihan (TNM)</b></td><td>One fictive temperature for the whole sample, nonlinearity <i>x</i> and a stretched-exponential (KWW) kernel.</td></tr>
+    <tr><td><b>MAP / RelaxPy</b></td><td>Mauro–Allan–Potuzak nonequilibrium viscosity with Prony-series components (Wilkinson, Mauro &amp; Mauro, SoftwareX 2018).</td></tr>
+  </table>
+  <div class="box"><b class="t">Your data stay on your computer</b><p>All calculations run locally, in your browser or in the desktop app. Nothing you load is uploaded anywhere.</p></div>
+  <div class="box warn"><b class="t">Beta software</b><p>Tf Studio is in beta: features, defaults and occasionally results may change between versions. Record the version number (bottom of the launcher) with your results.</p></div>
+</section>
+
+<!-- 2 -->
+<section class="chapter">
+  <h2>2 · Getting Tf Studio</h2>
+  <h3>2.1 In the browser</h3>
+  <p>Open <a href="https://wtakeda0129.github.io/tf-studio/">wtakeda0129.github.io/tf-studio</a>. Nothing to install; it works in Chrome, Edge, Firefox and Safari, and always shows the latest version. After the page has loaded, the tools also work offline.</p>
+  <h3>2.2 Desktop app</h3>
+  <p>Download the installer from <a href="https://github.com/Wtakeda0129/tf-studio/releases/latest">github.com/Wtakeda0129/tf-studio/releases/latest</a>, or click <span class="ui">Download for Mac / Windows</span> on the home page.</p>
+  <div class="cols">
+    <div>
+      <h4>macOS (Apple silicon and Intel)</h4>
+      <ol class="steps">
+        <li>Download <code>Tf-Studio-&lt;version&gt;-universal.dmg</code>.</li>
+        <li>Open it and drag <b>Tf Studio</b> into <b>Applications</b> (choose <b>Replace</b> if asked).</li>
+        <li>Open Tf Studio. The first time, macOS says it cannot verify the developer: click <b>Done</b>.</li>
+        <li>Open <b>System Settings → Privacy &amp; Security</b>, scroll down and click <b>Open Anyway</b>, then confirm.</li>
+      </ol>
+      <p style="font-size:9.5pt;color:var(--muted)">This is needed once per computer, because the app is signed with the group's own certificate rather than an Apple Developer ID.</p>
+    </div>
+    <div>
+      <h4>Windows 10 / 11</h4>
+      <ol class="steps">
+        <li>Download <code>Tf-Studio-Setup-&lt;version&gt;.exe</code>.</li>
+        <li>Run it. If Windows shows “Windows protected your PC”, click <b>More info → Run anyway</b>.</li>
+        <li>Choose the install folder (no administrator rights are needed) and finish.</li>
+        <li>Start Tf Studio from the Start menu or the desktop shortcut.</li>
+      </ol>
+    </div>
+  </div>
+  <h3>2.3 Updates</h3>
+  <p>The desktop app checks for a new version when it starts and every six hours; you can also check with <b>Tf Studio → Check for Updates…</b> (Mac) or <b>Help → Check for Updates…</b> (Windows). A new version downloads in the background and the app offers <b>Restart now</b> to install it.</p>
+  <div class="box"><p>If macOS cannot install an update in place, the app says so and offers <b>Download</b>, which opens the release page: install the new DMG as in 2.2. The web version needs no updates.</p></div>
+  <h3>2.4 The launcher</h3>
+  <p>The desktop app opens a launcher with the four tools; each opens in its own window. Shortcuts: <span class="kbd">⌘/Ctrl 1</span> Learn, <span class="kbd">2</span> Lab, <span class="kbd">3</span> Fitter, <span class="kbd">4</span> Data Analysis, <span class="kbd">⌘/Ctrl 0</span> launcher. The version number is shown at the bottom of the launcher.</p>
+</section>
+
+<!-- 3 -->
+<section class="flowsec">
+  <h2>3 · Controls shared by every tool</h2>
+  <figure><img src="img/fit_header.png" alt=""><figcaption><b>Figure 3.1.</b> Header of the Fitter. The same controls appear in Data Analysis.</figcaption></figure>
+  <table>
+    <tr><th style="width:24%">Control</th><th>What it does</th></tr>
+    <tr><td><b>Tf Studio</b> (logo)</td><td>Back to the home page or the launcher.</td></tr>
+    <tr><td><b>Temperature</b> K / °C</td><td>Unit for every temperature on screen: plots, thermal-history inputs, <i>T</i><sub>g</sub> and its bounds, data limits. Values are stored in kelvin, so switching never changes a calculation.</td></tr>
+    <tr><td><b>Time axis</b> log / linear</td><td>Scale of every time axis (history, relaxation during holds, τ, time-domain data).</td></tr>
+    <tr><td><b>◐</b></td><td>Switches between the light (default) and dark colour scheme.</td></tr>
+    <tr><td><b>SVG</b> (on each plot)</td><td>Saves that plot as a vector graphic for slides or papers.</td></tr>
+    <tr><td>Hover on a plot</td><td>Shows the nearest data point and its values.</td></tr>
+  </table>
+  <div class="box tip"><b class="t">Typing numbers</b><p>Inputs accept any number format (<code>1e5</code>, <code>0.5</code>, <code>-40</code>). Temperatures are read in the unit selected in the header.</p></div>
+</section>
+
+<!-- 4 -->
+<section class="chapter">
+  <h2>4 · Learn</h2>
+  <p>Learn is a self-contained course on structural relaxation. The contents on the left jump to any section; <b>Part I</b> covers experiments and <b>Part II</b> the models.</p>
+  <figure><img src="img/learn_top.png" alt=""><figcaption><b>Figure 4.1.</b> Learn. The switch at the top (<b>TL / TNM / MAP</b>) chooses the model used by all simulations in Part I.</figcaption></figure>
+  <h3>Part I · Experiments</h3>
+  <p>Each experiment has its protocol and equations, then a live simulation of the same example glass (<i>T</i><sub>g</sub> = 734.5 K, <i>m</i> = 35.3):</p>
+  <ul>
+    <li><b>Isothermal annealing</b>: relaxation function φ(<i>t</i>) after a 10 K down-jump, compared with a linear KWW curve, and the apparent KWW parameters.</li>
+    <li><b>Kovacs experiments</b>: asymmetry of approach (±5 K jumps) and the memory effect (Kovacs; Macedo–Napolitano crossover).</li>
+    <li><b>DSC on cooling and heating</b>: heating scans after five cooling rates and Moynihan's cooling-rate plot (apparent Δ<i>h</i>/<i>R</i> and fragility).</li>
+    <li><b>Enthalpy recovery</b>: heating scans after annealing and ΔH(<i>t</i><sub>a</sub>).</li>
+    <li><b>MDSC</b>: total, reversing and non-reversing signals, C″, and how the reversing step moves with the modulation period (the Hutchinson and Schawe caveats).</li>
+  </ul>
+  <figure><img src="img/learn_dsc_lab.png" alt=""><figcaption><b>Figure 4.2.</b> DSC section: heating after five cooling rates (left) and the cooling-rate dependence of <i>T</i><sub>f</sub>′ (right).</figcaption></figure>
+  <figure><img src="img/learn_mdsc_lab.png" alt=""><figcaption><b>Figure 4.3.</b> MDSC section. Choose <b>Direction</b> (heating or cooling) and <b>Period</b>; the right plot compares the reversing C<sub>p</sub> for three periods.</figcaption></figure>
+  <h3>Part II · Models</h3>
+  <p>The mathematics of TNM, MAP and TL, what each assumes, and an interactive comparison of where the fictive temperatures sit.</p>
+  <figure><img src="img/learn_compare.png" alt=""><figcaption><b>Figure 4.4.</b> “See the difference”: the three models run the same cool–anneal history. Drag the slider or press <b>▶ Play</b>; change the cooling rate, annealing temperature and TL width <i>f</i>.</figcaption></figure>
+</section>
+
+<!-- 5 -->
+<section class="flowsec">
+  <h2>5 · Lab</h2>
+  <p>The Lab (formerly Explorer) is a quick, always-live playground: change a number and the plots update. Use it to build intuition; use the Fitter for your own histories and data.</p>
+  <figure><img src="img/lab.png" alt=""><figcaption><b>Figure 5.1.</b> Lab: models and material on the left, protocol below; tabs on the right.</figcaption></figure>
+  <ul>
+    <li><b>Models</b>: tick TL, TNM and/or RelaxPy. <b>Material preset</b> loads the TL parameters of Table I of the JCP 2024 paper; <i>T</i><sub>g</sub> and <i>m</i> are shared by the models unless unlinked in their sections.</li>
+    <li><b>Thermal history</b>: choose a protocol (cool → heat, slow cool, anneal, Kovacs T-jump) or build segments with <b>+ Ramp</b>, <b>+ Hold</b>, <b>+ T-jump</b>.</li>
+    <li><b>Tabs</b>: Calorimetry (C<sub>p</sub>, <i>T</i><sub>f</sub>), Relaxation dynamics, Distributions (TL relaxation-time distributions and β<sub>KWW</sub>(T)), Time history, Parameters.</li>
+    <li><b>Run</b> / <b>auto</b>: untick <b>auto</b> to update only when you click <b>Run</b>. <b>Pin</b> keeps a run for comparison; <b>CSV</b> exports the curves.</li>
+  </ul>
+</section>
+
+<!-- 6 -->
+<section class="chapter">
+  <h2>6 · Fitter</h2>
+  <p>The Fitter works in four steps, shown as buttons across the top. You can move between them at any time.</p>
+  <table>
+    <tr><th style="width:24%">Step</th><th>What you do</th><th style="width:30%">Right panel shows</th></tr>
+    <tr><td>1 Thermal history</td><td>Build the temperature program.</td><td>T(t) and the time steps</td></tr>
+    <tr><td>2 Experimental data</td><td>Optional: add measurements.</td><td>your data and the linked segment</td></tr>
+    <tr><td>3 Model &amp; parameters</td><td>Choose a model, values, which parameters are free, and bounds.</td><td>history and data</td></tr>
+    <tr><td>4 Compute &amp; fit</td><td>Click <b>Compute</b> or <b>Run fit</b>.</td><td>all results</td></tr>
+  </table>
+  <div class="box"><b class="t">Nothing is calculated until you click</b><p>Steps 1–3 only show the thermal history and your data. The model runs when you click <b>Compute</b> or <b>Run fit</b> in step 4. Any later change clears the old result and asks you to compute again, so a result on screen always matches the current settings.</p></div>
+
+  <h3>6.1 Step 1 · Thermal history</h3>
+  <figure><img src="img/fit_step1.png" alt=""><figcaption><b>Figure 6.1.</b> Step 1 with the template “Aging below T<sub>g</sub>, then DSC heating”.</figcaption></figure>
+  <ol class="steps">
+    <li><b>Start temperature T₀.</b> The sample starts in equilibrium at T₀ (T<sub>f</sub> = T₀). Choose T₀ above T<sub>g</sub>.</li>
+    <li><b>Insert template</b> (optional). Templates are placed around the current model T<sub>g</sub>, so set T<sub>g</sub> in step 3 first if your material differs from the default.</li>
+    <li><b>Add segments</b> with <span class="ui">+ Ramp</span>, <span class="ui">+ Hold / anneal</span>, <span class="ui">+ T-jump</span>, <span class="ui">+ MDSC</span>. Reorder, duplicate or delete them with the small buttons on each card.</li>
+  </ol>
+  <table>
+    <tr><th style="width:16%">Segment</th><th>Inputs</th><th style="width:32%">Notes</th></tr>
+    <tr><td>Ramp</td><td>target T, rate (K/min), ΔT step</td><td>0.1–0.5 K steps are accurate for DSC; the slider sets ΔT on a log scale.</td></tr>
+    <tr><td>Hold / anneal</td><td>duration (s, min, h, d), log-spaced points, first step t₁</td><td>Points are spaced logarithmically from t₁ to the duration.</td></tr>
+    <tr><td>T-jump</td><td>target T</td><td>Instantaneous change (e.g. Kovacs experiments).</td></tr>
+    <tr><td>MDSC</td><td>target T, underlying rate, amplitude ±A, period, points per period</td><td>Rate 0 gives quasi-isothermal MDSC with a duration.</td></tr>
+  </table>
+  <p>Under the segments, the summary shows the number of simulation steps and the total time. The right panel plots the temperature program and the time step of every simulation step.</p>
+
+  <h3>6.2 Step 2 · Experimental data (optional)</h3>
+  <figure><img src="img/fit_step2_editor.png" alt=""><figcaption><b>Figure 6.2.</b> Step 2 with two datasets and the <b>Add dataset</b> form open.</figcaption></figure>
+  <ol class="steps">
+    <li>Click <span class="ui">+ Add dataset</span> and choose the <b>Data type</b> (table in section 10).</li>
+    <li>Choose the <b>Linked history segment</b>: the part of the thermal history the data belong to (e.g. the heating ramp for a DSC heating scan, the hold for annealing data).</li>
+    <li><b>Paste / file</b>: paste two or more columns or click <span class="ui">Load file…</span>, then pick the x and y columns and units. Or <b>Synthesize from model</b> to generate test data with noise.</li>
+    <li>Optional: <b>use x ≥ / ≤</b> to limit the fitted range, a <b>weight</b>, a <b>y multiplier</b>, and <b>fit an offset and a scale factor</b> (y = a + b·model) when the data are not normalized.</li>
+    <li>Click <span class="ui">Add dataset</span>. Tick or untick a dataset to include it; ✎ edits it, × removes it.</li>
+  </ol>
+  <div class="box tip"><b class="t">Raw data are fine</b><p>Types such as “C<sub>p</sub> or heat flow vs T”, “Enthalpy vs T” and “property vs t” fit their baselines or linear coefficients exactly at every step, so you can load raw measurements. To normalize DSC data yourself first, use Data Analysis (section 7).</p></div>
+
+  <h3>6.3 Step 3 · Model and parameters</h3>
+  <figure class="half"><img src="img/fit_step3.png" alt=""><figcaption><b>Figure 6.3.</b> Step 3: model, parameter values, tick = free in the fit, and fit bounds.</figcaption></figure>
+  <ul>
+    <li>Choose <b>Takeda–Lucas</b>, <b>TNM</b> or <b>RelaxPy (MAP)</b>.</li>
+    <li>Type values. Ticked parameters are <b>free</b> in a fit and move between <b>min</b> and <b>max</b>; unticked ones stay fixed. <span class="ui">Bounds around values</span> sets sensible bounds.</li>
+    <li>TL: <b>Preset</b> loads Table I of the JCP 2024 paper; <b>N</b> is the number of domains (200 is accurate). <i>f</i> is fitted on its 0.01 grid.</li>
+    <li>TNM: choose the exact KWW summation or the Prony kernel for display (fits always use Prony).</li>
+    <li>MAP: <span class="ui">RelaxPy example glass</span>; A can follow from continuity at T<sub>g</sub>, and p = 0.3082·m (RelaxPy default).</li>
+  </ul>
+
+  <h3>6.4 Step 4 · Compute and fit</h3>
+  <h4>Compute with chosen parameters</h4>
+  <p>Forward calculation, no fitting. Check or adjust the values and click <span class="ui">Compute</span>. With data, the agreement (R², RMSE per dataset) is shown.</p>
+  <figure><img src="img/fit_step4_computed.png" alt=""><figcaption><b>Figure 6.4.</b> Result of <b>Compute</b>: temperature program and T<sub>f</sub>, normalized C<sub>p</sub> on each ramp, relaxation during holds, and relaxation time.</figcaption></figure>
+  <h4>Extra results for the TL model</h4>
+  <ul>
+    <li><b>Fictive-temperature fluctuation δT<sub>f</sub></b> vs temperature, with the equilibrium value.</li>
+    <li><b>Map of the local fictive temperatures T<sub>f,i</sub> vs time</b>, rebinned on a uniform T<sub>f</sub> grid (probability density in K⁻¹), with T(t) and ⟨T<sub>f</sub>⟩(t).</li>
+    <li><b>β<sub>KWW</sub>(T)</b>: tick <span class="ui">also compute the instantaneous β_KWW(T)</span> (adds about a second).</li>
+  </ul>
+  <figure><img src="img/fit_tl_map.png" alt=""><figcaption><b>Figure 6.5.</b> TL: local fictive temperatures during cooling, aging and reheating.</figcaption></figure>
+  <figure class="half"><img src="img/fit_tl_beta.png" alt=""><figcaption><b>Figure 6.6.</b> TL: instantaneous β<sub>KWW</sub> along each segment and in equilibrium (grey).</figcaption></figure>
+  <h4>Fit parameters</h4>
+  <figure><img src="img/fit_step4_fitresult.png" alt=""><figcaption><b>Figure 6.7.</b> Fit result: data with the fitted model and residuals, convergence, parameter correlation, and the parameter table with standard errors.</figcaption></figure>
+  <ol class="steps">
+    <li>Open the <b>Fit parameters</b> tab (needs at least one active dataset and one free parameter).</li>
+    <li>Choose the <b>Method</b>: <i>Local — Levenberg–Marquardt</i> (fast, starts from the current values) or <i>Global — differential evolution + LM polish</i> (slower, searches the whole box).</li>
+    <li>Set <b>Max model runs</b> and the <b>Weighting</b> (each dataset equal, or each point equal).</li>
+    <li>Click <span class="ui">Run fit</span>. <span class="ui">Stop</span> ends early; <span class="ui">Undo fit</span> restores the previous values.</li>
+  </ol>
+  <p>The result lists each parameter with ±1 standard error, flags parameters <i>at bound</i> or <i>poorly determined</i>, and gives R², reduced χ², AIC and BIC. In the correlation matrix, |r| &gt; 0.95 (bold) means two parameters trade off and are not separately determined by your data.</p>
+  <h4>Exports</h4>
+  <p><span class="ui">Export report (.json)</span> (parameters, errors, statistics, history), <span class="ui">Model vs data (.csv)</span>, <span class="ui">Simulation (.csv)</span> (t, T, T<sub>f</sub>, τ, τ<sub>eq</sub>, segment), and the <b>SVG</b> button on each plot.</p>
+
+  <h3>6.5 Projects and examples</h3>
+  <p><b>Project ▾</b>: <i>New project</i>, <i>Save project (.json)</i> (history, data, model, values, bounds, fit options) and <i>Open project…</i>. <b>Examples ▾</b> loads ready-made cases: a glycerol DSC cycle, aging + DSC with synthetic enthalpy data, and MDSC with synthetic C<sub>p</sub>′/C<sub>p</sub>″.</p>
+</section>
+
+<!-- 7 -->
+<section class="chapter">
+  <h2>7 · Data Analysis</h2>
+  <p>Data Analysis prepares your own measurements. It has three tabs across the top. Each tab has <span class="ui">Load example data</span> (synthetic glycerol data made with the TL model) so you can try everything first.</p>
+
+  <h3>7.1 Heat-flow scans</h3>
+  <figure class="half"><img src="img/an_editor.png" alt=""><figcaption><b>Figure 7.1.</b> Adding a run: paste or load a file, then check the detected columns and units.</figcaption></figure>
+  <ol class="steps">
+    <li>Click <span class="ui">+ Add run</span>, then choose a file (.csv, .txt, instrument export) or paste columns.</li>
+    <li>Check the <b>Temperature</b> and <b>Heat-flow</b> columns and their units (K or °C; mW, W/g or arbitrary). Column names like “Temperature (°C)” and “Heat Flow (W/g)” set these automatically.</li>
+    <li>Set the <b>Sign convention</b>: <i>endothermic up</i>, or <i>endothermic down (exo up)</i> as in TA Instruments exports.</li>
+    <li><b>Scan</b> is detected from the temperature trend (heating/cooling). Enter the <b>rate</b> and, for mW, the <b>sample mass</b>.</li>
+    <li>For a heating scan measured after annealing, enter the <b>annealing time t<sub>a</sub></b> and <b>T<sub>a</sub></b>. Leave them empty for the unaged reference.</li>
+    <li>Click <span class="ui">Add run</span>.</li>
+  </ol>
+  <figure><img src="img/an_tab1.png" alt=""><figcaption><b>Figure 7.2.</b> Normalization of the reference heating scan. Blue band: glass range; orange band: liquid range; dashed: the fitted baselines.</figcaption></figure>
+  <p><b>Normalization.</b> Enter a <b>glass range</b> and a <b>liquid range</b> (or <span class="ui">Auto ranges</span>). A straight line is fitted to the heat flow in each range and extrapolated, giving</p>
+  <p class="eq">C<sub>p</sub><sup>N</sup> = (HF − HF<sub>g</sub>) / (HF<sub>l</sub> − HF<sub>g</sub>) = dT<sub>f</sub>/dT,&nbsp;&nbsp;&nbsp; T<sub>f</sub>(T) = T* − ∫<sub>T</sub><sup>T*</sup> C<sub>p</sub><sup>N</sup> dT′</p>
+  <p>with T* at the start of the liquid range (Moynihan's area matching). The card reports the limiting fictive temperature <b>T<sub>f</sub>′</b>, the <b>midpoint</b> (C<sub>p</sub><sup>N</sup> = 0.5) and <b>ΔC<sub>p</sub></b> at T<sub>f</sub>′. <span class="ui">Apply to all runs</span> copies the ranges; <span class="ui">Export normalized (.csv)</span> saves T, HF, C<sub>p</sub><sup>N</sup>, T<sub>f</sub> for every run.</p>
+  <div class="box tip"><b class="t">Choosing the ranges</b><ul><li>Glass range: well below the transition, where the scan is straight; avoid the start-up transient.</li><li>Liquid range: above the overshoot, where the scan is straight again.</li><li>For comparisons (cooling rates, aging series), use the same ranges for all runs.</li></ul></div>
+
+  <h3>7.2 Enthalpy recovery</h3>
+  <figure><img src="img/an_tab2.png" alt=""><figcaption><b>Figure 7.3.</b> Enthalpy recovery: aligned scans, ΔHF(T), recovered ΔH vs annealing time, and φ(t<sub>a</sub>) with a KWW fit.</figcaption></figure>
+  <ol class="steps">
+    <li>Choose the <b>Unaged reference</b> (a heating scan without annealing).</li>
+    <li>Enter or check the annealing time <b>t<sub>a</sub></b> of each annealed heating scan.</li>
+    <li>Choose how each annealed scan is <b>aligned</b> to the reference: a constant shift in the liquid range, or a straight line through the glass and liquid ranges (use this if the glass lines differ slightly).</li>
+    <li>Check the <b>integration range</b> (default: from the glass range to the liquid range) and enter <b>T<sub>a</sub></b>.</li>
+    <li>Optionally override <b>ΔC<sub>p</sub></b> (default: the reference at T<sub>f</sub>′).</li>
+  </ol>
+  <p class="eq">ΔH = (1/q) ∫ ΔHF dT,&nbsp;&nbsp;&nbsp; T<sub>f</sub> = T<sub>f</sub>′(ref) − ΔH/ΔC<sub>p</sub>,&nbsp;&nbsp;&nbsp; φ = 1 − ΔH/ΔH<sub>∞</sub>,&nbsp;&nbsp; ΔH<sub>∞</sub> = ΔC<sub>p</sub>(T<sub>f</sub>′ − T<sub>a</sub>)</p>
+  <table>
+    <tr><th>Result column</th><th>Meaning</th></tr>
+    <tr><td>ΔH</td><td>enthalpy lost during annealing and recovered on heating (J/g with mW + mass or W/g; mJ with mW and no mass)</td></tr>
+    <tr><td>ΔH/ΔC<sub>p</sub></td><td>the same in kelvin: the drop of the fictive temperature during annealing</td></tr>
+    <tr><td>T<sub>f</sub> from ΔH / T<sub>f</sub>′ (area)</td><td>fictive temperature after annealing, from ΔH and independently from area matching of the annealed scan (they should agree)</td></tr>
+    <tr><td>φ</td><td>relaxation function; with three or more annealing times a KWW fit gives τ, β and ⟨τ⟩</td></tr>
+  </table>
+  <div class="box warn"><b class="t">Use the same heating rate</b><p>ΔH is computed with the reference's rate. All scans should be heated at the same rate and ideally measured on the same sample.</p></div>
+
+  <h3>7.3 Property relaxation</h3>
+  <figure><img src="img/an_tab3.png" alt=""><figcaption><b>Figure 7.4.</b> Specific volume during annealing with the stretched-exponential fit, φ(t) and residuals.</figcaption></figure>
+  <p>Add a dataset of a property against time during isothermal annealing: volume, density, length, refractive index… (<span class="ui">+ Add dataset</span>: pick the time column and unit, the property column, a label and T<sub>a</sub>). The fit is</p>
+  <p class="eq">V(t) = V<sub>∞</sub> + (V<sub>0</sub> − V<sub>∞</sub>) exp[−(t/τ)<sup>β</sup>]</p>
+  <p>with V<sub>∞</sub> <b>fitted</b> or <b>fixed</b> at a value you enter (use fixed when the data stop well before equilibrium). The table gives τ, β, ⟨τ⟩ = (τ/β)Γ(1/β), V<sub>0</sub>, V<sub>∞</sub>, the relative change and R². Several datasets can be compared on the φ(t) plot.</p>
+  <div class="box"><p>Systematic residuals (as in Figure 7.4) are expected for real glasses: relaxation is nonlinear, so a single stretched exponential is only an approximation. Fitting the model in the Fitter accounts for this.</p></div>
+
+  <h3>7.4 From analysis to fit</h3>
+  <p>Export the normalized curves (tab 1) or φ(t) (tabs 2, 3) as CSV and paste them into Fitter step 2 as “DSC — normalized C<sub>p</sub>” or “Annealing — normalized relaxation φ(t)”, linked to the matching segment of a thermal history that reproduces your experiment.</p>
+</section>
+
+<!-- 8 -->
+<section class="flowsec">
+  <h2>8 · Data files</h2>
+  <ul>
+    <li><b>Formats</b>: text files (.csv, .txt, .dat, .tsv) or pasted text. Columns may be separated by commas, semicolons, tabs or spaces.</li>
+    <li><b>Headers</b>: lines before the numbers (titles, column names, unit rows) are skipped; the last text line before the data is used for column names.</li>
+    <li><b>Decimal point</b>: use a period (<code>0.25</code>). Files with decimal commas must be converted first.</li>
+    <li><b>Order</b>: any; cooling scans may run from high to low temperature.</li>
+    <li><b>Instrument exports</b>: export to text/CSV from the instrument software (e.g. TA Universal Analysis / TRIOS, Netzsch Proteus, Mettler STARe) with temperature and heat flow columns.</li>
+  </ul>
+  <table>
+    <tr><th>Example (DSC, TA style)</th><th>Example (annealing)</th></tr>
+    <tr><td><code>Time (min),Temperature (°C),Heat Flow (W/g)</code><br><code>0.00,-120.0,-0.1000</code><br><code>0.05,-119.5,-0.1001</code><br>…</td><td><code>t (s)   V (cm3/g)</code><br><code>1       0.795716</code><br><code>1.2     0.795715</code><br>…</td></tr>
+  </table>
+</section>
+
+<!-- 9 -->
+<section class="chapter">
+  <h2>9 · Troubleshooting and questions</h2>
+  <table>
+    <tr><th style="width:36%">Problem</th><th>What to do</th></tr>
+    <tr><td>The Fitter shows no model curves.</td><td>Expected: the model runs only when you click <b>Compute</b> or <b>Run fit</b> in step 4.</td></tr>
+    <tr><td>A plot shows “Could not draw …”.</td><td>The rest of the page still works. Check the inputs of that part (e.g. a range with fewer than two points) and report it if it persists.</td></tr>
+    <tr><td>A hold shows no relaxation.</td><td>The hold is above T<sub>g</sub>: the liquid equilibrates within milliseconds. Put the hold below T<sub>g</sub>.</td></tr>
+    <tr><td>Mac: “cannot be opened / cannot verify the developer”.</td><td>System Settings → Privacy &amp; Security → <b>Open Anyway</b> (once per computer).</td></tr>
+    <tr><td>Mac: “Restart now” does nothing, or the version does not change.</td><td>Download the latest DMG and replace the app (section 2.2). Versions before 1.1.6 cannot update themselves.</td></tr>
+    <tr><td>Windows: “Windows protected your PC”.</td><td><b>More info → Run anyway</b> (first install only).</td></tr>
+    <tr><td>TL map or β<sub>KWW</sub> plot missing.</td><td>Very long histories (above ~60 000 steps with 200 domains) do not keep every T<sub>f,i</sub>. Use a coarser ΔT step or fewer hold points.</td></tr>
+    <tr><td>A fitted parameter is “at bound”.</td><td>Widen its bounds in step 3, or fix it if the data cannot determine it.</td></tr>
+    <tr><td>Parameters strongly correlated (|r| &gt; 0.95).</td><td>Add data that separate them (several cooling rates, annealing data) or fix one of them.</td></tr>
+    <tr><td>C<sub>p</sub><sup>N</sup> is upside down.</td><td>Change the <b>sign convention</b> of the run (endothermic up/down).</td></tr>
+    <tr><td>ΔH has the wrong sign or size.</td><td>Check the sign convention, the rate and the sample mass, and that all scans used the same heating rate.</td></tr>
+  </table>
+  <p>Report problems or ideas at <a href="https://github.com/Wtakeda0129/tf-studio/issues">github.com/Wtakeda0129/tf-studio/issues</a> or to the Lucas group.</p>
+</section>
+
+<!-- 10 -->
+<section class="chapter">
+  <h2>10 · Reference</h2>
+  <h3>Model parameters</h3>
+  <table>
+    <tr><th style="width:16%">Model</th><th style="width:22%">Parameter</th><th>Meaning</th></tr>
+    <tr><td rowspan="6">TL</td><td>T<sub>g</sub></td><td>temperature where ⟨τ⟩ = 100 s</td></tr>
+    <tr><td>m</td><td>fragility index</td></tr>
+    <tr><td>log<sub>10</sub> τ<sub>0</sub></td><td>high-temperature limit of τ (s)</td></tr>
+    <tr><td>f</td><td>width of the relaxation-time distribution (≈ β<sub>KWW</sub> at T<sub>g</sub>), 0.10–0.99</td></tr>
+    <tr><td>β<sub>0</sub></td><td>intrinsic (local) stretching; 1 = fully heterogeneous</td></tr>
+    <tr><td>N</td><td>number of domains (numerical; 200 is accurate)</td></tr>
+    <tr><td rowspan="4">TNM</td><td>T<sub>g</sub></td><td>τ(T<sub>g</sub>) = 100 s</td></tr>
+    <tr><td>m</td><td>fragility; Δh/R = m ln10 T<sub>g</sub></td></tr>
+    <tr><td>x</td><td>nonlinearity (0–1)</td></tr>
+    <tr><td>β</td><td>KWW stretching exponent</td></tr>
+    <tr><td rowspan="9">MAP / RelaxPy</td><td>T<sub>g</sub></td><td>η(T<sub>g</sub>) = 10¹² Pa·s</td></tr>
+    <tr><td>m</td><td>fragility (MYEGA)</td></tr>
+    <tr><td>log<sub>10</sub> η<sub>∞</sub></td><td>high-temperature viscosity limit</td></tr>
+    <tr><td>A, B, C</td><td>nonequilibrium viscosity branch; A from continuity at T<sub>g</sub> by default</td></tr>
+    <tr><td>p</td><td>ergodicity exponent (default 0.3082·m)</td></tr>
+    <tr><td>log<sub>10</sub> K<sub>s</sub></td><td>modulus in τ = η/K<sub>s</sub></td></tr>
+    <tr><td>β</td><td>stretching of the Prony series</td></tr>
+  </table>
+  <h3>Fitter data types</h3>
+  <table>
+    <tr><th style="width:44%">Data type</th><th>Linked to</th><th>Notes</th></tr>
+    <tr><td>DSC — normalized C<sub>p</sub> (dT<sub>f</sub>/dT) vs T</td><td>ramp</td><td>already normalized (e.g. from Data Analysis)</td></tr>
+    <tr><td>DSC — C<sub>p</sub> or heat flow vs T</td><td>ramp</td><td>raw; glass/liquid baselines fitted</td></tr>
+    <tr><td>Enthalpy vs T</td><td>ramp, MDSC</td><td>H = a + bT + ΔC<sub>p</sub>T<sub>f</sub> fitted</td></tr>
+    <tr><td>Volume / density / length vs T</td><td>ramp, MDSC</td><td>dilatometry</td></tr>
+    <tr><td>Fictive temperature T<sub>f</sub> vs T</td><td>ramp, MDSC</td><td></td></tr>
+    <tr><td>Annealing — normalized φ(t)</td><td>hold</td><td>φ = (T<sub>f</sub> − T)/(T<sub>f,0</sub> − T)</td></tr>
+    <tr><td>Annealing — T<sub>f</sub>(t)</td><td>hold</td><td></td></tr>
+    <tr><td>Annealing — enthalpy / volume / refractive index vs t</td><td>hold</td><td>a + b·T<sub>f</sub> fitted</td></tr>
+    <tr><td>MDSC — C<sub>p</sub>′ (reversing), C<sub>p</sub>″</td><td>MDSC</td><td>normalized; optional scale</td></tr>
+  </table>
+  <h3>Glossary</h3>
+  <table>
+    <tr><td style="width:20%"><b>T<sub>f</sub></b></td><td>fictive temperature: the temperature at which the liquid would have the current structure</td></tr>
+    <tr><td><b>T<sub>f</sub>′</b></td><td>limiting fictive temperature of the glass (frozen value after cooling)</td></tr>
+    <tr><td><b>C<sub>p</sub><sup>N</sup></b></td><td>normalized heat capacity, 0 in the glass and 1 in the liquid; equals dT<sub>f</sub>/dT</td></tr>
+    <tr><td><b>φ(t)</b></td><td>normalized relaxation function, 1 → 0 during annealing</td></tr>
+    <tr><td><b>KWW</b></td><td>stretched exponential exp[−(t/τ)<sup>β</sup>]</td></tr>
+    <tr><td><b>δT<sub>f</sub></b></td><td>spread (standard deviation) of the local fictive temperatures in the TL model</td></tr>
+  </table>
+</section>
+
+<!-- 11 -->
+<section class="chapter">
+  <h2>11 · How to cite, and references</h2>
+  <p>If Tf Studio contributes to your work, please cite:</p>
+  <ul>
+    <li>W. Takeda and P. Lucas, “A model of heterogeneous undercooled liquid and glass accounting for temperature-dependent nonexponentiality and enthalpy fluctuation,” <i>J. Chem. Phys.</i> <b>160</b>, 174504 (2024). doi:10.1063/5.0196812</li>
+    <li>W. Takeda and P. Lucas, “Relationship between enthalpy fluctuation and nonexponential relaxation in glass-forming liquids,” <i>Mater. Adv.</i> <b>7</b>, 5729 (2026). doi:10.1039/d6ma00442c</li>
+  </ul>
+  <p>and, when you use them, the TNM and MAP / RelaxPy papers:</p>
+  <ul style="font-size:9.5pt">
+    <li>A. Q. Tool, <i>J. Am. Ceram. Soc.</i> <b>29</b>, 240 (1946); O. S. Narayanaswamy, <i>J. Am. Ceram. Soc.</i> <b>54</b>, 491 (1971); C. T. Moynihan et al., <i>J. Am. Ceram. Soc.</i> <b>59</b>, 12 (1976); I. M. Hodge, <i>Macromolecules</i> <b>20</b>, 2897 (1987); G. W. Scherer, <i>J. Am. Ceram. Soc.</i> <b>69</b>, 374 (1986).</li>
+    <li>J. C. Mauro, D. C. Allan and M. Potuzak, <i>Phys. Rev. B</i> <b>80</b>, 094204 (2009); X. Guo et al., <i>J. Am. Ceram. Soc.</i> <b>101</b>, 1169 (2018); J. C. Mauro and Y. Z. Mauro, <i>Physica A</i> <b>506</b>, 75 (2018); J. C. Mauro, R. J. Loucks and P. K. Gupta, <i>J. Am. Ceram. Soc.</i> <b>92</b>, 75 (2009); C. J. Wilkinson, Y. Z. Mauro and J. C. Mauro, <i>SoftwareX</i> <b>7</b>, 255 (2018).</li>
+  </ul>
+  <p>Experiment references (Kovacs, Macedo–Napolitano, Hodge, Schawe, Hutchinson–Montserrat) are listed in Learn → Further reading.</p>
+  <p style="margin-top:24pt;color:var(--muted);font-size:9.5pt">Tf Studio · Lucas group, Department of Materials Science and Engineering, University of Arizona · <a href="https://github.com/Wtakeda0129/tf-studio">github.com/Wtakeda0129/tf-studio</a></p>
+</section>
+</body></html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Tf Studio Quick Start</title><link rel="stylesheet" href="doc.css">
+<style>
+.qhead { display: flex; align-items: center; gap: 14pt; background: var(--navy); color: #fff; border-radius: 8pt; padding: 14pt 18pt; margin-bottom: 12pt; }
+.qhead img { width: 44pt; height: 44pt; }
+.qhead h1 { color: #fff; margin: 0; font-size: 24pt; }
+.qhead h1 i { font-family: Georgia, serif; }
+.qhead .s { color: #b7c4d8; font-size: 10pt; letter-spacing: 1pt; text-transform: uppercase; font-weight: 700; }
+.qhead .r { margin-left: auto; text-align: right; color: #b7c4d8; font-size: 9.5pt; }
+.flow { border: 0.8pt solid var(--line); border-radius: 8pt; padding: 6pt 12pt 2pt; margin: 7pt 0; break-inside: avoid; }
+.flow h3 { margin-top: 2pt; }
+.flow .time { float: right; font-size: 8.5pt; color: var(--muted); font-weight: 700; }
+.tools4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6pt; margin: 6pt 0 10pt; }
+.tools4 div { border: 0.8pt solid var(--line); border-radius: 6pt; padding: 5pt 7pt; font-size: 9pt; }
+.tools4 b { display: block; font-size: 10pt; color: var(--accent); }
+</style></head>
+<body>
+<div class="qhead"><img src="../../site/icon256.png" alt=""><div><h1><i>T</i><sub style="font-family:Georgia,serif;font-style:italic;font-size:.6em">f</sub> Studio · Quick Start</h1><div class="s">Thermal Fingerprint · Beta</div></div><div class="r">Version 1.2 · September 2026<br>Full details: <b>Tf Studio User Guide</b></div></div>
+
+<h2 style="margin-top:4pt">1 · Open Tf Studio</h2>
+<div class="cols">
+  <div>
+    <h4>In the browser (nothing to install)</h4>
+    <p><a href="https://wtakeda0129.github.io/tf-studio/">wtakeda0129.github.io/tf-studio</a></p>
+    <h4>Desktop app</h4>
+    <p>Download from <a href="https://github.com/Wtakeda0129/tf-studio/releases/latest">github.com/Wtakeda0129/tf-studio/releases/latest</a>.</p>
+  </div>
+  <div>
+    <p><b>Mac</b>: open the <code>.dmg</code>, drag <b>Tf Studio</b> into Applications, open it. First time only: <b>System Settings → Privacy &amp; Security → Open Anyway</b>.</p>
+    <p><b>Windows</b>: run <code>Tf-Studio-Setup-….exe</code>. If warned: <b>More info → Run anyway</b>.</p>
+    <p>The app updates itself: accept <b>Restart now</b> when offered.</p>
+  </div>
+</div>
+<div class="tools4">
+  <div><b>Learn</b>experiments and models explained, with live simulations</div>
+  <div><b>Lab</b>quick interactive runs, three models side by side</div>
+  <div><b>Fitter</b>your thermal history and data → compute or fit</div>
+  <div><b>Data Analysis</b>raw DSC heat flow, enthalpy recovery, volume relaxation</div>
+</div>
+
+<h2>2 · Good to know</h2>
+<ul>
+  <li><b>Nothing runs until you click.</b> In the Fitter the model runs only on <b>Compute</b> or <b>Run fit</b>; any change clears the old result.</li>
+  <li><b>Temperature K / °C</b> and <b>Time axis log / linear</b> (top right) apply everywhere, including inputs and T<sub>g</sub>.</li>
+  <li><b>Try before your own data</b>: every tool has examples (Fitter <b>Examples ▾</b>, Data Analysis <b>Load example data</b>).</li>
+  <li><b>Save your work</b>: Fitter <b>Project ▾ → Save project</b>; exports as CSV, JSON, and SVG for every plot.</li>
+  <li><b>Private</b>: everything runs on your computer; no data are uploaded.</li>
+  <li><b>Help</b>: see the User Guide, or report issues at <a href="https://github.com/Wtakeda0129/tf-studio/issues">github.com/Wtakeda0129/tf-studio/issues</a>.</li>
+</ul>
+
+<h2>3 · Three things to try</h2>
+
+<div class="flow"><span class="time">≈ 2 min</span>
+<h3>A · Simulate a DSC scan after aging (Fitter)</h3>
+<ol class="steps">
+  <li>Open <b>Fitter</b>. In step <b>1 Thermal history</b>, choose the template <b>Aging below T<sub>g</sub>, then DSC heating</b>.</li>
+  <li>Step <b>3 Model &amp; parameters</b>: keep <b>Takeda–Lucas</b> or pick a <b>Preset</b> (e.g. Glycerol).</li>
+  <li>Step <b>4 Compute &amp; fit</b>: click <b>Compute</b>. You get T<sub>f</sub>, normalized C<sub>p</sub>, relaxation during the hold, τ and, for TL, the map of local fictive temperatures.</li>
+</ol>
+
+</div>
+
+<div class="flow"><span class="time">≈ 3 min</span>
+<h3>B · Fit a model to data (Fitter)</h3>
+<ol class="steps">
+  <li><b>Examples ▾ → Aging + DSC with synthetic enthalpy data</b> (or add your own data in step <b>2</b> with <b>+ Add dataset</b>, linked to the matching segment).</li>
+  <li>Step <b>3</b>: tick the parameters to fit and check their min/max.</li>
+  <li>Step <b>4</b>: open <b>Fit parameters</b>, choose <i>Local</i> (fast) or <i>Global</i> (thorough), click <b>Run fit</b>. Read the values ± errors, R², and the correlation matrix.</li>
+</ol>
+</div>
+
+<div class="flow"><span class="time">≈ 3 min</span>
+<h3>C · Analyze raw DSC heat flow (Data Analysis)</h3>
+<ol class="steps">
+  <li>Open <b>Data Analysis</b> → <b>+ Add run</b>. Load your file or paste columns; check temperature and heat-flow columns, units, the <b>sign convention</b> (endo up/down), rate and mass. For scans after annealing, enter <b>t<sub>a</sub></b> and <b>T<sub>a</sub></b>.</li>
+  <li>Set the <b>glass range</b> and <b>liquid range</b> (or <b>Auto ranges</b>). Read <b>T<sub>f</sub>′</b>, the midpoint and ΔC<sub>p</sub>; <b>Apply to all runs</b>.</li>
+  <li>Tab <b>2 Enthalpy recovery</b>: choose the unaged reference and enter <b>T<sub>a</sub></b> to get ΔH, T<sub>f</sub> and φ(t<sub>a</sub>) with a KWW fit. Tab <b>3</b> fits volume (density, length…) during annealing.</li>
+</ol>
+<figure style="margin:4pt 0 6pt"><img src="img/an_tab2.png" style="max-width:88%" alt=""></figure>
+</div>
+
+<p style="font-size:9pt;color:var(--muted);margin-top:10pt">Please cite W. Takeda and P. Lucas, <i>J. Chem. Phys.</i> <b>160</b>, 174504 (2024) and <i>Mater. Adv.</i> <b>7</b>, 5729 (2026) when Tf Studio contributes to your work.</p>
+</body></html>

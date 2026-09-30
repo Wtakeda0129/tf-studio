@@ -13,6 +13,8 @@ Every glass carries a thermal fingerprint of how it was made, written in its fic
 | **Data Analysis** | Raw DSC heat flow (heating or cooling): linear glass and liquid baselines, normalized C<sub>p</sub><sup>N</sup>, T<sub>f</sub>(T) and T<sub>f</sub>′ by area matching. Heating after annealing: scans aligned to the unaged reference, ΔHF(T), recovered enthalpy ΔH(t<sub>a</sub>), φ(t<sub>a</sub>) and a KWW fit. Volume, density or length during annealing: V(t) = V∞ + ΔV exp[−(t/τ)<sup>β</sup>] |
 | **Fitter** | Four steps: (1) program any thermal history: ramps, anneals with log-spaced times, T-jumps, MDSC. (2) Load DSC, MDSC C<sub>p</sub>′/C<sub>p</sub>″, enthalpy, volume, *T*<sub>f</sub> or annealing data. (3) Choose a model and set parameter bounds. (4) Compute with chosen parameters, or fit with Levenberg–Marquardt or differential evolution; get standard errors, correlations, AIC/BIC |
 
+📘 **Documentation:** [Quick Start (PDF)](https://wtakeda0129.github.io/tf-studio/docs/Tf_Studio_Quick_Start.pdf) · [User Guide (PDF)](https://wtakeda0129.github.io/tf-studio/docs/Tf_Studio_User_Guide.pdf) (sources in `docs/src`, rebuild with `node docs/src/build_docs.js`).
+
 Tf Studio is in beta: features and results may still change between versions. Everything runs locally, in the browser or in the desktop app. No data is uploaded. Equations in Learn are typeset with [KaTeX](https://katex.org) (MIT licence), bundled in `site/vendor/katex` so they also render offline.
 
 ## Repository layout
