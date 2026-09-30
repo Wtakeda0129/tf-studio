@@ -144,7 +144,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:12px}
     <button class="item" id="pSave">Save project (.json)</button>
     <label class="item" style="display:block;padding:6px 8px;cursor:pointer;border-radius:6px">Open project…<input type="file" id="pOpen" accept=".json" hidden></label>
   </div></div>
-  <label class="chk">T axis <select id="unit"><option value="K">K</option><option value="C">°C</option></select></label>
+  <label class="chk" title="Unit for every temperature: plots, thermal history, T_g and the other parameters">Temperature <select id="unit"><option value="K">K</option><option value="C">°C</option></select></label>
+  <label class="chk" title="Time axis of all time plots">Time axis <select id="tscale"><option value="log">log</option><option value="lin">linear</option></select></label>
   <button class="btn small" id="themeBtn" title="Light / dark">◐</button>
 </header>
 <main>
