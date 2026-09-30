@@ -43,10 +43,25 @@ function openTool(key) {
 
 /* ---------------- updates ---------------- */
 let manualCheck = false;
+// macOS installs an update in place only when both versions carry the same Developer ID signature. Ad-hoc signed
+// builds (no certificate configured) therefore point the user to the download page instead of downloading.
+let MAC_SIGNED = true; try { MAC_SIGNED = require("./package.json").macSigned !== false; } catch (e) {}
+const manualMac = () => process.platform === "darwin" && !MAC_SIGNED;
+const RELEASES_URL = "https://github.com/Wtakeda0129/tf-studio/releases/latest";
+let offered = null;
 function setupUpdater() {
   if (!autoUpdater || !app.isPackaged) return;
-  autoUpdater.autoDownload = true;
-  autoUpdater.on("update-available", info => { if (manualCheck) dialog.showMessageBox({ message: `Version ${info.version} is available and is downloading in the background.` }); });
+  autoUpdater.autoDownload = !manualMac();
+  autoUpdater.on("update-available", info => {
+    if (manualMac()) {
+      if (!manualCheck && offered === info.version) return;   // remind once per version on automatic checks
+      offered = info.version; manualCheck = false;
+      dialog.showMessageBox({ type: "info", buttons: ["Download", "Later"], defaultId: 0, message: `Tf Studio ${info.version} is available (you have ${app.getVersion()}).`, detail: "Download the new DMG and drag Tf Studio into Applications, replacing the old copy." })
+        .then(r => { if (r.response === 0) shell.openExternal(RELEASES_URL); });
+      return;
+    }
+    if (manualCheck) dialog.showMessageBox({ message: `Version ${info.version} is available and is downloading in the background.` });
+  });
   autoUpdater.on("update-not-available", () => { if (manualCheck) dialog.showMessageBox({ message: `You are up to date (version ${app.getVersion()}).` }); manualCheck = false; });
   autoUpdater.on("error", err => { if (manualCheck) dialog.showMessageBox({ type: "warning", message: "Could not check for updates.", detail: String(err && err.message || err) }); manualCheck = false; });
   autoUpdater.on("update-downloaded", info => {

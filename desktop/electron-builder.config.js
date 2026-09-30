@@ -39,5 +39,9 @@ module.exports = {
     artifactName: "Tf-Studio-Setup-${version}.exe",
   },
   // Where installed copies look for updates. GitHub Releases by default; see DESKTOP_README.md for alternatives.
-  publish: [{ provider: "github", owner: PUBLISH_OWNER, repo: PUBLISH_REPO, releaseType: "release" }],
+  // builds upload into a draft; the release workflow publishes it only after all platforms are done, so an
+  // update check never sees a half-uploaded release (e.g. the DMG without latest-mac.yml)
+  publish: [{ provider: "github", owner: PUBLISH_OWNER, repo: PUBLISH_REPO, releaseType: "draft" }],
+  // tells the app whether this macOS build carries a Developer ID signature (needed to install updates in place)
+  extraMetadata: { macSigned: !!process.env.CSC_LINK },
 };
