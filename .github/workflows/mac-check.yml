@@ -1,0 +1,33 @@
+# Temporary: builds the macOS app without publishing and reports any error as an annotation (never fails the run).
+name: macOS build check
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/mac-check.yml"]
+  workflow_dispatch:
+jobs:
+  mac:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: desktop
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci 2>&1 | tail -20
+      - run: bash sync_apps.sh
+      - name: Build (no publish)
+        run: |
+          set +e
+          npx electron-builder --config electron-builder.config.js --mac --publish never > build.log 2>&1
+          code=$?
+          if [ $code -ne 0 ]; then
+            grep -nE "⨯|Error|error|failed|Cannot" build.log | head -30 | while IFS= read -r line; do echo "::warning title=mac build::${line:0:900}"; done
+            tail -15 build.log | while IFS= read -r line; do echo "::notice title=mac build tail::${line:0:900}"; done
+          else
+            echo "::notice title=mac build::OK — $(ls dist/*.dmg | tr '\n' ' ')"
+          fi
+          exit 0
