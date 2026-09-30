@@ -42,6 +42,8 @@ function plot(el,cfg){
   // bands (e.g. highlighted segment)
   (cfg.bands||[]).forEach(b=>{const a=Math.max(m.l,sx(b.x0)),c=Math.min(W-m.r,sx(b.x1)); if(c>a) g+=`<rect x="${a}" y="${m.t}" width="${c-a}" height="${H-m.t-m.b}" fill="${b.color}" opacity="${b.op||0.12}"/>`;});
   g+=`<clipPath id="${uid}"><rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}"/></clipPath><g clip-path="url(#${uid})">`;
+  // raster image in data coordinates (e.g. a colour map), drawn under the lines
+  if(cfg.image){const im=cfg.image,a=sx(im.x0),b=sx(im.x1),c=sy(im.y1),d=sy(im.y0); g+=`<image href="${im.href}" x="${Math.min(a,b).toFixed(1)}" y="${Math.min(c,d).toFixed(1)}" width="${Math.abs(b-a).toFixed(1)}" height="${Math.abs(d-c).toFixed(1)}" preserveAspectRatio="none"/>`;}
   const flat=[];
   S.forEach((s,si)=>{
     if(s.pts){ for(let i=0;i<s.x.length;i++){ if(!isFinite(s.x[i])||!isFinite(s.y[i])||(cfg.xlog&&!(s.x[i]>0))||(cfg.ylog&&!(s.y[i]>0)))continue; g+=s.hollow?`<circle cx="${sx(s.x[i]).toFixed(1)}" cy="${sy(s.y[i]).toFixed(1)}" r="${s.r||2.6}" fill="none" stroke="${s.color}" stroke-width="1.2"/>`:`<circle cx="${sx(s.x[i]).toFixed(1)}" cy="${sy(s.y[i]).toFixed(1)}" r="${s.r||2.6}" fill="${s.color}" fill-opacity="${s.op||.75}"/>`; flat.push([sx(s.x[i]),sy(s.y[i]),si,i]); } return; }

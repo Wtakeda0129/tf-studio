@@ -126,6 +126,9 @@ table.corr{border-collapse:collapse;font-size:11.5px;font-variant-numeric:tabula
 .kbd{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:var(--soft);border:1px solid var(--line);border-radius:4px;padding:0 4px}
 details summary{cursor:pointer;color:var(--muted);font-size:12px}
 .eqn{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.55;background:var(--soft);border-radius:7px;padding:7px 9px;margin-top:6px;overflow-x:auto;white-space:pre}
+.plotcard.wide{grid-column:1/-1}
+.cbar{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);padding:0 8px 6px 56px;flex-wrap:wrap}
+.cbar i{display:inline-block;width:180px;height:10px;border-radius:2px}
 </style>
 </head>
 <body>
@@ -888,6 +891,8 @@ function plot(el,cfg){
   // bands (e.g. highlighted segment)
   (cfg.bands||[]).forEach(b=>{const a=Math.max(m.l,sx(b.x0)),c=Math.min(W-m.r,sx(b.x1)); if(c>a) g+=`<rect x="${a}" y="${m.t}" width="${c-a}" height="${H-m.t-m.b}" fill="${b.color}" opacity="${b.op||0.12}"/>`;});
   g+=`<clipPath id="${uid}"><rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}"/></clipPath><g clip-path="url(#${uid})">`;
+  // raster image in data coordinates (e.g. a colour map), drawn under the lines
+  if(cfg.image){const im=cfg.image,a=sx(im.x0),b=sx(im.x1),c=sy(im.y1),d=sy(im.y0); g+=`<image href="${im.href}" x="${Math.min(a,b).toFixed(1)}" y="${Math.min(c,d).toFixed(1)}" width="${Math.abs(b-a).toFixed(1)}" height="${Math.abs(d-c).toFixed(1)}" preserveAspectRatio="none"/>`;}
   const flat=[];
   S.forEach((s,si)=>{
     if(s.pts){ for(let i=0;i<s.x.length;i++){ if(!isFinite(s.x[i])||!isFinite(s.y[i])||(cfg.xlog&&!(s.x[i]>0))||(cfg.ylog&&!(s.y[i]>0)))continue; g+=s.hollow?`<circle cx="${sx(s.x[i]).toFixed(1)}" cy="${sy(s.y[i]).toFixed(1)}" r="${s.r||2.6}" fill="none" stroke="${s.color}" stroke-width="1.2"/>`:`<circle cx="${sx(s.x[i]).toFixed(1)}" cy="${sy(s.y[i]).toFixed(1)}" r="${s.r||2.6}" fill="${s.color}" fill-opacity="${s.op||.75}"/>`; flat.push([sx(s.x[i]),sy(s.y[i]),si,i]); } return; }
@@ -996,7 +1001,9 @@ function runModel() {
   const t0 = performance.now();
   try {
     const p = params(S.model);
-    S.sim = E.simulate(S.model, p, S.hist, { exact: S.model === "TNM" && S.P.TNM.opt.simKernel === "exact" && S.hist.T.length < 4000 });
+    // TL: keep every local T_f,i for the β_KWW, δT_f and T_f,i-map plots (skipped for very long histories)
+    const keepTfi = S.model === "TL" && S.hist.T.length * (S.P.TL.opt.N || 200) <= 1.2e7;
+    S.sim = E.simulate(S.model, p, S.hist, { keepTfi, exact: S.model === "TNM" && S.P.TNM.opt.simKernel === "exact" && S.hist.T.length < 4000 });
     const ds = activeDatasets(); ds.forEach(E.dsPrepare);
     if (ds.length) S.evalRes = E.evaluate(S.model, p, S.hist, S.segs, ds, { perPoint: S.opts.perPoint, exact: S.model === "TNM" && S.P.TNM.opt.simKernel === "exact" && S.hist.T.length < 4000 });
   } catch (e) { S.simErr = e.message; S.sim = null; }
@@ -1054,7 +1061,9 @@ function dtPlotCfg() {
 function simOverviewHTML(prefix) {
   const h = S.hist; if (!h) return "";
   const hasRamp = S.segs.some(s => s.type === "ramp"), hasHold = S.segs.some(s => s.type === "hold"), hasM = S.segs.some(s => s.type === "mdsc");
-  return `<div class="plots">${card(prefix + "Tt")}${hasRamp ? card(prefix + "cp") : ""}${hasHold ? card(prefix + "phi") : ""}${hasM ? card(prefix + "md") : ""}${card(prefix + "tau")}</div>`;
+  const tl = S.model === "TL" && S.sim && S.sim.raw;
+  const tlCards = tl ? `${card(prefix + "beta")}${card(prefix + "sig")}${S.sim.raw.TfiAll ? `<div class="plotcard wide" id="${prefix}map"><div class="plotbox"></div><div class="cbar" id="${prefix}cbar"></div></div>` : ""}` : "";
+  return `<div class="plots">${card(prefix + "Tt")}${hasRamp ? card(prefix + "cp") : ""}${hasHold ? card(prefix + "phi") : ""}${hasM ? card(prefix + "md") : ""}${card(prefix + "tau")}${tlCards}</div>`;
 }
 function simOverviewPlot(prefix) {
   const h = S.hist, sim = S.sim; if (!h) return;
@@ -1067,11 +1076,98 @@ function simOverviewPlot(prefix) {
   if (document.getElementById(prefix + "md")) { const series = []; S.segs.forEach((s, si) => { if (s.type !== "mdsc") return; const m = E.mdscSeries(h, sim, si, s); const c = css(DS_COLORS[si % DS_COLORS.length]); series.push({ name: `${segLabel(si)} C_p′`, x: m.T.map(tU), y: m.re, color: c, w: 2 }, { name: "C_p″", x: m.T.map(tU), y: m.im, color: c, w: 2, dash: "6 4" }); });
     P(prefix + "md", { title: "MDSC complex heat capacity (normalized)", xlabel: `Temperature (${uL()})`, ylabel: "C_p′, C_p″", series, xshort: "T", yshort: "Cp" }); }
   const tx = Array.from(h.t, (v, i) => S.logt ? (i === 0 ? NaN : v) : v);
+  if (S.model === "TL" && sim.raw) tlPlots(prefix);
   P(prefix + "tau", { title: "Relaxation time", xlabel: "time (s)", ylabel: "log₁₀ τ (s)", xlog: S.logt, series: [{ name: "τ (model)", x: tx, y: Array.from(sim.tau, Math.log10), color: css("--c4"), w: 2 }, { name: "τ_eq(T)", x: tx, y: Array.from(sim.tauEq, Math.log10), color: css("--eq"), w: 1.4, dash: "4 3" }], xshort: "t", yshort: "log τ" });
 }
 function simStatus() {
   if (S.simErr) return `<div class="banner err">Simulation: ${esc(S.simErr)}</div>`;
   return "";
+}
+
+
+/* ---------------- TL only: β_KWW, δT_f and the T_f,i map ---------------- */
+// β_KWW at sampled steps (instantaneous, from the X_i weights at T and ⟨T_f⟩; equilibrium: ⟨T_f⟩ = T), cached on the result
+function tlDerived() {
+  const sim = S.sim, raw = sim.raw, h = S.hist; if (sim._tl) return sim._tl;
+  const n = h.T.length, pick = new Set();
+  S.segs.forEach((s, si) => { const inf = h.info[si]; if (!inf || inf.n < 1) return; const a = Math.max(1, inf.i0), b = inf.i1, m = s.type === "hold" ? 40 : 70;
+    for (let k = 0; k <= m; k++) pick.add(Math.min(b, Math.round(a + (b - a) * k / m))); });
+  pick.add(0);
+  const idx = [...pick].filter(i => i >= 0 && i < n).sort((x, y) => x - y);
+  const beta = new Map(), betaEq = new Map();
+  if (raw.TfiAll) idx.forEach(i => { const sn = TL.snapshot(raw, i); beta.set(i, sn.ne.beta); betaEq.set(i, sn.eq.beta); });
+  const sig = Float64Array.from(raw.sigTf, v => Math.sqrt(Math.max(0, v)));
+  return (sim._tl = { idx, beta, betaEq, sig });
+}
+const VIRIDIS = [[68, 1, 84], [72, 40, 120], [62, 74, 137], [49, 104, 142], [38, 130, 142], [31, 158, 137], [53, 183, 121], [109, 205, 89], [180, 222, 44], [253, 231, 37]];
+function viridis(u) { u = Math.min(1, Math.max(0, u)) * (VIRIDIS.length - 1); const k = Math.min(VIRIDIS.length - 2, Math.floor(u)), f = u - k, a = VIRIDIS[k], b = VIRIDIS[k + 1]; return [0, 1, 2].map(j => Math.round(a[j] + (b[j] - a[j]) * f)); }
+// density of T_f,i on a uniform T_f grid: each domain's weight Y_i is spread over its own cell (midpoints to its
+// neighbours in T_f), and the cells are integrated over uniform bins, so the map is homogeneous in T_f
+function rebinDensity(vals, w, edges, out) {
+  const N = vals.length, ord = Array.from({ length: N }, (_, k) => k).sort((a, b) => vals[a] - vals[b]);
+  const v = ord.map(k => vals[k]), wt = ord.map(k => w[k]);
+  const lo = new Float64Array(N), hi = new Float64Array(N);
+  for (let k = 0; k < N; k++) {
+    const gl = k > 0 ? v[k] - v[k - 1] : (N > 1 ? v[1] - v[0] : 1), gr = k < N - 1 ? v[k + 1] - v[k] : gl;
+    lo[k] = v[k] - Math.max(gl, 1e-9) / 2; hi[k] = v[k] + Math.max(gr, 1e-9) / 2;
+  }
+  out.fill(0); const nb = edges.length - 1;
+  for (let k = 0; k < N; k++) {
+    if (!(wt[k] > 0)) continue; const dens = wt[k] / (hi[k] - lo[k]);
+    let b0 = Math.max(0, Math.floor((lo[k] - edges[0]) / (edges[1] - edges[0]))), b1 = Math.min(nb - 1, Math.floor((hi[k] - edges[0]) / (edges[1] - edges[0])));
+    for (let b = b0; b <= b1; b++) { const ov = Math.min(hi[k], edges[b + 1]) - Math.max(lo[k], edges[b]); if (ov > 0) out[b] += dens * ov; }
+  }
+  const dw = edges[1] - edges[0]; for (let b = 0; b < nb; b++) out[b] /= dw;   // probability per kelvin
+}
+function tlPlots(prefix) {
+  const h = S.hist, sim = S.sim, raw = sim.raw, D = tlDerived();
+  // β_KWW and δT_f vs temperature, one line per non-hold segment; holds are shown against time in the map
+  const bS = [], sS = [];
+  S.segs.forEach((s, si) => { const inf = h.info[si]; if (!inf || inf.n < 1 || s.type === "hold") return; const a = Math.max(1, inf.i0) - 1, b = inf.i1;
+    const col = css(DS_COLORS[si % DS_COLORS.length]), cool = inf.Tend < inf.Tstart, dash = cool ? "6 4" : null;
+    const ib = D.idx.filter(i => i >= a && i <= b && D.beta.has(i));
+    if (ib.length) bS.push({ name: segLabel(si), x: ib.map(i => tU(h.T[i])), y: ib.map(i => D.beta.get(i)), color: col, w: 2, dash });
+    const xs = [], ys = []; for (let i = a; i <= b; i++) { xs.push(tU(h.T[i])); ys.push(D.sig[i]); } sS.push({ name: segLabel(si), x: xs, y: ys, color: col, w: 2, dash });
+  });
+  // equilibrium references (⟨T_f⟩ = T): β_KWW from the eq weights, δT_f = T·σ(T_v)/⟨T_v⟩
+  const eqI = D.idx.filter(i => D.betaEq.has(i)).sort((a, b) => h.T[a] - h.T[b]);
+  if (eqI.length) bS.push({ name: "equilibrium (⟨T_f⟩ = T)", x: eqI.map(i => tU(h.T[i])), y: eqI.map(i => D.betaEq.get(i)), color: css("--eq"), w: 1.4, dash: "3 3" });
+  const d = raw.dist; let mu = 0, v2 = 0; for (let k = 0; k < d.N; k++) mu += d.Yi[k] * d.Tvi[k]; for (let k = 0; k < d.N; k++) v2 += d.Yi[k] * (d.Tvi[k] - mu) ** 2; const rel = Math.sqrt(v2) / mu;
+  let Tmin = Infinity, Tmax = -Infinity; for (const T of h.T) { if (T < Tmin) Tmin = T; if (T > Tmax) Tmax = T; }
+  sS.push({ name: "equilibrium T·σ(T_v)/⟨T_v⟩", x: [tU(Tmin), tU(Tmax)], y: [Tmin * rel, Tmax * rel], color: css("--eq"), w: 1.4, dash: "3 3" });
+  P(prefix + "beta", raw.TfiAll ? { title: "Nonexponentiality β_KWW (TL)", xlabel: `Temperature (${uL()})`, ylabel: "β_KWW", series: bS, xshort: "T", yshort: "β" }
+    : { title: "β_KWW (TL): history too long to keep all T_f,i", xlabel: "", ylabel: "", series: [] });
+  P(prefix + "sig", { title: "Fictive-temperature fluctuation δT_f (TL)", xlabel: `Temperature (${uL()})`, ylabel: `δT_f (${uL() === "°C" ? "K" : "K"})`, series: sS, xshort: "T", yshort: "δT_f" });
+  if (raw.TfiAll) tlMap(prefix);
+}
+function tlMap(prefix) {
+  const h = S.hist, raw = S.sim.raw, N = raw.dist.N, n = h.T.length, A = raw.TfiAll, Y = raw.dist.Yi;
+  // time columns uniform on the displayed axis (log or linear); each takes the nearest simulation step
+  const t0 = S.logt ? Math.max(h.t[1] || 1e-3, 1e-6) : 0, t1 = h.t[n - 1]; if (!(t1 > t0)) return;
+  // T_f,i at each column time is interpolated linearly between the two neighbouring simulation steps
+  const NC = 360, NB = 140, cols = new Int32Array(NC), frac = new Float64Array(NC);
+  const fx = S.logt ? Math.log10 : (v => v), X0 = fx(t0), X1 = fx(t1);
+  for (let c = 0, j = 0; c < NC; c++) { const x = X0 + (X1 - X0) * (c + 0.5) / NC, tt = S.logt ? Math.pow(10, x) : x;
+    while (j < n - 2 && h.t[j + 1] <= tt) j++; const dt = h.t[j + 1] - h.t[j]; cols[c] = j; frac[c] = dt > 0 ? Math.min(1, Math.max(0, (tt - h.t[j]) / dt)) : 1; }
+  const colVals = (c, out) => { const i = cols[c], f = frac[c], i2 = Math.min(n - 1, i + 1); for (let k = 0; k < N; k++) out[k] = A[i * N + k] * (1 - f) + A[i2 * N + k] * f; return out; };
+  // T_f grid: 0.5–99.5 % weight range over the whole run
+  let lo = Infinity, hi = -Infinity; const order = Array.from({ length: N }, (_, k) => k);
+  const tmp = new Float64Array(N);
+  for (let c = 0; c < NC; c++) { const v = Array.from(colVals(c, tmp)); const s = order.slice().sort((a, b) => v[a] - v[b]); let cum = 0; for (const k of s) { cum += Y[k]; if (cum >= 0.005) { lo = Math.min(lo, v[k]); break; } } cum = 0; for (let q = s.length - 1; q >= 0; q--) { cum += Y[s[q]]; if (cum >= 0.005) { hi = Math.max(hi, v[s[q]]); break; } } }
+  for (let i = 0; i < n; i++) { lo = Math.min(lo, h.T[i]); hi = Math.max(hi, h.T[i]); }
+  const pad = (hi - lo) * 0.03 || 1; lo -= pad; hi += pad;
+  const edges = Float64Array.from({ length: NB + 1 }, (_, b) => lo + (hi - lo) * b / NB), dens = new Float64Array(NB), img = new Float64Array(NC * NB), vals = new Float64Array(N);
+  for (let c = 0; c < NC; c++) { colVals(c, vals); rebinDensity(vals, Y, edges, dens); img.set(dens, c * NB); }
+  const sorted = Array.from(img).filter(v => v > 0).sort((a, b) => a - b), vmax = sorted.length ? sorted[Math.floor(sorted.length * 0.995)] : 1;
+  const cv = document.createElement("canvas"); cv.width = NC; cv.height = NB; const cx = cv.getContext("2d"), id = cx.createImageData(NC, NB);
+  for (let c = 0; c < NC; c++) for (let b = 0; b < NB; b++) { const [r, g, bl] = viridis(img[c * NB + b] / vmax), o = ((NB - 1 - b) * NC + c) * 4; id.data[o] = r; id.data[o + 1] = g; id.data[o + 2] = bl; id.data[o + 3] = 255; }
+  cx.putImageData(id, 0, 0);
+  const tx = Array.from(h.t, (v, i) => S.logt ? (i === 0 ? NaN : v) : v);
+  P(prefix + "map", { title: "Local fictive temperatures T_f,i vs time (TL), rebinned on a uniform T_f grid", xlabel: "time (s)", ylabel: `T_f,i (${uL()})`, xlog: S.logt, W: 1120, H: 360,
+    xdom: [t0, t1], ydom: [tU(lo), tU(hi)], image: { href: cv.toDataURL(), x0: t0, x1: t1, y0: tU(lo), y1: tU(hi) },
+    series: [{ name: "T (white, dashed)", x: tx, y: Array.from(h.T, tU), color: "#ffffff", w: 1.3, dash: "5 4" }, { name: "⟨T_f⟩", x: tx, y: Array.from(S.sim.Tf, tU), color: "#ff6b6b", w: 1.8 }], xshort: "t", yshort: "T_f,i" });
+  const cb = document.getElementById(prefix + "cbar");
+  if (cb) cb.innerHTML = `<span>0</span><i style="background:linear-gradient(90deg,${VIRIDIS.map(c => `rgb(${c})`).join(",")})"></i><span>${nf(vmax, 3)} K⁻¹</span><span class="note" style="margin:0 0 0 8px">probability density of T_f,i (weights Y_i per kelvin; colours saturate at the 99.5th percentile)</span>`;
 }
 
 /* ================= STEP 1: thermal history ================= */
