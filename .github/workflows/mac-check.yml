@@ -1,4 +1,4 @@
-# Temporary (attempt 2): builds the macOS app without publishing and reports any error as an annotation (never fails the run).
+# Temporary (attempt 3: universal build): builds the macOS app without publishing and reports any error as an annotation (never fails the run).
 name: macOS build check
 on:
   push:

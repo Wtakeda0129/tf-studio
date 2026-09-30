@@ -13,7 +13,8 @@ module.exports = {
     category: "public.app-category.education",
     icon: "build/icon.png",
     // dmg = what people download and install; zip + latest-mac.yml = what the auto-updater downloads
-    target: [{ target: "dmg", arch: ["arm64", "x64"] }, { target: "zip", arch: ["arm64", "x64"] }],
+    // one universal build (Apple silicon + Intel): a single DMG and update ZIP, and no two DMG volumes mounted at once
+    target: [{ target: "dmg", arch: ["universal"] }, { target: "zip", arch: ["universal"] }],
     hardenedRuntime: true,
     gatekeeperAssess: false,
     notarize: canNotarize,          // needs a Developer ID certificate (CSC_LINK) + the three APPLE_* variables
