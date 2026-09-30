@@ -105,14 +105,14 @@ const EXP = (function () {
     const segs = dir === 'cool' ? [{ type: 'mdsc', T: lo, rate: q, A, P, ppp }] : [{ type: 'ramp', T: lo, rate: q, dT: 0.5 }, { type: 'mdsc', T: hi, rate: q, A, P, ppp }];
     const T0 = hi, si = segs.length - 1;
     const r = sim(model, T0, segs), seg = segs[si];
-    // One window per modulation period (windows all start at the same phase, so no phase-dependent ripple).
+    // Windows one modulation period long, slid by STRIDE steps (a tenth of a period) for a fine temperature grid.
     // Each window: least-squares fit of v(t) = p0 + p1·(t − t̄) + C cos ωt + D sin ωt to dT_f/dt and to dT/dt.
-    //   total C_p   = p0[dT_f/dt] / p0[dT/dt]            (underlying, period-averaged)
+    //   total C_p   = ⟨dT_f/dt⟩ / ⟨dT/dt⟩ over the period  (underlying, period-averaged)
     //   complex C_p = (C − iD)[dT_f/dt] / (C − iD)[dT/dt] (ω component; same convention as the Fitter engine,
     //                 incl. the τ-dependent correction for the staircase input, ENGINE.stepCorr)
-    const inf = r.hist.info[si], i0 = Math.max(1, inf.i0), n = inf.i1 - i0 + 1, w = 2 * Math.PI / P;
+    const inf = r.hist.info[si], i0 = Math.max(1, inf.i0), n = inf.i1 - i0 + 1, w = 2 * Math.PI / P, STRIDE = Math.max(1, Math.round(ppp / 10));
     const out = [];
-    for (let s0 = 0; s0 + ppp <= n; s0 += ppp) {
+    for (let s0 = 0; s0 + ppp <= n; s0 += STRIDE) {
       const tt = [], a = [], b = []; let Tm = 0;
       for (let k = 0; k < ppp; k++) { const i = i0 + s0 + k, dt = r.hist.t[i] - r.hist.t[i - 1]; tt.push((r.hist.t[i] + r.hist.t[i - 1]) / 2 - r.hist.t[i0 - 1]); a.push((r.Tf[i] - r.Tf[i - 1]) / dt); b.push((r.hist.T[i] - r.hist.T[i - 1]) / dt); Tm += (r.hist.T[i] + r.hist.T[i - 1]) / 2; }
       const tc = tt.reduce((x, y) => x + y) / ppp, X = [tt.map(() => 1), tt.map(x => x - tc), tt.map(x => Math.cos(w * x)), tt.map(x => Math.sin(w * x))];
@@ -121,8 +121,12 @@ const EXP = (function () {
       let Rr = (xr * yr + xi * yi) / den, Ri = (xi * yr - xr * yi) / den;
       let lt = 0; for (let k = 0; k < ppp; k++) lt += Math.log(r.tau[i0 + s0 + k]);
       const [cr, ci] = ENGINE.stepCorr(w, P / ppp, Math.exp(lt / ppp)); [Rr, Ri] = [Rr * cr - Ri * ci, Rr * ci + Ri * cr];
-      out.push({ T: Tm / ppp, total: fa.b[0] / fb.b[0], re: Rr, im: -Ri });
+      out.push({ T: Tm / ppp, total: a.reduce((x, y) => x + y) / b.reduce((x, y) => x + y), re: Rr, im: -Ri });   // total: one-period average
     }
+    // Single-window results depend on the phase at which the window starts wherever τ changes appreciably within a period
+    // (non-stationary response). As in instrument software, average C′, C″ and the total over one period of window positions.
+    const M = Math.round(ppp / STRIDE), sm = k => out.map((o, i) => { let s = 0, c = 0; for (let j = i - (M >> 1); j < i - (M >> 1) + M; j++) if (j >= 0 && j < out.length) { s += out[j][k]; c++; } return s / c; });
+    { const R = sm("re"), I = sm("im"), Q = sm("total"); out.forEach((o, i) => { o.re = R[i]; o.im = I[i]; o.total = Q[i]; }); }
     out.sort((u, v) => u.T - v.T);
     const T = out.map(o => o.T), re = out.map(o => o.re), im = out.map(o => o.im), total = out.map(o => o.total), rev = out.map(o => Math.hypot(o.re, o.im));
     return { P, dir, T, re, im, rev, total, nonrev: total.map((v, i) => v - rev[i]) };

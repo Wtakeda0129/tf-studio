@@ -1,7 +1,7 @@
 {
   "name": "tf-studio",
   "productName": "Tf Studio",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Tf Studio (Thermal Fingerprint): compute and fit glass relaxation dynamics with structural relaxation models",
   "author": "Wataru Takeda (University of Arizona, Lucas group)",
   "license": "UNLICENSED",
