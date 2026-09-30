@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tf Studio Beta · Data Analysis</title>
+<title>GARASU Beta · Data Analysis</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <style>
 
@@ -132,7 +132,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:12px}
 </head>
 <body>
 <header>
-  <a class="brand" href="index.html" title="Tf Studio home"><h1>Tf Studio</h1><b class="beta-badge" title="Beta: still in development">Beta</b><span>Data Analysis</span></a>
+  <a class="brand" href="index.html" title="GARASU home"><h1>GARASU</h1><b class="beta-badge" title="Beta: still in development">Beta</b><span>Data Analysis</span></a>
   <nav class="stepper">
     <button class="step" data-tab="1"><span class="num">1</span><span><b>Heat-flow scans</b><small id="st1">upload DSC heat flow</small></span></button>
     <button class="step" data-tab="2"><span class="num">2</span><span><b>Enthalpy recovery</b><small id="st2">heating after annealing</small></span></button>
@@ -240,7 +240,7 @@ function dl(blob,name){const a=document.createElement("a");a.href=URL.createObje
 </script>
 <script>
 /* ============================================================
-   Tf Studio · Data Analysis — numerical core (no DOM)
+   GARASU · Data Analysis — numerical core (no DOM)
    - parse pasted / uploaded tables
    - DSC heat flow: linear glass and liquid baselines → normalized C_p^N = (HF − HF_g)/(HF_l − HF_g),
      fictive temperature T_f(T) by integration (Moynihan area matching), limiting T_f′
@@ -391,7 +391,7 @@ const EXAMPLES = {"note":"Synthetic data from the Takeda–Lucas model (selenium
 </script>
 <script>
 /* ============================================================
-   Tf Studio · Data Analysis — user interface
+   GARASU · Data Analysis — user interface
    Tab 1  Heat-flow scans: import raw DSC heat flow (heating or cooling), linear glass/liquid baselines,
           normalized C_p^N, T_f(T) and T_f′ (area matching)
    Tab 2  Enthalpy recovery: heating scans after annealing vs the unaged reference, aligned, ΔHF(T), ΔH(t_a),

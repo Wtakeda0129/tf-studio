@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble ../../site/learn.html (Tf Studio · Learn) from template.html, learn_core.js, learn_app.js
+"""Assemble ../../site/learn.html (GARASU · Learn) from template.html, learn_core.js, learn_app.js
    learn_plot.js, learn_exp.js, learn_expui.js and the model cores + engine in ../fitter.
    KaTeX is loaded from site/vendor/katex (vendored, so the page also works offline in the desktop app)."""
 import os, pathlib

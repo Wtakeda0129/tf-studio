@@ -1,4 +1,4 @@
-# Tf Studio: desktop app (macOS and Windows)
+# GARASU: desktop app (macOS and Windows)
 
 A desktop wrapper (Electron) around the website in `../site`: the launcher page (`index.html`), **Learn** (`learn.html`), the **Lab** (`explorer.html`) and the **Fitter** (`fitter.html`).
 
@@ -19,7 +19,7 @@ desktop/
 
 ## 1. Current releases (ad-hoc signed)
 
-Every release on GitHub has `Tf-Studio-<version>-universal.dmg` (Apple silicon and Intel) and `Tf-Studio-Setup-<version>.exe` (Windows). Locally, `npm ci && ./sync_apps.sh && npm run dist` on a Mac gives the same DMG; `make_dmg_linux.sh` builds test DMGs without a Mac.
+Every release on GitHub has `GARASU-<version>-universal.dmg` (Apple silicon and Intel) and `GARASU-Setup-<version>.exe` (Windows). Locally, `npm ci && ./sync_apps.sh && npm run dist` on a Mac gives the same DMG; `make_dmg_linux.sh` builds test DMGs without a Mac.
 
 Until a Developer ID certificate is configured, the macOS app has only an ad-hoc signature. So on first launch:
 
@@ -27,7 +27,7 @@ Until a Developer ID certificate is configured, the macOS app has only an ad-hoc
 2. Double-click the app. macOS will say it cannot verify the developer.
 3. Go to **System Settings → Privacy & Security** and click **Open Anyway**.
 
-   Alternatively, run `xattr -dr com.apple.quarantine "/Applications/Tf Studio.app"` in Terminal.
+   Alternatively, run `xattr -dr com.apple.quarantine "/Applications/GARASU.app"` in Terminal.
 
 **Auto-update does not work in these builds.** macOS only installs an update if it is signed with the same Developer ID as the installed app.
 
@@ -79,7 +79,7 @@ You can also build locally on your Mac with `npm ci && npm run release`, using t
 
 ## Windows
 
-- The release workflow also builds `Tf-Studio-Setup-<version>.exe` on a Windows runner. This is a per-user installer with Start-menu and desktop shortcuts, and it needs no admin rights.
+- The release workflow also builds `GARASU-Setup-<version>.exe` on a Windows runner. This is a per-user installer with Start-menu and desktop shortcuts, and it needs no admin rights.
 - **Auto-update works on Windows without code signing.** Installed copies read `latest.yml` from the newest release.
 - Unsigned installers show a SmartScreen "unknown publisher" warning. Users click **More info → Run anyway**. To remove the warning, buy a code-signing certificate and add `WIN_CERT_P12_BASE64` and `WIN_CERT_PASSWORD` as repository secrets.
 - Local Windows build on a Windows PC: `cd desktop && npm ci && bash sync_apps.sh && npm run dist:win`.

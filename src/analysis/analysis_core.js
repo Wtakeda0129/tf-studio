@@ -1,5 +1,5 @@
 /* ============================================================
-   Tf Studio · Data Analysis — numerical core (no DOM)
+   GARASU · Data Analysis — numerical core (no DOM)
    - parse pasted / uploaded tables
    - DSC heat flow: linear glass and liquid baselines → normalized C_p^N = (HF − HF_g)/(HF_l − HF_g),
      fictive temperature T_f(T) by integration (Moynihan area matching), limiting T_f′

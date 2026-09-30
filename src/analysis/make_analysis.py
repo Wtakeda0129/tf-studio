@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble ../../site/analysis.html (Tf Studio · Data Analysis): template.html + the Fitter's styles and plot
+"""Assemble ../../site/analysis.html (GARASU · Data Analysis): template.html + the Fitter's styles and plot
 library (../fitter/template.html, ../fitter/ui_plot.js) + analysis_core.js + analysis_ui.js + examples.json.
 Rebuild the example data (TL model, synthetic):  node build_examples.js"""
 import os, pathlib, re

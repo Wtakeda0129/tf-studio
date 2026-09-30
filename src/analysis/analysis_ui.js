@@ -1,5 +1,5 @@
 /* ============================================================
-   Tf Studio · Data Analysis — user interface
+   GARASU · Data Analysis — user interface
    Tab 1  Heat-flow scans: import raw DSC heat flow (heating or cooling), linear glass/liquid baselines,
           normalized C_p^N, T_f(T) and T_f′ (area matching)
    Tab 2  Enthalpy recovery: heating scans after annealing vs the unaged reference, aligned, ΔHF(T), ΔH(t_a),

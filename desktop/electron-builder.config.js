@@ -5,7 +5,7 @@ const canNotarize = !!(process.env.APPLE_ID && process.env.APPLE_APP_SPECIFIC_PA
 
 module.exports = {
   appId: "io.github.wtakeda0129.tfstudio",
-  productName: "Tf Studio",
+  productName: "GARASU",
   copyright: "© 2026 Wataru Takeda, University of Arizona",
   files: ["main.js", "preload.js", "app/**/*"],
   directories: { buildResources: "build", output: "dist" },
@@ -20,7 +20,7 @@ module.exports = {
     gatekeeperAssess: false,
     notarize: canNotarize,          // needs a Developer ID certificate (CSC_LINK) + the three APPLE_* variables
   },
-  dmg: { title: "Tf Studio ${version}" },
+  dmg: { title: "GARASU ${version}" },
   win: {
     icon: "build/icon.png",
     // NSIS installer: per-user install (no admin rights needed), Start-menu + desktop shortcuts, auto-update via latest.yml
@@ -35,14 +35,14 @@ module.exports = {
     allowToChangeInstallationDirectory: true,
     createDesktopShortcut: true,
     createStartMenuShortcut: true,
-    shortcutName: "Tf Studio",
-    artifactName: "Tf-Studio-Setup-${version}.exe",
+    shortcutName: "GARASU",
+    artifactName: "GARASU-Setup-${version}.exe",
   },
   // Where installed copies look for updates. GitHub Releases by default; see DESKTOP_README.md for alternatives.
   // builds upload into a draft; the release workflow publishes it only after all platforms are done, so an
   // update check never sees a half-uploaded release (e.g. the DMG without latest-mac.yml)
   publish: [{ provider: "github", owner: PUBLISH_OWNER, repo: PUBLISH_REPO, releaseType: "draft" }],
-  // tells the app whether this macOS build has a stable signature (Developer ID or the self-signed Tf Studio
+  // tells the app whether this macOS build has a stable signature (Developer ID or the self-signed GARASU
   // certificate), which is what installing an update in place needs
   extraMetadata: { macSigned: !!(process.env.CSC_LINK || process.env.TF_SIGN_IDENTITY) },
 };

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble ../../site/explorer.html (Tf Studio · Explorer) (one self-contained file) from the pieces in this folder:
+"""Assemble ../../site/explorer.html (GARASU · Explorer) (one self-contained file) from the pieces in this folder:
    template.html, tl_core.js (TL model), models_extra.js (TNM + RelaxPy),
    app_head.js, part_segs.js, app_run.js, part_plot.js, app_render.js (GUI),
    beta_library.json (TL beta library), prony_fit.json, relaxpy_prony.json (Prony tables).

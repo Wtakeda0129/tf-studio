@@ -3,7 +3,7 @@
 # Real releases should be built on macOS (GitHub Actions) with a Developer ID signature + notarization — see DESKTOP_README.md.
 set -euo pipefail
 RCS=${RCODESIGN:-rcodesign}; DMGTOOL=${DMGTOOL:-dmg}
-VER=$(node -p "require('./package.json').version"); NAME="Tf Studio"
+VER=$(node -p "require('./package.json').version"); NAME="GARASU"
 for arch in arm64 x64; do
   dir=dist/mac-$arch; [ "$arch" = x64 ] && dir=dist/mac
   app="$dir/$NAME.app"; [ -d "$app" ] || { echo "skip $arch (no $app)"; continue; }

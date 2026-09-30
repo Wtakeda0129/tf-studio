@@ -1,5 +1,5 @@
 // Render the documentation to PDF with headless Chromium:  node docs/src/build_docs.js
-// Output: docs/Tf_Studio_User_Guide.pdf, docs/Tf_Studio_Quick_Start.pdf (also copied to site/docs/)
+// Output: docs/GARASU_User_Guide.pdf, docs/GARASU_Quick_Start.pdf (also copied to site/docs/)
 const { chromium } = require("playwright");
 const path = require("path"), fs = require("fs");
 const here = __dirname, out = path.join(here, ".."), site = path.join(here, "..", "..", "site", "docs");
@@ -7,7 +7,7 @@ const footer = title => `<div style="width:100%;font-size:8px;color:#8a96a6;padd
 (async () => {
   const b = await chromium.launch();
   fs.mkdirSync(site, { recursive: true });
-  for (const [src, dst, title, first] of [["user_guide.html", "Tf_Studio_User_Guide.pdf", "Tf Studio (Beta) · User Guide · v1.2", false], ["quick_start.html", "Tf_Studio_Quick_Start.pdf", "Tf Studio (Beta) · Quick Start · v1.2", true]]) {
+  for (const [src, dst, title, first] of [["user_guide.html", "GARASU_User_Guide.pdf", "GARASU (Beta) · User Guide · v1.3", false], ["quick_start.html", "GARASU_Quick_Start.pdf", "GARASU (Beta) · Quick Start · v1.3", true]]) {
     const p = await b.newPage();
     await p.goto("file://" + path.join(here, src), { waitUntil: "networkidle" });
     await p.pdf({ path: path.join(out, dst), format: "Letter", printBackground: true, preferCSSPageSize: true, displayHeaderFooter: true, headerTemplate: "<span></span>", footerTemplate: footer(title) });

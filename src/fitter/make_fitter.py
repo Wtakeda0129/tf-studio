@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble ../../site/fitter.html (Tf Studio · Fitter) (single self-contained file) from:
+"""Assemble ../../site/fitter.html (GARASU · Fitter) (single self-contained file) from:
    template.html, tl_core.js, models_extra.js (β-continuous Prony blend), engine.js, ui_plot.js, ui_main.js,
    beta_library.json, prony_fit.json, relaxpy_prony.json, examples.json
    (examples.json: python3 build_examples.py, from ../build/geasse_data.json)"""

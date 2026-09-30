@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tf Studio Beta · Learn</title>
+<title>GARASU Beta · Learn</title>
 <meta name="description" content="How the TNM, MAP (RelaxPy) and Takeda–Lucas models describe glass relaxation: the mathematics of each model, and what separates a mean-field fictive temperature from a distribution of local fictive temperatures.">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
@@ -110,7 +110,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
 </head>
 <body>
 <header class="top"><div class="in">
-  <a class="brand" href="index.html" title="Tf Studio home"><h1>Tf Studio</h1><b class="beta-badge" title="Beta: still in development">Beta</b><span>Learn</span></a>
+  <a class="brand" href="index.html" title="GARASU home"><h1>GARASU</h1><b class="beta-badge" title="Beta: still in development">Beta</b><span>Learn</span></a>
   <div class="modelsw" id="hdrsw" title="Model used for the Part I simulations"><button type="button" data-m="TL" class="on" style="--mc:var(--mTL)">TL</button><button type="button" data-m="TNM" style="--mc:var(--mTNM)">TNM</button><button type="button" data-m="MAP" style="--mc:var(--mMAP)">MAP</button></div>
   <nav><a href="#experiments">Experiments</a><a href="#models">Models</a><a href="explorer.html" data-tool="explorer">Lab</a><a href="fitter.html" data-tool="fitter">Fitter</a></nav>
 </div></header>
@@ -143,7 +143,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
 <!-- 1 -->
 <section id="fictive" class="prose">
   <h2><span class="num">1</span>Fictive temperature and structural relaxation</h2>
-  <p>Above the glass transition, a liquid's structure keeps pace with temperature. On cooling, the structural relaxation time \(\tau\) grows so quickly that the structure eventually cannot keep up and freezes. Tool described the frozen structure by a <b>fictive temperature</b> \(T_f\): the temperature at which the liquid would have this structure in equilibrium. In equilibrium \(T_f = T\). In the glass, \(T_f\) records the thermal history, which is why Tf Studio calls it the <i>thermal fingerprint</i>.</p>
+  <p>Above the glass transition, a liquid's structure keeps pace with temperature. On cooling, the structural relaxation time \(\tau\) grows so quickly that the structure eventually cannot keep up and freezes. Tool described the frozen structure by a <b>fictive temperature</b> \(T_f\): the temperature at which the liquid would have this structure in equilibrium. In equilibrium \(T_f = T\). In the glass, \(T_f\) records the thermal history, which is why GARASU calls it the <i>thermal fingerprint</i>.</p>
   <p>Enthalpy and volume follow \(T_f\). With liquid and glass heat capacities \(C_{p,l}\) and \(C_{p,g}\), the normalized heat capacity measured by DSC is</p>
   <div class="eq">$$C_p^{N}(T) = \frac{C_p - C_{p,g}}{C_{p,l} - C_{p,g}} = \frac{dT_f}{dT}.$$</div>
   <p>Relaxation towards equilibrium has three well-known signatures, and every model below has to reproduce all three:</p>
@@ -228,7 +228,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
   <div class="eq">$$C_{\text{tot}}=\frac{\langle\Phi\rangle}{q},\qquad C_{\text{rev}}=\frac{A_\Phi}{A_T\,\omega}=|C^*|,\qquad C_{\text{nrev}}=C_{\text{tot}}-C_{\text{rev}}.$$</div>
   <p>Schawe put the method on the footing of linear response theory. The modulation measures a <b>complex heat capacity</b> at frequency \(\omega\). The phase angle \(\varphi\) splits it into a storage part \(C'\) and a loss part \(C''\), and both follow from the relaxation function:</p>
   <div class="eq">$$C^*(\omega)=C'-iC''=|C^*|e^{-i\varphi}=C_{p,g}+\Delta C_p\Big[1-i\omega\!\int_0^\infty\!\phi(t)\,e^{-i\omega t}\,dt\Big]\ \xrightarrow{\ \text{Debye}\ }\ C_{p,g}+\frac{\Delta C_p}{1+i\omega\tau}.$$</div>
-  <p>\(C'\) steps from \(C_{p,l}\) to \(C_{p,g}\), and \(C''\) peaks at the <b>dynamic glass transition</b>, where \(\omega\,\tau(T)\approx1\). Tf Studio computes the normalized \(C^*\) as the Fourier ratio of \(dT_f/dt\) to \(dT/dt\) at \(\omega\) in one-period windows, slid in steps of a tenth of a period and then averaged over one period, as instrument software does. The total is the one-period average of the same signal.</p>
+  <p>\(C'\) steps from \(C_{p,l}\) to \(C_{p,g}\), and \(C''\) peaks at the <b>dynamic glass transition</b>, where \(\omega\,\tau(T)\approx1\). GARASU computes the normalized \(C^*\) as the Fourier ratio of \(dT_f/dt\) to \(dT/dt\) at \(\omega\) in one-period windows, slid in steps of a tenth of a period and then averaged over one period, as instrument software does. The total is the one-period average of the same signal.</p>
   <div class="callout"><b class="h">Caveats: why reversing and non-reversing are not "thermodynamic" and "kinetic"</b>
     <ul>
       <li><b>The reversing signal is a dynamic quantity.</b> \(C_{\text{rev}}=|C^*(\omega)|\) steps at the temperature where \(\omega\tau\approx1\), not at the conventional (fictive-temperature) \(T_g\). This step moves with the modulation period. It is not the equilibrium \(C_p\) of the liquid or the glass.</li>
@@ -266,7 +266,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
   <div class="eq">$$T_{f,n} = T_0 + \sum_{j=1}^{n}\Delta T_j\left[1-\exp\!\left(-\Big(\sum_{k=j}^{n}\frac{\Delta t_k}{\tau_k}\Big)^{\beta}\right)\right].$$</div>
   <p>Alternatively, the KWW function can be replaced by a Prony series, \(\exp(-\xi^{\beta})\approx\sum_i w_i\exp(-k_i\xi)\). Each term then updates recursively, which is much faster for long histories. The exponentials in this sum are a mathematical expansion of one relaxation function. They are not regions of the glass.</p>
   <dl class="sym">
-    <dt>\(\Delta h/R\)</dt><dd>apparent activation energy. Tf Studio sets \(\Delta h/R = m\ln 10\,T_g\), so that the equilibrium fragility equals \(m\).</dd>
+    <dt>\(\Delta h/R\)</dt><dd>apparent activation energy. GARASU sets \(\Delta h/R = m\ln 10\,T_g\), so that the equilibrium fragility equals \(m\).</dd>
     <dt>\(A\)</dt><dd>fixed by \(\tau(T_g)=100\) s</dd>
     <dt>\(x,\ \beta\)</dt><dd>nonlinearity and nonexponentiality. Both are constants.</dd>
   </dl>
@@ -292,8 +292,8 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
   <div class="eq">$$\exp\!\left[-\Big(\frac{t}{\tau}\Big)^{\beta}\right]\approx\sum_{i=1}^{N} w_i \exp\!\Big(-\frac{k_i t}{\tau}\Big),\qquad T_{f,i}(t_j)=T_j-\big[T_j-T_{f,i}(t_{j-1})\big]\exp\!\Big(-\frac{k_i\,\Delta t_j}{\tau(T_j,T_f)}\Big),\qquad T_f=\sum_{i} w_i\,T_{f,i}.$$</div>
   <dl class="sym">
     <dt>\(m,\ T_g,\ \eta_\infty\)</dt><dd>MYEGA parameters. By convention \(\eta(T_g)=10^{12}\) Pa·s.</dd>
-    <dt>\(A,\ B,\ C\)</dt><dd>nonequilibrium branch. Tf Studio sets \(A\) by continuity at \(T_g\).</dd>
-    <dt>\(p\)</dt><dd>ergodicity exponent. Tf Studio's default is \(p\approx0.308\,m\).</dd>
+    <dt>\(A,\ B,\ C\)</dt><dd>nonequilibrium branch. GARASU sets \(A\) by continuity at \(T_g\).</dd>
+    <dt>\(p\)</dt><dd>ergodicity exponent. GARASU's default is \(p\approx0.308\,m\).</dd>
     <dt>\(K_s,\ \{w_i,k_i\}\)</dt><dd>modulus in the Maxwell relation, and the Prony coefficients for a chosen \(\beta\)</dd>
   </dl>
   <div class="callout m-MAP"><b class="h">What MAP assumes</b>
@@ -391,7 +391,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
       <tr><th>\(\delta T_f\) (enthalpy fluctuation)</th><td>0</td><td>0 in the liquid, finite only in the glass</td><td>finite in the liquid and the glass, and changes during aging</td></tr>
       <tr><th>Relaxation time</th><td>Tool–Narayanaswamy, \(\tau(T,T_f)\) with \(x\)</td><td>MAP viscosity, \(\tau=\eta(T,T_f)/K_s\), MYEGA plus ergodicity \(p\)</td><td>Adam–Gibbs–Hodge per domain, \(\tau_i(T,T_{v,i},\langle T_f\rangle)\)</td></tr>
       <tr><th>Nonexponentiality</th><td>input \(\beta\), constant</td><td>input \(\beta\) (Prony set), constant</td><td>emerges from \(f\) and \(\beta_0\). \(\beta_{\mathrm{KWW}}\) varies with \(T\) and \(\langle T_f\rangle\).</td></tr>
-      <tr><th>Parameters in Tf Studio</th><td>\(T_g,\ m,\ x,\ \beta\)</td><td>\(T_g,\ m,\ \eta_\infty,\ A,\ B,\ C,\ p,\ K_s,\ \beta\)</td><td>\(T_g,\ m,\ \log_{10}\tau_0,\ f,\ \beta_0\)</td></tr>
+      <tr><th>Parameters in GARASU</th><td>\(T_g,\ m,\ x,\ \beta\)</td><td>\(T_g,\ m,\ \eta_\infty,\ A,\ B,\ C,\ p,\ K_s,\ \beta\)</td><td>\(T_g,\ m,\ \log_{10}\tau_0,\ f,\ \beta_0\)</td></tr>
     </tbody>
   </table></div>
 </section>
@@ -414,10 +414,10 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
   <p>A. Q. Tool, <i>J. Am. Ceram. Soc.</i> <b>29</b>, 240–253 (1946). O. S. Narayanaswamy, <i>J. Am. Ceram. Soc.</i> <b>54</b>, 491–498 (1971). C. T. Moynihan et al., <i>J. Am. Ceram. Soc.</i> <b>59</b>, 12–16 (1976). I. M. Hodge, <i>Macromolecules</i> <b>20</b>, 2897 (1987). G. W. Scherer, <i>J. Am. Ceram. Soc.</i> <b>69</b>, 374–381 (1986).</p>
   <p><b>MAP / RelaxPy</b></p>
   <p>J. C. Mauro, D. C. Allan and M. Potuzak, <i>Phys. Rev. B</i> <b>80</b>, 094204 (2009). X. Guo et al., <i>J. Am. Ceram. Soc.</i> <b>101</b>, 1169–1179 (2018). J. C. Mauro and Y. Z. Mauro, <i>Physica A</i> <b>506</b>, 75–87 (2018). J. C. Mauro, R. J. Loucks and P. K. Gupta, <i>J. Am. Ceram. Soc.</i> <b>92</b>, 75–86 (2009). C. J. Wilkinson, Y. Z. Mauro and J. C. Mauro, <i>SoftwareX</i> <b>7</b>, 255–258 (2018).</p>
-  <p class="small">Full citations with DOIs are on the <a href="index.html#refs">Tf Studio home page</a>.</p>
+  <p class="small">Full citations with DOIs are on the <a href="index.html#refs">GARASU home page</a>.</p>
 </section>
 
-<footer>Tf Studio · Learn · Lucas group, Materials Science &amp; Engineering, University of Arizona</footer>
+<footer>GARASU · Learn · Lucas group, Materials Science &amp; Engineering, University of Arizona</footer>
 </main>
 </div>
 

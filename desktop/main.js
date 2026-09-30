@@ -1,4 +1,4 @@
-// Tf Studio (Thermal Fingerprint) — Electron shell
+// GARASU (Glass Aging, Relaxation And Simulation Utility) — Electron shell
 // Opens a launcher window; each tool (Learn, Lab, Fitter, Data Analysis) is a self-contained HTML page in ./app.
 // Updates: electron-updater checks the "publish" feed configured in package.json (GitHub Releases by default).
 const { app, BrowserWindow, Menu, dialog, shell, ipcMain } = require("electron");
@@ -7,10 +7,10 @@ let autoUpdater = null;
 try { autoUpdater = require("electron-updater").autoUpdater; } catch (e) { autoUpdater = null; }
 
 const TOOLS = {
-  learn: { file: "learn.html", title: "Tf Studio Beta · Learn" },
-  explorer: { file: "explorer.html", title: "Tf Studio Beta · Lab" },
-  fitter: { file: "fitter.html", title: "Tf Studio Beta · Fitter" },
-  analysis: { file: "analysis.html", title: "Tf Studio Beta · Data Analysis" },
+  learn: { file: "learn.html", title: "GARASU Beta · Learn" },
+  explorer: { file: "explorer.html", title: "GARASU Beta · Lab" },
+  fitter: { file: "fitter.html", title: "GARASU Beta · Fitter" },
+  analysis: { file: "analysis.html", title: "GARASU Beta · Data Analysis" },
 };
 // a link to another tool's page opens (or focuses) that tool's own window
 function toolForUrl(url) { for (const [k, t] of Object.entries(TOOLS)) if (new RegExp("/" + t.file.replace(".", "\\.") + "(#.*)?$").test(url)) return k; return null; }
@@ -19,7 +19,7 @@ const toolWindows = {};
 
 function openLauncher() {
   if (launcher && !launcher.isDestroyed()) { launcher.focus(); return; }
-  launcher = new BrowserWindow({ width: 980, height: 720, minWidth: 700, minHeight: 500, title: "Tf Studio Beta",
+  launcher = new BrowserWindow({ width: 980, height: 720, minWidth: 700, minHeight: 500, title: "GARASU Beta",
     webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true } });
   launcher.loadFile(path.join(__dirname, "app", "index.html"));
   launcher.webContents.on("will-navigate", (e, url) => { if (/^https?:/.test(url)) { e.preventDefault(); shell.openExternal(url); } });
@@ -33,7 +33,7 @@ function openTool(key) {
   // external links open in the default browser
   w.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url)) shell.openExternal(url); return { action: "deny" }; });
   w.on("page-title-updated", e => e.preventDefault());   // keep the tool name in the title bar
-  // the "Tf Studio" logo in each tool links to index.html: bring up the launcher instead of navigating away
+  // the "GARASU" logo in each tool links to index.html: bring up the launcher instead of navigating away
   w.webContents.on("will-navigate", (e, url) => {
     if (/index\.html(#.*)?$/.test(url)) { e.preventDefault(); openLauncher(); return; }
     if (/^https?:/.test(url)) { e.preventDefault(); shell.openExternal(url); return; }
@@ -57,7 +57,7 @@ function setupUpdater() {
     if (manualMac()) {
       if (!manualCheck && offered === info.version) return;   // remind once per version on automatic checks
       offered = info.version; manualCheck = false;
-      dialog.showMessageBox({ type: "info", buttons: ["Download", "Later"], defaultId: 0, message: `Tf Studio ${info.version} is available (you have ${app.getVersion()}).`, detail: "Download the new DMG and drag Tf Studio into Applications, replacing the old copy." })
+      dialog.showMessageBox({ type: "info", buttons: ["Download", "Later"], defaultId: 0, message: `GARASU ${info.version} is available (you have ${app.getVersion()}).`, detail: "Download the new DMG and drag GARASU into Applications, replacing the old copy." })
         .then(r => { if (r.response === 0) shell.openExternal(RELEASES_URL); });
       return;
     }
@@ -68,7 +68,7 @@ function setupUpdater() {
   autoUpdater.on("error", err => {
     // an update was downloaded but macOS refused to install it (signature mismatch): offer the download page
     if (downloaded && process.platform === "darwin") {
-      dialog.showMessageBox({ type: "warning", buttons: ["Download", "Later"], defaultId: 0, message: `Tf Studio ${downloaded} could not be installed automatically.`, detail: "Download the new DMG and drag Tf Studio into Applications, replacing the old copy.\n\n" + String(err && err.message || err) })
+      dialog.showMessageBox({ type: "warning", buttons: ["Download", "Later"], defaultId: 0, message: `GARASU ${downloaded} could not be installed automatically.`, detail: "Download the new DMG and drag GARASU into Applications, replacing the old copy.\n\n" + String(err && err.message || err) })
         .then(r => { if (r.response === 0) shell.openExternal(RELEASES_URL); });
       downloaded = null; manualCheck = false; return;
     }
