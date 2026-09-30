@@ -73,7 +73,11 @@ function navbar(prev, next, nextLabel) { return `<div class="navbar">${prev ? `<
 
 /* ================= plotting helpers ================= */
 function card(id, cls) { return `<div class="plotcard ${cls || ""}" id="${id}"><div class="plotbox"></div></div>`; }
-function P(elId, cfg) { const el = document.getElementById(elId); if (!el) return; const box = el.querySelector(".plotbox") || el; plot(box, { id: elId, ...cfg }); }
+function P(elId, cfg) {
+  const el = document.getElementById(elId); if (!el || !cfg) return; const box = el.querySelector(".plotbox") || el;
+  // one plot that cannot be drawn must never blank the rest of the panel
+  try { plot(box, { id: elId, ...cfg }); } catch (e) { console.error(e); box.innerHTML = `<div class="banner err">Could not draw “${esc(cfg.title || elId)}”: ${esc(e.message)}</div>`; }
+}
 function histPlotCfg(opts) {
   opts = opts || {}; const h = S.hist; if (!h) return null;
   const tx = Array.from(h.t, (v, i) => S.logt ? (i === 0 ? NaN : v) : v);

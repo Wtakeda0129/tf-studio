@@ -1115,7 +1115,9 @@ const PLOT = (function () {
   function niceTicks(lo, hi, target) {
     const span = hi - lo || 1, raw = span / target, mag = Math.pow(10, Math.floor(Math.log10(raw))), r = raw / mag;
     const step = (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag, out = [];
-    for (let v = Math.ceil(lo / step - 1e-9) * step; v <= hi + step * 1e-9; v += step) out.push(+v.toPrecision(12));
+    const start = Math.ceil(lo / step - 1e-9), n = Math.floor(hi / step + 1e-9) - start;
+    if (!isFinite(step) || !(step > 0) || !isFinite(n) || n > 1000) return [lo, hi];
+    for (let i = 0; i <= n; i++) out.push(+((start + i) * step).toPrecision(12));
     return out;
   }
   const fmt = v => (Math.abs(v) >= 100 ? v.toFixed(0) : +v.toPrecision(3) + "");

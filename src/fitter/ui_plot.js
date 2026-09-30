@@ -5,7 +5,10 @@ function niceTicks(lo,hi,target){
   if(!(hi>lo)){hi=lo+1;}
   const span=hi-lo, raw=span/target, mag=Math.pow(10,Math.floor(Math.log10(raw))), r=raw/mag;
   const step=(r<1.5?1:r<3?2:r<7?5:10)*mag, out=[];
-  for(let v=Math.ceil(lo/step-1e-9)*step; v<=hi+step*1e-9; v+=step) out.push(Math.abs(v)<step*1e-6?0:+v.toPrecision(12));
+  const start=Math.ceil(lo/step-1e-9), n=Math.floor(hi/step+1e-9)-start;
+  // a span that is tiny relative to the values (or non-finite) would give endless ticks: fall back to the two ends
+  if(!isFinite(step)||!(step>0)||!isFinite(n)||n>1000||step<Math.max(Math.abs(lo),Math.abs(hi))*1e-12) return [lo,hi];
+  for(let i=0;i<=n;i++){const v=(start+i)*step; out.push(Math.abs(v)<step*1e-6?0:+v.toPrecision(12));}
   return out;
 }
 function fmt(v){ if(v===0)return "0"; const a=Math.abs(v); if(a>=1e5||a<1e-3) return v.toExponential(1).replace("e+","e"); return +v.toPrecision(4)+""; }
@@ -18,10 +21,16 @@ function plot(el,cfg){
   let xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
   if(!xs.length){xmin=0;xmax=1;ymin=0;ymax=1;}
   if(cfg.xdom){[xmin,xmax]=cfg.xdom;} if(cfg.ydom){[ymin,ymax]=cfg.ydom;}
+  // a (nearly) constant series: open the range around it instead of zooming into rounding noise
+  const flatRange=(a,b)=>!(b-a>1e-9*Math.max(Math.abs(a),Math.abs(b)));
+  if(!cfg.xdom&&!cfg.xlog&&flatRange(xmin,xmax)){const c=(xmin+xmax)/2,d=Math.abs(c)>1e-6?Math.abs(c)*0.01:0.5;xmin=c-d;xmax=c+d;}
+  if(!cfg.ydom&&!cfg.ylog&&flatRange(ymin,ymax)){const c=(ymin+ymax)/2,d=Math.abs(c)>1e-6?Math.abs(c)*0.01:0.5;ymin=c-d;ymax=c+d;}
   const padY=(ymax-ymin)*0.05||1; if(!cfg.ydom&&!cfg.ylog){ymin-=padY;ymax+=padY;}
   const fx=cfg.xlog?Math.log10:(v=>v), fy=cfg.ylog?Math.log10:(v=>v);
   let X0=fx(xmin),X1=fx(xmax),Y0=fy(ymin),Y1=fy(ymax);
   if(cfg.ylog&&!cfg.ydom){Y0=Math.floor(Y0);Y1=Math.ceil(Y1);} if(cfg.xlog&&!cfg.xdom){X0=Math.floor(X0);X1=Math.ceil(X1);}
+  // log axis without any positive value (or overflowing values): fall back to one decade instead of an unbounded axis
+  if(!isFinite(X0)||!isFinite(X1)){X0=0;X1=1;} if(!isFinite(Y0)||!isFinite(Y1)){Y0=0;Y1=1;}
   if(X1===X0)X1=X0+1; if(Y1===Y0)Y1=Y0+1;
   const sx=v=>m.l+(fx(v)-X0)/(X1-X0)*(W-m.l-m.r), sy=v=>H-m.b-(fy(v)-Y0)/(Y1-Y0)*(H-m.t-m.b);
   let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${cfg.title}"><g class="axis">`;
@@ -35,7 +44,7 @@ function plot(el,cfg){
   g+=`<clipPath id="${uid}"><rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}"/></clipPath><g clip-path="url(#${uid})">`;
   const flat=[];
   S.forEach((s,si)=>{
-    if(s.pts){ for(let i=0;i<s.x.length;i++){ if(!isFinite(s.x[i])||!isFinite(s.y[i]))continue; g+=s.hollow?`<circle cx="${sx(s.x[i]).toFixed(1)}" cy="${sy(s.y[i]).toFixed(1)}" r="${s.r||2.6}" fill="none" stroke="${s.color}" stroke-width="1.2"/>`:`<circle cx="${sx(s.x[i]).toFixed(1)}" cy="${sy(s.y[i]).toFixed(1)}" r="${s.r||2.6}" fill="${s.color}" fill-opacity="${s.op||.75}"/>`; flat.push([sx(s.x[i]),sy(s.y[i]),si,i]); } return; }
+    if(s.pts){ for(let i=0;i<s.x.length;i++){ if(!isFinite(s.x[i])||!isFinite(s.y[i])||(cfg.xlog&&!(s.x[i]>0))||(cfg.ylog&&!(s.y[i]>0)))continue; g+=s.hollow?`<circle cx="${sx(s.x[i]).toFixed(1)}" cy="${sy(s.y[i]).toFixed(1)}" r="${s.r||2.6}" fill="none" stroke="${s.color}" stroke-width="1.2"/>`:`<circle cx="${sx(s.x[i]).toFixed(1)}" cy="${sy(s.y[i]).toFixed(1)}" r="${s.r||2.6}" fill="${s.color}" fill-opacity="${s.op||.75}"/>`; flat.push([sx(s.x[i]),sy(s.y[i]),si,i]); } return; }
     let d="",pen=false;
     for(let i=0;i<s.x.length;i++){
       const ok=isFinite(s.x[i])&&isFinite(s.y[i])&&(!cfg.ylog||s.y[i]>0)&&(!cfg.xlog||s.x[i]>0);
@@ -64,7 +73,7 @@ function plot(el,cfg){
   cap.addEventListener("mouseleave",()=>{hov.style.display="none";tip.style.display="none";});
   const sb=el.querySelector("[data-svg]"); if(sb) sb.addEventListener("click",()=>exportSVG(svg,cfg.id));
 }
-function range(a,b){const o=[];for(let i=a;i<=b;i++)o.push(i);return o;}
+function range(a,b){const o=[];if(!isFinite(a)||!isFinite(b))return o;const st=Math.max(1,Math.ceil((b-a)/12));for(let i=a;i<=b;i+=st)o.push(i);return o;}
 function exportSVG(svg,name){
   const cs=getComputedStyle(document.documentElement); let s=new XMLSerializer().serializeToString(svg);
   s=s.replace(/var\((--[a-z0-9-]+)\)/g,(_,v)=>cs.getPropertyValue(v).trim()||"#000");
