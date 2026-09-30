@@ -30,7 +30,19 @@ The TL implementation is a line-by-line port of the reference Python code (`TL_m
 - W. Takeda and P. Lucas, "A model of heterogeneous undercooled liquid and glass accounting for temperature-dependent nonexponentiality and enthalpy fluctuation," *J. Chem. Phys.* **160**, 174504 (2024). https://doi.org/10.1063/5.0196812
 - W. Takeda and P. Lucas, "Relationship between enthalpy fluctuation and nonexponential relaxation in glass-forming liquids," *Mater. Adv.* **7**, 5729 (2026). https://doi.org/10.1039/d6ma00442c
 
-RelaxPy: C. J. Wilkinson, Y. Z. Mauro and J. C. Mauro, *SoftwareX* (2018).
+### Comparison models
+
+**Tool–Narayanaswamy–Moynihan (TNM)**
+- A. Q. Tool, *J. Am. Ceram. Soc.* **29**, 240–253 (1946).
+- O. S. Narayanaswamy, *J. Am. Ceram. Soc.* **54**, 491–498 (1971). https://doi.org/10.1111/j.1151-2916.1971.tb12186.x
+- C. T. Moynihan, A. J. Easteal, M. A. DeBolt and J. Tucker, *J. Am. Ceram. Soc.* **59**, 12–16 (1976). https://doi.org/10.1111/j.1151-2916.1976.tb09376.x
+- I. M. Hodge, *Macromolecules* **20**, 2897 (1987).
+- G. W. Scherer, "Volume relaxation far from equilibrium," *J. Am. Ceram. Soc.* **69**, 374–381 (1986). https://doi.org/10.1111/j.1151-2916.1986.tb04764.x
+
+**MAP nonequilibrium viscosity / RelaxPy**
+- J. C. Mauro, D. C. Allan and M. Potuzak, "Nonequilibrium viscosity of glass," *Phys. Rev. B* **80**, 094204 (2009). https://doi.org/10.1103/PhysRevB.80.094204
+- X. Guo, J. C. Mauro, D. C. Allan and M. M. Smedskjaer, *J. Am. Ceram. Soc.* **101**, 1169–1179 (2018). https://doi.org/10.1111/jace.15272
+- C. J. Wilkinson, Y. Z. Mauro and J. C. Mauro, "RelaxPy: Python code for modeling of glass relaxation behavior," *SoftwareX* **7**, 255–258 (2018). https://doi.org/10.1016/j.softx.2018.07.008
 
 ---
 Lucas group · Department of Materials Science and Engineering · University of Arizona

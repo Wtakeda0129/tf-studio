@@ -16,7 +16,8 @@ jobs:
       max-parallel: 1   # one platform at a time, so both upload into the same GitHub Release without racing to create it
       matrix:
         include:
-          # macOS is paused until its build is fixed (see mac-check.yml); Windows publishes normally
+          - os: macos-latest
+            target: --mac
           - os: windows-latest
             target: --win
     runs-on: ${{ matrix.os }}
