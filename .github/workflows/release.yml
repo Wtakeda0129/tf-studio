@@ -35,14 +35,22 @@ jobs:
           cache-dependency-path: desktop/package-lock.json
       - run: npm ci
       - run: bash sync_apps.sh
+      - name: Work around hdiutil "resource busy" on GitHub macOS runners
+        if: matrix.os == 'macos-latest'
+        run: |
+          sudo mdutil -a -i off || true
+          # XProtect / Spotlight scanning keeps freshly mounted DMG volumes busy; stop them for the duration of the build
+          ( for i in $(seq 1 180); do sudo pkill -9 XProtect >/dev/null 2>&1 || true; sudo pkill -9 mds_stores >/dev/null 2>&1 || true; sleep 5; done ) &
       - name: Build and publish
         run: |
-          set -o pipefail
-          npx electron-builder --config electron-builder.config.js ${{ matrix.target }} --publish always 2>&1 | tee build.log
-          code=${PIPESTATUS[0]}
+          set +e +o pipefail
+          npx electron-builder --config electron-builder.config.js ${{ matrix.target }} --publish always > build.log 2>&1
+          code=$?
+          cat build.log
           if [ "$code" -ne 0 ]; then
             # surface the error as annotations (visible on the run page without opening the log)
-            grep -nE "⨯|Error:|error " build.log | head -20 | while IFS= read -r line; do echo "::error title=electron-builder::${line:0:900}"; done
+            grep -nE "⨯|Error|error|failed|Cannot" build.log | head -20 | while IFS= read -r line; do echo "::error title=electron-builder::${line:0:900}"; done
+            tail -12 build.log | while IFS= read -r line; do echo "::notice title=build tail::${line:0:900}"; done
           fi
           exit $code
         env:

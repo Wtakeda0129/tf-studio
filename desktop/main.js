@@ -1,5 +1,5 @@
 // Tf Studio (Thermal Fingerprint) — Electron shell
-// Opens a launcher window; each tool (TL Model Explorer, Relaxation Fitter) is a self-contained HTML page in ./app.
+// Opens a launcher window; each tool (Learn, Lab, Fitter) is a self-contained HTML page in ./app.
 // Updates: electron-updater checks the "publish" feed configured in package.json (GitHub Releases by default).
 const { app, BrowserWindow, Menu, dialog, shell, ipcMain } = require("electron");
 const path = require("path");
@@ -7,9 +7,12 @@ let autoUpdater = null;
 try { autoUpdater = require("electron-updater").autoUpdater; } catch (e) { autoUpdater = null; }
 
 const TOOLS = {
-  explorer: { file: "explorer.html", title: "Tf Studio · Explorer" },
+  learn: { file: "learn.html", title: "Tf Studio · Learn" },
+  explorer: { file: "explorer.html", title: "Tf Studio · Lab" },
   fitter: { file: "fitter.html", title: "Tf Studio · Fitter" },
 };
+// a link to another tool's page opens (or focuses) that tool's own window
+function toolForUrl(url) { for (const [k, t] of Object.entries(TOOLS)) if (new RegExp("/" + t.file.replace(".", "\\.") + "(#.*)?$").test(url)) return k; return null; }
 let launcher = null;
 const toolWindows = {};
 
@@ -30,7 +33,11 @@ function openTool(key) {
   w.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url)) shell.openExternal(url); return { action: "deny" }; });
   w.on("page-title-updated", e => e.preventDefault());   // keep the tool name in the title bar
   // the "Tf Studio" logo in each tool links to index.html: bring up the launcher instead of navigating away
-  w.webContents.on("will-navigate", (e, url) => { if (/index\.html$/.test(url)) { e.preventDefault(); openLauncher(); } else if (/^https?:/.test(url)) { e.preventDefault(); shell.openExternal(url); } });
+  w.webContents.on("will-navigate", (e, url) => {
+    if (/index\.html(#.*)?$/.test(url)) { e.preventDefault(); openLauncher(); return; }
+    if (/^https?:/.test(url)) { e.preventDefault(); shell.openExternal(url); return; }
+    const k = toolForUrl(url); if (k && k !== key) { e.preventDefault(); openTool(k); }
+  });
   toolWindows[key] = w; w.on("closed", () => { delete toolWindows[key]; });
 }
 
@@ -62,8 +69,9 @@ function buildMenu() {
     ...(isMac ? [{ label: app.name, submenu: [{ role: "about" }, { label: "Check for Updates…", click: checkForUpdatesManually }, { type: "separator" }, { role: "hide" }, { role: "hideOthers" }, { role: "unhide" }, { type: "separator" }, { role: "quit" }] }] : []),
     { label: "File", submenu: [
       { label: "Launcher", accelerator: "CmdOrCtrl+0", click: openLauncher },
-      { label: "Explorer", accelerator: "CmdOrCtrl+1", click: () => openTool("explorer") },
-      { label: "Fitter", accelerator: "CmdOrCtrl+2", click: () => openTool("fitter") },
+      { label: "Learn", accelerator: "CmdOrCtrl+1", click: () => openTool("learn") },
+      { label: "Lab", accelerator: "CmdOrCtrl+2", click: () => openTool("explorer") },
+      { label: "Fitter", accelerator: "CmdOrCtrl+3", click: () => openTool("fitter") },
       { type: "separator" }, isMac ? { role: "close" } : { role: "quit" } ] },
     { role: "editMenu" },
     { label: "View", submenu: [{ role: "reload" }, { role: "toggleDevTools" }, { type: "separator" }, { role: "resetZoom" }, { role: "zoomIn" }, { role: "zoomOut" }, { type: "separator" }, { role: "togglefullscreen" }] },

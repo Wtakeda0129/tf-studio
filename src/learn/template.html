@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tf Studio · Learn</title>
+<meta name="description" content="How the TNM, MAP (RelaxPy) and Takeda–Lucas models describe glass relaxation: the mathematics of each model, and what separates a mean-field fictive temperature from a distribution of local fictive temperatures.">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<style>
+:root{--bg:#f5f6f8;--panel:#fff;--ink:#16202c;--muted:#5d6b7c;--line:#dfe3e9;--grid:#eef0f4;--accent:#2a6fdb;--soft:#eef1f5;--code:#f0f3f7;
+  --mTL:#2a6fdb;--mTNM:#d9480f;--mMAP:#2b9348;--c1:#1f5fbf;--c2:#d9480f;--c3:#2b9348;--c4:#8e44ad;--c5:#b8860b;--c6:#0e8f9c;--callout:#f3f7ff;--callout-line:#c9dafb}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#10141a;--panel:#1a2029;--ink:#e6ebf2;--muted:#93a1b3;--line:#2c3543;--grid:#222a35;--accent:#5b9bff;--soft:#161b22;--code:#121820;
+  --mTL:#5b9bff;--mTNM:#ff8a4c;--mMAP:#5fd17f;--c1:#5b9bff;--c2:#ff8a4c;--c3:#5fd17f;--c4:#c08be0;--c5:#e3b341;--c6:#4fd0dc;--callout:#152033;--callout-line:#2a3f63}}
+:root[data-theme=dark]{--bg:#10141a;--panel:#1a2029;--ink:#e6ebf2;--muted:#93a1b3;--line:#2c3543;--grid:#222a35;--accent:#5b9bff;--soft:#161b22;--code:#121820;
+  --mTL:#5b9bff;--mTNM:#ff8a4c;--mMAP:#5fd17f;--c1:#5b9bff;--c2:#ff8a4c;--c3:#5fd17f;--c4:#c08be0;--c5:#e3b341;--c6:#4fd0dc;--callout:#152033;--callout-line:#2a3f63}
+*{box-sizing:border-box}
+html,body{margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{background:var(--bg);color:var(--ink);font:15.5px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--accent)}
+[hidden]{display:none!important}
+.tp{display:block;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:12px 0 4px}
+.part{margin:56px 0 0;padding:18px 0 4px;border-top:2px solid var(--line)}
+.partlabel{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:800}
+.parth{margin:4px 0 6px!important;font-size:30px!important}
+.modelsw{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 8px;font-size:14px}
+.modelsw span{color:var(--muted);font-weight:600;margin-right:4px}
+.modelsw button{font:inherit;font-weight:650;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:8px;padding:5px 12px;cursor:pointer}
+.modelsw button.on{background:var(--mc);border-color:var(--mc);color:#fff}
+header.top .modelsw{margin:0;padding:3px 5px;font-size:13px}
+header.top .modelsw button{padding:3px 9px}
+.card h4 span{display:inline}
+.busy{opacity:.55;transition:opacity .15s}
+
+header.top{position:sticky;top:0;z-index:10;background:var(--panel);border-bottom:1px solid var(--line)}
+header.top .in{max-width:1240px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:baseline;gap:7px;color:inherit;text-decoration:none}
+.brand h1{margin:0;font-size:18px;font-weight:720}
+.brand span{font-size:13px;color:var(--muted);font-weight:600}
+header.top .modelsw{margin-left:auto}
+header.top nav{margin-left:14px;display:flex;gap:14px;font-size:14px;flex-wrap:wrap}
+header.top nav a{text-decoration:none;font-weight:600}
+.layout{max-width:1240px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:210px minmax(0,1fr);gap:34px}
+.toc{position:sticky;top:64px;align-self:start;padding:26px 0;font-size:14px}
+.toc b{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.toc a{display:block;padding:4px 0 4px 10px;color:var(--muted);text-decoration:none;border-left:2px solid var(--line)}
+.toc a.on{color:var(--ink);border-left-color:var(--accent);font-weight:600}
+main{padding:26px 0 40px;min-width:0}
+.prose{max-width:780px}
+h2{font-size:26px;letter-spacing:-.2px;margin:44px 0 10px;line-height:1.25}
+h2 .num{color:var(--muted);font-weight:500;margin-right:6px}
+h3{font-size:17.5px;margin:26px 0 6px}
+.lede{font-size:18px;color:var(--muted);max-width:780px;margin:6px 0 0}
+.badge{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 9px;border-radius:999px;color:#fff;vertical-align:middle;margin-left:6px}
+.t-TNM{background:var(--mTNM)}.t-MAP{background:var(--mMAP)}.t-TL{background:var(--mTL)}
+.eq{overflow-x:auto;overflow-y:hidden;margin:10px 0;padding:2px 0}
+.katex-display{margin:.7em 0}
+.callout{background:var(--callout);border:1px solid var(--callout-line);border-radius:12px;padding:12px 16px;margin:16px 0;max-width:780px}
+.callout b.h{display:block;margin-bottom:2px}
+.callout ul{margin:6px 0 0;padding-left:20px}
+.callout.m-TNM{border-left:4px solid var(--mTNM)}.callout.m-MAP{border-left:4px solid var(--mMAP)}.callout.m-TL{border-left:4px solid var(--mTL)}
+.sym{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:14px;color:var(--muted);margin:8px 0 4px;max-width:780px}
+.sym dt{color:var(--ink);white-space:nowrap}
+.sym dd{margin:0}
+.small{font-size:13.5px;color:var(--muted)}
+/* interactive */
+.lab{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px 16px;margin-top:14px}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:end;font-size:14px}
+.ctrl label{display:flex;flex-direction:column;gap:3px;color:var(--muted);font-weight:600;font-size:12.5px}
+.ctrl select,.ctrl input[type=range]{font:inherit;font-size:14px}
+.ctrl select{padding:4px 6px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.ctrl output{color:var(--ink);font-weight:600}
+.scrub{display:flex;gap:10px;align-items:center;margin:12px 0 4px}
+.scrub input{flex:1}
+.btn{font:inherit;font-size:14px;font-weight:650;padding:6px 14px;border-radius:9px;border:1px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.state{font-size:14px;color:var(--muted);min-height:1.5em}
+.state b{color:var(--ink)}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:8px}
+.cols2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.card{border:1px solid var(--line);border-radius:12px;padding:8px 10px 6px;min-width:0}
+.card h4{margin:0 0 2px;font-size:14.5px;display:flex;align-items:center;gap:8px}
+.card h4 i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.card .sub{font-size:12.5px;color:var(--muted);margin:0 0 2px}
+.card .read{font-size:12.5px;color:var(--muted);margin-top:2px}
+.card .read b{color:var(--ink)}
+svg{display:block;width:100%;height:auto}
+svg text{fill:var(--muted);font-size:11px;font-family:inherit}
+svg text.al{fill:var(--ink);font-size:11.5px}
+.legend{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:2px}
+.legend i{display:inline-block;width:16px;height:0;border-top:2.5px solid;vertical-align:middle;margin-right:5px}
+.legend i.d{border-top-style:dashed}
+table.cmp{border-collapse:collapse;width:100%;font-size:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+table.cmp th,table.cmp td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.cmp thead th{background:var(--soft);font-size:13px}
+table.cmp tbody th{font-weight:600;color:var(--muted);width:22%}
+table.cmp tr:last-child td,table.cmp tr:last-child th{border-bottom:0}
+.tablewrap{overflow-x:auto;margin-top:12px;position:relative}
+.refs p{font-size:14px;margin:7px 0}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.cta a{display:inline-flex;align-items:center;padding:8px 16px;border-radius:10px;font-weight:650;text-decoration:none;border:1px solid var(--line);background:var(--panel)}
+.cta a.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;color:var(--muted);font-size:13px}
+@media (max-width:980px){.layout{grid-template-columns:1fr}.toc{display:none}.cols{grid-template-columns:1fr}.cols2{grid-template-columns:1fr}}
+@media (max-width:760px){#hdrsw{display:none}header.top nav{margin-left:auto}}
+@media (max-width:600px){header.top nav{gap:10px;font-size:13px}h2{font-size:22px}.parth{font-size:24px!important}}
+.brand h1{white-space:nowrap}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="index.html" title="Tf Studio home"><h1>Tf Studio</h1><span>Learn</span></a>
+  <div class="modelsw" id="hdrsw" title="Model used for the Part I simulations"><button type="button" data-m="TL" class="on" style="--mc:var(--mTL)">TL</button><button type="button" data-m="TNM" style="--mc:var(--mTNM)">TNM</button><button type="button" data-m="MAP" style="--mc:var(--mMAP)">MAP</button></div>
+  <nav><a href="#experiments">Experiments</a><a href="#models">Models</a><a href="explorer.html" data-tool="explorer">Lab</a><a href="fitter.html" data-tool="fitter">Fitter</a></nav>
+</div></header>
+
+<div class="layout">
+<aside class="toc" id="toc">
+  <b>Contents</b>
+  <a href="#fictive">1 · Fictive temperature</a>
+  <span class="tp">Part I · Experiments</span>
+  <a href="#annealing">2 · Isothermal annealing</a>
+  <a href="#kovacs">3 · Kovacs: asymmetry, memory</a>
+  <a href="#dsc">4 · DSC cooling and heating</a>
+  <a href="#recovery">5 · Enthalpy recovery</a>
+  <a href="#mdsc">6 · MDSC and C<sub>p</sub>*</a>
+  <span class="tp">Part II · Models</span>
+  <a href="#tnm">7 · TNM</a>
+  <a href="#map">8 · MAP / RelaxPy</a>
+  <a href="#tl">9 · Takeda–Lucas</a>
+  <a href="#compare">10 · See the difference</a>
+  <a href="#summary">11 · Side by side</a>
+  <a href="#reading">12 · Further reading</a>
+</aside>
+
+<main>
+<div class="prose">
+  <h2 style="margin-top:8px">Learn: glass relaxation, from experiment to model</h2>
+  <p class="lede">Part I covers the experiments used to study structural relaxation: annealing, Kovacs jumps, DSC, enthalpy recovery and modulated DSC. Each one comes with a live simulation. Part II explains the mathematics of the three models and where they differ. TNM gives the whole sample one fictive temperature. MAP splits the relaxation into Prony components, and all of them return to the same temperature in equilibrium. The Takeda–Lucas model gives every domain its own fictive temperature, so the fictive temperatures stay spread out even in the equilibrium liquid.</p>
+</div>
+
+<!-- 1 -->
+<section id="fictive" class="prose">
+  <h2><span class="num">1</span>Fictive temperature and structural relaxation</h2>
+  <p>Above the glass transition, a liquid's structure keeps pace with temperature. On cooling, the structural relaxation time \(\tau\) grows so quickly that the structure eventually cannot keep up and freezes. Tool described the frozen structure by a <b>fictive temperature</b> \(T_f\): the temperature at which the liquid would have this structure in equilibrium. In equilibrium \(T_f = T\). In the glass, \(T_f\) records the thermal history, which is why Tf Studio calls it the <i>thermal fingerprint</i>.</p>
+  <p>Enthalpy and volume follow \(T_f\). With liquid and glass heat capacities \(C_{p,l}\) and \(C_{p,g}\), the normalized heat capacity measured by DSC is</p>
+  <div class="eq">$$C_p^{N}(T) = \frac{C_p - C_{p,g}}{C_{p,l} - C_{p,g}} = \frac{dT_f}{dT}.$$</div>
+  <p>Relaxation towards equilibrium has three well-known signatures, and every model below has to reproduce all three:</p>
+  <ul>
+    <li><b>Nonexponential.</b> After a small temperature step, the response follows a stretched exponential (Kohlrausch–Williams–Watts, KWW), \(\Psi(t)=\exp[-(t/\tau)^{\beta}]\) with \(0<\beta\le 1\).</li>
+    <li><b>Nonlinear.</b> \(\tau\) depends on the structure (\(T_f\)) as well as on \(T\). A glass therefore relaxes faster when it approaches equilibrium from above than from below (Kovacs asymmetry).</li>
+    <li><b>Non-Arrhenius.</b> In equilibrium, \(\tau(T)\) follows a VFT, Adam–Gibbs or MYEGA form, and its steepness at \(T_g\) is the fragility \(m = d\log_{10}\tau/d(T_g/T)\big|_{T_g}\).</li>
+  </ul>
+  <p>All three models describe a thermal history as a sequence of small temperature steps \(\Delta T_j\) and add up each step's delayed response. They differ in <b>what relaxes</b> (one \(T_f\) or many \(T_{f,i}\)) and in <b>where each part relaxes to</b>.</p>
+</section>
+
+<!-- ============ PART I: EXPERIMENTS ============ -->
+<div class="part" id="experiments">
+  <span class="partlabel">Part I</span>
+  <h2 class="parth">Experiments: how relaxation is measured</h2>
+  <p class="lede">Each experiment below comes with a live simulation of the same example glass (T<sub>g</sub> = 734.5 K, m = 35.3). The switch picks the model that runs it. The models themselves are explained in Part II.</p>
+  <div class="modelsw" role="radiogroup" aria-label="Model used for the simulations">
+    <span>Simulate with</span>
+    <button type="button" data-m="TL" class="on" style="--mc:var(--mTL)">Takeda–Lucas</button>
+    <button type="button" data-m="TNM" style="--mc:var(--mTNM)">TNM</button>
+    <button type="button" data-m="MAP" style="--mc:var(--mMAP)">MAP / RelaxPy</button>
+  </div>
+</div>
+
+<section id="annealing" class="prose">
+  <h2><span class="num">2</span>Isothermal annealing (physical aging)</h2>
+  <p>The simplest relaxation experiment starts in equilibrium, changes the temperature quickly to an annealing temperature \(T_a\) below \(T_g\), and follows a structure-sensitive property as the glass ages at \(T_a\). Tool used volume and refractive index. DSC, dilatometry, density and optical measurements are common today. When the changes are small, enthalpy, volume and refractive index all follow the fictive temperature, so every property gives the same normalized <b>relaxation function</b>:</p>
+  <div class="eq">$$\phi(t)=\frac{T_f(t)-T_a}{T_f(0)-T_a}\approx\frac{H(t)-H_\infty}{H(0)-H_\infty}\approx\frac{V(t)-V_\infty}{V(0)-V_\infty}.$$</div>
+  <p>If relaxation were linear, \(\phi(t)\) would be a single KWW function, \(\exp[-(t/\tau)^{\beta}]\), with the equilibrium \(\tau(T_a)\). In reality \(\tau\) depends on the current structure. After a down-jump the glass starts with \(T_f>T_a\), where relaxation is faster. As \(T_f\) falls, relaxation slows down. The measured curve therefore starts ahead of the linear KWW curve and ends behind it: it is stretched by nonexponentiality <i>and</i> nonlinearity. Separating the two is exactly what the models are for.</p>
+</section>
+<div class="lab"><div class="cols2">
+  <div class="card"><h4><span>Relaxation after a 10 K down-jump</span></h4><p class="sub">Solid: model. Dashed: linear KWW with the equilibrium τ(T<sub>a</sub>) and the same β.</p><div id="x-anneal"></div></div>
+  <div class="card"><h4><span>Reading the curve</span></h4><div class="small" id="x-anneal-note" style="font-size:14px;line-height:1.6"></div></div>
+</div></div>
+
+<section id="kovacs" class="prose">
+  <h2><span class="num">3</span>Kovacs experiments: asymmetry and memory</h2>
+  <p>Kovacs followed the volume of poly(vinyl acetate) after temperature jumps, writing the departure from equilibrium as \(\delta(t)=[V(t)-V_\infty]/V_\infty\approx\Delta\alpha\,[T_f(t)-T]\). Two of his experiments became the standard tests for any relaxation model.</p>
+  <h3>Asymmetry of approach</h3>
+  <p>Equal and opposite jumps, \(T\pm\Delta T\to T\), do not give mirror-image curves. After a down-jump (contraction) the glass starts with a high \(T_f\) and relaxes quickly, then slows down as it densifies. After an up-jump (expansion) the glass starts compact and slow, and it accelerates as it expands. Expansion therefore reaches equilibrium later. The asymmetry is a direct signature of <b>nonlinearity</b>, the dependence of \(\tau\) on \(T_f\).</p>
+  <h3>Memory effect (Kovacs, Macedo–Napolitano crossover)</h3>
+  <p>A glass is equilibrated at \(T_0\), quenched to \(T_1\), and aged just until its property equals the equilibrium value at a higher temperature \(T_2\). It is then jumped to \(T_2\). The average structure is now "right" for \(T_2\), yet the property does not stay put. It first moves <i>away</i> from equilibrium, passes a maximum (the Kovacs hump), and only then returns. Macedo and Napolitano found the same crossover in the refractive index of a borosilicate crown glass, and showed that it needs at least two relaxation times. The hump is larger when \(T_1\) is lower.</p>
+  <p>The memory effect shows that one number, the average \(T_f\), does not define the state of a glass. Some parts of the structure have relaxed further than the average and some less. At \(T_2\), the fast parts rebound before the slow parts finish relaxing. TNM encodes this history in its nonexponential memory kernel, MAP in its Prony components, and TL in its domain \(T_{f,i}\).</p>
+</section>
+<div class="lab"><div class="cols2">
+  <div class="card"><h4><span>Asymmetry: ±5 K jumps to T<sub>g</sub> − 10 K</span></h4><p class="sub">δ ∝ T<sub>f</sub> − T. Contraction (down-jump) vs. expansion (up-jump); the expansion curve is shown as −δ so the two can be compared.</p><div id="x-asym"></div></div>
+  <div class="card"><h4><span>Memory: T<sub>0</sub> → T<sub>1</sub> → T<sub>2</sub> = T<sub>g</sub> − 10 K</span></h4><p class="sub">Aged at T<sub>1</sub> until ⟨T<sub>f</sub>⟩ = T<sub>2</sub>, then jumped to T<sub>2</sub>.</p><div id="x-memory"></div></div>
+</div></div>
+
+<section id="dsc" class="prose">
+  <h2><span class="num">4</span>DSC on cooling and heating</h2>
+  <p>A differential scanning calorimeter measures the heat flow needed to change temperature at a constant rate \(q\), which gives \(C_p=\Phi/q\). Through the glass transition, \(C_p\) steps between the glass value \(C_{p,g}\) and the liquid value \(C_{p,l}\). Both baselines are usually fit linearly in \(T\), and the scan is normalized:</p>
+  <div class="eq">$$C_p^{N}(T)=\frac{C_p(T)-C_{p,g}(T)}{C_{p,l}(T)-C_{p,g}(T)}=\frac{dT_f}{dT}.$$</div>
+  <p><b>On cooling</b>, \(C_p^N\) falls smoothly from 1 to 0 as the structure freezes. The frozen-in, or limiting, fictive temperature \(T_f'\) follows from the heating scan by Moynihan's area-matching method. Here \(T'\) lies deep in the glass and \(T^*\) in the liquid:</p>
+  <div class="eq">$$\int_{T_f'}^{T^*}\!\big(C_{p,l}-C_{p,g}\big)\,dT=\int_{T'}^{T^*}\!\big(C_p-C_{p,g}\big)\,dT\quad\Longleftrightarrow\quad T_f' = T^*-\int_{T'}^{T^*} C_p^{N}\,dT.$$</div>
+  <p><b>On heating</b>, the glass keeps its structure until \(\tau\) becomes short enough, and then catches up with the liquid. A glass cooled slowly (low \(T_f'\)) overshoots the liquid line: the enthalpy it lost is recovered in a peak. A glass cooled faster than it is heated relaxes first, which shows up as an exothermic dip below \(T_g\).</p>
+  <p>Slower cooling gives a lower \(T_f'\), and Moynihan and co-workers showed that the cooling-rate dependence carries the activation energy. The fragility follows from it:</p>
+  <div class="eq">$$\frac{d\ln|q_c|}{d(1/T_f')}\approx-\frac{\Delta h}{R},\qquad m\approx\frac{\Delta h}{R\,T_g\ln 10}.$$</div>
+  <p class="small">The relation is approximate. In the simulation, compare the apparent \(m\) with the input value of 35.3.</p>
+</section>
+<div class="lab"><div class="cols2">
+  <div class="card"><h4><span>Heating at 10 K/min after cooling at q<sub>c</sub></span></h4><p class="sub">Normalized C<sub>p</sub><sup>N</sup> = dT<sub>f</sub>/dT. Dashed: the 10 K/min cooling scan.</p><div id="x-dsc"></div></div>
+  <div class="card"><h4><span>Cooling-rate dependence of T<sub>f</sub>′ (Moynihan)</span></h4><p class="sub">log<sub>10</sub> q<sub>c</sub> vs 1000/T<sub>f</sub>′. The slope gives Δh/R.</p><div id="x-moyn"></div></div>
+</div></div>
+
+<section id="recovery" class="prose">
+  <h2><span class="num">5</span>Enthalpy relaxation and recovery with DSC</h2>
+  <p>Aging can also be followed with DSC. The glass is cooled to \(T_a\), annealed for a time \(t_a\), cooled back into the glass, and heated through \(T_g\). The enthalpy lost during annealing is regained on heating, so it appears as extra area under the \(C_p\) peak compared with an unaged reference scan:</p>
+  <div class="eq">$$\Delta H(t_a)=\int\!\big[C_p^{\text{aged}}(T)-C_p^{\text{ref}}(T)\big]\,dT=\Delta C_p\,\big[T_f(0)-T_f(t_a)\big],\qquad \phi(t_a)=1-\frac{\Delta H(t_a)}{\Delta H_\infty},\quad \Delta H_\infty=\Delta C_p\,\big[T_f(0)-T_a\big].$$</div>
+  <p>As \(t_a\) grows, the recovery peak becomes taller and moves to higher temperature. \(\Delta H\) rises roughly linearly in \(\log t_a\) and then levels off at \(\Delta H_\infty\), when the glass has reached equilibrium at \(T_a\). The model parameters are often fitted to a set of such scans, together with scans at several cooling rates, because the combination separates \(x\) (or its equivalent) from \(\beta\).</p>
+</section>
+<div class="lab"><div class="cols2">
+  <div class="card"><h4><span>Heating scans after annealing at T<sub>g</sub> − 20 K</span></h4><p class="sub">Cooled at 10 K/min to T<sub>a</sub>, annealed for t<sub>a</sub>, then heated at 10 K/min.</p><div id="x-rec"></div></div>
+  <div class="card"><h4><span>Recovered enthalpy vs annealing time</span></h4><p class="sub">ΔH/ΔC<sub>p</sub> = T<sub>f</sub>(0) − T<sub>f</sub>(t<sub>a</sub>). Dots: the scans on the left. Dashed: ΔH<sub>∞</sub>/ΔC<sub>p</sub>.</p><div id="x-dh"></div></div>
+</div></div>
+
+<section id="mdsc" class="prose">
+  <h2><span class="num">6</span>Modulated DSC: complex heat capacity, reversing and non-reversing</h2>
+  <p>Temperature-modulated DSC (MDSC, TMDSC), introduced by Reading and co-workers in the early 1990s, adds a small sinusoid to the underlying ramp:</p>
+  <div class="eq">$$T(t)=T_0+q\,t+A_T\sin\omega t,\qquad \Phi(t)=\langle\Phi\rangle(t)+A_\Phi\sin(\omega t-\varphi).$$</div>
+  <p>The heat flow is split into three signals. The <b>total</b> signal is the average heat flow, which is the conventional DSC curve. The <b>reversing</b> signal is the amplitude ratio. The <b>non-reversing</b> signal is what remains:</p>
+  <div class="eq">$$C_{\text{tot}}=\frac{\langle\Phi\rangle}{q},\qquad C_{\text{rev}}=\frac{A_\Phi}{A_T\,\omega}=|C^*|,\qquad C_{\text{nrev}}=C_{\text{tot}}-C_{\text{rev}}.$$</div>
+  <p>Schawe put the method on the footing of linear response theory. The modulation measures a <b>complex heat capacity</b> at frequency \(\omega\). The phase angle \(\varphi\) splits it into a storage part \(C'\) and a loss part \(C''\), and both follow from the relaxation function:</p>
+  <div class="eq">$$C^*(\omega)=C'-iC''=|C^*|e^{-i\varphi}=C_{p,g}+\Delta C_p\Big[1-i\omega\!\int_0^\infty\!\phi(t)\,e^{-i\omega t}\,dt\Big]\ \xrightarrow{\ \text{Debye}\ }\ C_{p,g}+\frac{\Delta C_p}{1+i\omega\tau}.$$</div>
+  <p>\(C'\) steps from \(C_{p,l}\) to \(C_{p,g}\), and \(C''\) peaks at the <b>dynamic glass transition</b>, where \(\omega\,\tau(T)\approx1\). Tf Studio computes the normalized \(C^*\) period by period, as the Fourier ratio of \(dT_f/dt\) to \(dT/dt\) at \(\omega\).</p>
+  <div class="callout"><b class="h">Caveats: why reversing and non-reversing are not "thermodynamic" and "kinetic"</b>
+    <ul>
+      <li><b>The reversing signal is a dynamic quantity.</b> \(C_{\text{rev}}=|C^*(\omega)|\) steps at the temperature where \(\omega\tau\approx1\), not at the conventional (fictive-temperature) \(T_g\). This step moves with the modulation period. It is not the equilibrium \(C_p\) of the liquid or the glass.</li>
+      <li><b>The non-reversing signal is not the enthalpy relaxation.</b> Because \(C_{\text{nrev}}=C_{\text{tot}}-C_{\text{rev}}\), it inherits the frequency dependence of \(C_{\text{rev}}\). It mixes the enthalpy recovery of the underlying scan with the dispersion of the dynamic glass transition, and it changes with period and rate. It is nonzero even on cooling, where no recovery peak exists (switch to cooling below). Using a kinetic model of structural relaxation, Hutchinson and Montserrat showed how both components in the glass-transition region depend on the modulation conditions.</li>
+      <li><b>Linear response needs linearity and stationarity.</b> Schawe's analysis asks for a small amplitude, several periods across the transition, and a phase angle corrected for instrumental heat-transfer lag. Under these conditions, \(C'\) and \(C''\) are the meaningful quantities. With long periods (400 s at 1 K/min, about 7 K per period), the sample changes within one period, and the separation becomes unreliable.</li>
+    </ul>
+  </div>
+</section>
+<div class="lab">
+  <div class="ctrl" style="margin-bottom:6px">
+    <label>Direction <select id="md-dir"><option value="heat" selected>Heating (after cooling at 1 K/min)</option><option value="cool">Cooling</option></select></label>
+    <label>Period <select id="md-P"><option value="40">40 s</option><option value="120" selected>120 s</option><option value="400">400 s</option></select></label>
+    <span class="small">Underlying rate 1 K/min, amplitude 0.5 K</span>
+  </div>
+  <div class="cols2">
+    <div class="card"><h4><span>MDSC signals (normalized)</span></h4><p class="sub">Total ⟨Φ⟩/q, reversing |C*|, non-reversing = total − reversing, and loss C″</p><div id="x-md"></div></div>
+    <div class="card"><h4><span>Reversing C<sub>p</sub> depends on the period</span></h4><p class="sub">|C*| for 40, 120 and 400 s, compared with the total (conventional) signal</p><div id="x-md2"></div></div>
+  </div>
+</div>
+
+<!-- ============ PART II: MODELS ============ -->
+<div class="part" id="models">
+  <span class="partlabel">Part II</span>
+  <h2 class="parth">Models: three ways to describe a glass that is still relaxing</h2>
+</div>
+
+<!-- 2 -->
+<section id="tnm" class="prose">
+  <h2><span class="num">7</span>Tool–Narayanaswamy–Moynihan <span class="badge t-TNM">mean field</span></h2>
+  <p>TNM uses a single fictive temperature. Following Narayanaswamy, time is replaced by a <b>reduced time</b> \(\xi\) that runs at the current relaxation rate, and each temperature step relaxes with a KWW function of \(\xi\):</p>
+  <div class="eq">$$T_f(t) = T(t) - \int_0^t M\big(\xi(t)-\xi(t')\big)\,\frac{dT}{dt'}\,dt', \qquad M(\xi)=\exp\!\left(-\xi^{\beta}\right), \qquad \xi(t)=\int_0^t\frac{dt'}{\tau\big(T(t'),T_f(t')\big)}.$$</div>
+  <p>Nonlinearity enters through the Tool–Narayanaswamy relaxation time, where the parameter \(0<x\le1\) splits the activation energy between the real and fictive temperatures:</p>
+  <div class="eq">$$\tau(T,T_f) = A\exp\!\left[\frac{x\,\Delta h}{RT} + \frac{(1-x)\,\Delta h}{RT_f}\right].$$</div>
+  <p>Moynihan and co-workers discretized the integral for a history of steps \(\Delta T_j\):</p>
+  <div class="eq">$$T_{f,n} = T_0 + \sum_{j=1}^{n}\Delta T_j\left[1-\exp\!\left(-\Big(\sum_{k=j}^{n}\frac{\Delta t_k}{\tau_k}\Big)^{\beta}\right)\right].$$</div>
+  <p>Alternatively, the KWW function can be replaced by a Prony series, \(\exp(-\xi^{\beta})\approx\sum_i w_i\exp(-k_i\xi)\). Each term then updates recursively, which is much faster for long histories. The exponentials in this sum are a mathematical expansion of one relaxation function. They are not regions of the glass.</p>
+  <dl class="sym">
+    <dt>\(\Delta h/R\)</dt><dd>apparent activation energy. Tf Studio sets \(\Delta h/R = m\ln 10\,T_g\), so that the equilibrium fragility equals \(m\).</dd>
+    <dt>\(A\)</dt><dd>fixed by \(\tau(T_g)=100\) s</dd>
+    <dt>\(x,\ \beta\)</dt><dd>nonlinearity and nonexponentiality. Both are constants.</dd>
+  </dl>
+  <div class="callout m-TNM"><b class="h">What TNM assumes</b>
+    <ul>
+      <li>The structure is described by one order parameter, \(T_f\), and the whole sample shares one \(\tau(T,T_f)\). This is a <b>mean-field</b> description.</li>
+      <li>Nonexponentiality is put in by hand through \(\beta\), and it does not change with temperature.</li>
+      <li>In equilibrium, \(T_f = T\) exactly. The model has no spread of local structures, so it cannot describe the fluctuation \(\delta T_f\).</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="map" class="prose">
+  <h2><span class="num">8</span>MAP nonequilibrium viscosity with a Prony series (RelaxPy) <span class="badge t-MAP">Prony heterogeneity</span></h2>
+  <p>The Mauro–Allan–Potuzak (MAP) model changes where \(\tau\) comes from. The relaxation time follows from the <b>nonequilibrium viscosity</b> through the Maxwell relation \(\tau=\eta/K_s\). In equilibrium, the viscosity follows the MYEGA equation, evaluated at \(T_f\):</p>
+  <div class="eq">$$\log_{10}\eta_{\mathrm{eq}}(T_f) = \log_{10}\eta_\infty + \big(12-\log_{10}\eta_\infty\big)\frac{T_g}{T_f}\exp\!\left[\left(\frac{m}{12-\log_{10}\eta_\infty}-1\right)\left(\frac{T_g}{T_f}-1\right)\right].$$</div>
+  <p>Deep in the glass the viscosity instead follows a nonequilibrium branch. It is Arrhenius in \(T\), and \(T_f\) sets the frozen configurational entropy:</p>
+  <div class="eq">$$\log_{10}\eta_{\mathrm{ne}}(T,T_f) = A + \frac{B}{T} - C\exp\!\left[-\frac{T_g}{T_f}\left(\frac{m}{12-\log_{10}\eta_\infty}-1\right)\right].$$</div>
+  <p>An <b>ergodicity parameter</b> \(y\) blends the two branches. It equals 1 in equilibrium and decays as \(T\) and \(T_f\) move apart:</p>
+  <div class="eq">$$\log_{10}\eta(T,T_f) = y\,\log_{10}\eta_{\mathrm{eq}}(T_f) + (1-y)\,\log_{10}\eta_{\mathrm{ne}}(T,T_f), \qquad y=\left(\frac{\min(T,T_f)}{\max(T,T_f)}\right)^{p}.$$</div>
+  <p>The KWW relaxation is written as a <b>Prony series</b>. A few exponentials with fixed weights \(w_i\) and rate factors \(k_i\) reproduce the stretched exponential accurately (Mauro &amp; Mauro, 2018). Each term carries its own fictive temperature, relaxes towards the real temperature \(T\), and uses the relaxation time set by the global \(T_f\):</p>
+  <div class="eq">$$\exp\!\left[-\Big(\frac{t}{\tau}\Big)^{\beta}\right]\approx\sum_{i=1}^{N} w_i \exp\!\Big(-\frac{k_i t}{\tau}\Big),\qquad T_{f,i}(t_j)=T_j-\big[T_j-T_{f,i}(t_{j-1})\big]\exp\!\Big(-\frac{k_i\,\Delta t_j}{\tau(T_j,T_f)}\Big),\qquad T_f=\sum_{i} w_i\,T_{f,i}.$$</div>
+  <dl class="sym">
+    <dt>\(m,\ T_g,\ \eta_\infty\)</dt><dd>MYEGA parameters. By convention \(\eta(T_g)=10^{12}\) Pa·s.</dd>
+    <dt>\(A,\ B,\ C\)</dt><dd>nonequilibrium branch. Tf Studio sets \(A\) by continuity at \(T_g\).</dd>
+    <dt>\(p\)</dt><dd>ergodicity exponent. Tf Studio's default is \(p\approx0.308\,m\).</dd>
+    <dt>\(K_s,\ \{w_i,k_i\}\)</dt><dd>modulus in the Maxwell relation, and the Prony coefficients for a chosen \(\beta\)</dd>
+  </dl>
+  <div class="callout m-MAP"><b class="h">What MAP assumes</b>
+    <ul>
+      <li>The Prony terms can be read as regions that relax at different rates \(k_i/\tau\). After a fast cooling they freeze at different \(T_{f,i}\), so the glass <b>does</b> have a spread of fictive temperatures.</li>
+      <li>The weights \(w_i\) are fixed, and all terms share one \(\tau(T,T_f)\) set by the <i>average</i> \(T_f\). Nonlinearity therefore still acts in a mean-field way.</li>
+      <li>Every \(T_{f,i}\) relaxes to the same target, \(T\). In the equilibrium liquid the spread collapses: \(T_{f,i}=T\) for all \(i\), so <b>there is no distribution of \(T_{f,i}\) in equilibrium</b> and \(\delta T_f=0\).</li>
+      <li>\(\beta\) is fixed by the chosen Prony set and does not depend on temperature.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="tl" class="prose">
+  <h2><span class="num">9</span>Takeda–Lucas heterogeneous model <span class="badge t-TL">spatial heterogeneity</span></h2>
+  <p>The TL model starts from dynamic heterogeneity. The liquid is made of domains \(i\), and each domain has its own Vogel temperature \(T_{v,i}\), weight \(Y_i\), relaxation time \(\tau_i\) and local fictive temperature \(T_{f,i}\). The key step is that each domain relaxes towards its own <b>equilibrium local fictive temperature</b> \(T_{f,i}^{e}\), not towards \(T\). Only the average has to equal the real temperature:</p>
+  <div class="eq">$$\sum_{i=1}^{N} W_i^{e}\,T_{f,i}^{e} = \big\langle T_{f,i}^{e}\big\rangle = T. \tag{4}$$</div>
+  <p>Faster domains (smaller \(T_{v,i}\)) should sit at a higher local fictive temperature. In addition, Donth's fluctuation–dissipation theorem fixes the slope \(\big|\partial T_{f,i}^{e}/\partial T_{v,i}\big|_{\langle T_v\rangle}=T/\langle T_{v,i}\rangle\). The simplest relation that satisfies both conditions is</p>
+  <div class="eq">$$T_{f,i}^{e} = T\left(2-\frac{T_{v,i}}{\langle T_{v,i}\rangle}\right). \tag{8}$$</div>
+  <p>The weights come from the distribution of relaxation times. The KWW distribution \(G_{\mathrm{KWW}}(\ln\tau)\) with shape parameter \(f\), mapped through VFT, gives the Vogel-temperature weights \(Y_i\), and it turns out that \(W_i^{e}=Y_i\):</p>
+  <div class="eq">$$G_{\mathrm{KWW}}\!\left[\ln\frac{\tau_i}{\tau_{\mathrm{KWW}}}\right]=\sum_{n=1}^{\infty}\frac{(-1)^n}{n!}\frac{(\tau_i/\tau_{\mathrm{KWW}})^{nf}}{\Gamma(nf)},\qquad Y_i=\frac{1}{I}\,\frac{1}{T_gD}\left(\ln\frac{\tau_i(T_g)}{\tau_0}+D\right)^{2}G_{\mathrm{KWW}}\big(\ln\tau_i(T_g)\big). \tag{11, 14}$$</div>
+  <p>Each domain relaxes with an Adam–Gibbs–Hodge relaxation time. Its nonlinearity comes from the <i>average</i> fictive temperature, and it has no extra parameter:</p>
+  <div class="eq">$$\tau_i = \tau_0\exp\!\left[\frac{D\,T_{v,i}}{T\big(1-T_{v,i}/\langle T_{f,i}\rangle\big)}\right], \tag{18}$$</div>
+  <div class="eq">$$T_{f,i}(t_j) = T_{f,i}^{e}(t_j) - \big[T_{f,i}^{e}(t_j)-T_{f,i}(t_{j-1})\big]\exp\!\left[-\Big(\frac{\Delta t_j}{\tau_i(t_j)}\Big)^{\beta_0}\right],\qquad \langle T_f\rangle=\sum_i Y_i\,T_{f,i}. \tag{16, 17, 3}$$</div>
+  <p>Two quantities follow directly. The first is the <b>fictive-temperature fluctuation</b>, which is linked to the enthalpy fluctuation. In equilibrium it is proportional to \(T\):</p>
+  <div class="eq">$$\delta T_f = \Big[\sum_i Y_i\big(T_{f,i}-\langle T_f\rangle\big)^2\Big]^{1/2}\ \xrightarrow{\ \text{equilibrium}\ }\ T\,\frac{\sigma(T_v)}{\langle T_v\rangle}.$$</div>
+  <p>The second is the <b>instantaneous nonexponentiality</b>. The weights of the relaxation times, \(X_i\), depend on \(T\) and \(\langle T_f\rangle\). A KWW fit of \(\chi(t)=\sum_i X_i\,\phi_i(t)\) therefore gives a \(\beta_{\mathrm{KWW}}(T,\langle T_f\rangle)\) that changes with temperature and with aging:</p>
+  <div class="eq">$$X_i=\frac{Y_i\,T}{L\,D}\left(1-\frac{T_{v,i}}{\langle T_{f,i}\rangle}\right)^{2}. \tag{22}$$</div>
+  <dl class="sym">
+    <dt>\(T_g,\ m\)</dt><dd>glass transition (\(\langle\tau(T_g)\rangle=100\) s) and fragility. Together with \(\tau_0\), they fix \(D\) and \(\langle T_v\rangle\) (Eqs. 23–24).</dd>
+    <dt>\(\log_{10}\tau_0\)</dt><dd>high-temperature limit of \(\tau\)</dd>
+    <dt>\(f\)</dt><dd>width of the relaxation-time distribution. \(\beta_{\mathrm{KWW}}(T_g)\approx f\).</dd>
+    <dt>\(\beta_0\)</dt><dd>intrinsic nonexponentiality of a single domain. \(\beta_0=1\) is the fully heterogeneous limit.</dd>
+  </dl>
+  <div class="callout m-TL"><b class="h">What TL assumes</b>
+    <ul>
+      <li>Heterogeneity is <b>spatial</b>. Domains have different structures as well as different rates, and the distribution of \(T_{f,i}\) <b>exists in the equilibrium liquid</b>. Its width grows with \(T\), which gives a finite enthalpy fluctuation above \(T_g\).</li>
+      <li>On cooling, the distribution freezes. During aging it reshapes, and \(\delta T_f\) can evolve nonmonotonically.</li>
+      <li>\(\beta_{\mathrm{KWW}}\) is not an input. It follows from the \(X_i\) weights, so it changes with \(T\) and \(\langle T_f\rangle\). Nonexponentiality and enthalpy fluctuation have the same origin.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="compare">
+  <div class="prose">
+    <h2><span class="num">10</span>See the difference: where do the fictive temperatures sit?</h2>
+    <p>All three models run the same history on one example glass (RelaxPy's example: \(T_g\) = 734.5 K, \(m\) = 35.3). The glass is equilibrated at \(T_g\)+40 K, cooled to the annealing temperature \(T_a\), and held there. The TNM and MAP \(\beta\) is set to the TL model's \(\beta_{\mathrm{KWW}}(T_g)\), so all three share the same nonexponentiality at \(T_g\). Drag the slider, or press play, and watch how the fictive temperatures spread and come back together.</p>
+  </div>
+  <div class="lab" id="lab">
+    <div class="ctrl">
+      <label>Cooling rate <select id="q"><option value="0.1">0.1 K/min</option><option value="1">1 K/min</option><option value="10" selected>10 K/min</option><option value="100">100 K/min</option></select></label>
+      <label>Annealing temperature T<sub>a</sub> <span><input type="range" id="Ta" min="684.5" max="729.5" step="5" value="714.5"> <output id="TaO"></output></span></label>
+      <label>TL width f <span><input type="range" id="f" min="0.40" max="0.90" step="0.05" value="0.60"> <output id="fO"></output></span></label>
+      <span class="small" id="betaNote"></span>
+    </div>
+    <div class="scrub">
+      <button class="btn" id="play" type="button">▶ Play</button>
+      <input type="range" id="step" min="0" max="100" value="0" aria-label="Position in the thermal history">
+    </div>
+    <div class="state" id="state"></div>
+    <div class="cols">
+      <div class="card" id="c-TNM"><h4><i style="background:var(--mTNM)"></i>TNM</h4><p class="sub">One T<sub>f</sub> for the whole sample</p><div class="traj"></div><div class="dist"></div><div class="read"></div></div>
+      <div class="card" id="c-MAP"><h4><i style="background:var(--mMAP)"></i>MAP / RelaxPy</h4><p class="sub">Prony components T<sub>f,i</sub> (line opacity ∝ weight w<sub>i</sub>)</p><div class="traj"></div><div class="dist"></div><div class="read"></div></div>
+      <div class="card" id="c-TL"><h4><i style="background:var(--mTL)"></i>Takeda–Lucas</h4><p class="sub">Domains T<sub>f,i</sub> at 5–95 % of the Y<sub>i</sub> weight</p><div class="traj"></div><div class="dist"></div><div class="read"></div></div>
+    </div>
+    <div class="legend" style="margin-top:8px"><span><i class="d" style="border-color:var(--muted)"></i>real temperature T</span><span><i style="border-color:var(--ink)"></i>average ⟨T<sub>f</sub>⟩ (heavy line) and components (thin lines)</span><span>Top row: history. The left half is cooling (T axis), the right half is annealing at T<sub>a</sub> (log time). Bottom row: weight of each T<sub>f,i</sub> at the slider position.</span></div>
+    <div class="cols2">
+      <div class="card"><h4>Fictive-temperature fluctuation δT<sub>f</sub></h4><p class="sub">Weighted standard deviation of the T<sub>f,i</sub>. TNM has none by construction.</p><div id="sig"></div></div>
+      <div class="card"><h4>Nonexponentiality in equilibrium, β<sub>KWW</sub>(T)</h4><p class="sub">Constant for TNM and MAP. For TL it comes from the X<sub>i</sub> weights.</p><div id="beta"></div></div>
+    </div>
+  </div>
+  <div class="prose">
+    <h3>What to look for</h3>
+    <ul>
+      <li><b>At the start (equilibrium liquid).</b> TNM and MAP have a single point: every \(T_{f,i}=T\). The TL distribution is already broad (\(\delta T_f\approx16\) K here) and centered on \(T\).</li>
+      <li><b>During cooling.</b> The MAP components separate as the slow terms freeze first, so MAP develops a spread <i>only</i> out of equilibrium. The TL distribution keeps its equilibrium shape until the slow domains fall out of equilibrium, and then it narrows as the fast domains keep following their targets.</li>
+      <li><b>After long annealing.</b> MAP collapses back to a single value at \(T_a\), while TL recovers its equilibrium width \(T_a\,\sigma(T_v)/\langle T_v\rangle\).</li>
+      <li><b>Change the cooling rate.</b> The two heterogeneous models respond in opposite ways. Faster cooling leaves a <i>wider</i> spread of Prony \(T_{f,i}\) in MAP, because the components freeze at more widely separated temperatures. In TL it leaves a <i>narrower</i> frozen distribution, further below the equilibrium width, because the distribution has less time to follow the cooling.</li>
+    </ul>
+    <div class="cta"><a class="primary" href="explorer.html" data-tool="explorer">Open the Lab: DSC scans, anneals and T-jumps with all three models</a><a href="fitter.html" data-tool="fitter">Fit your own data</a></div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="summary">
+  <div class="prose"><h2><span class="num">11</span>Side by side</h2></div>
+  <div class="tablewrap"><table class="cmp">
+    <thead><tr><th></th><th style="color:var(--mTNM)">TNM</th><th style="color:var(--mMAP)">MAP / RelaxPy</th><th style="color:var(--mTL)">Takeda–Lucas</th></tr></thead>
+    <tbody>
+      <tr><th>Order parameter</th><td>one \(T_f\)</td><td>Prony components \(T_{f,i}\), fixed weights \(w_i\)</td><td>domain fictive temperatures \(T_{f,i}\), weights \(Y_i\) from \(G_{\mathrm{KWW}}\) and VFT</td></tr>
+      <tr><th>Picture</th><td>mean field</td><td>heterogeneous in time (rates \(k_i/\tau\))</td><td>heterogeneous in space (each domain has its own \(T_{v,i}\), \(\tau_i\) and \(T^{e}_{f,i}\))</td></tr>
+      <tr><th>Each part relaxes to</th><td>\(T\)</td><td>\(T\) (all components)</td><td>\(T^{e}_{f,i}=T(2-T_{v,i}/\langle T_v\rangle)\)</td></tr>
+      <tr><th>\(T_{f,i}\) distribution in equilibrium</th><td>none</td><td><b>none</b>: every \(T_{f,i}=T\)</td><td><b>yes</b>, width \(\propto T\)</td></tr>
+      <tr><th>\(\delta T_f\) (enthalpy fluctuation)</th><td>0</td><td>0 in the liquid, finite only in the glass</td><td>finite in the liquid and the glass, and changes during aging</td></tr>
+      <tr><th>Relaxation time</th><td>Tool–Narayanaswamy, \(\tau(T,T_f)\) with \(x\)</td><td>MAP viscosity, \(\tau=\eta(T,T_f)/K_s\), MYEGA plus ergodicity \(p\)</td><td>Adam–Gibbs–Hodge per domain, \(\tau_i(T,T_{v,i},\langle T_f\rangle)\)</td></tr>
+      <tr><th>Nonexponentiality</th><td>input \(\beta\), constant</td><td>input \(\beta\) (Prony set), constant</td><td>emerges from \(f\) and \(\beta_0\). \(\beta_{\mathrm{KWW}}\) varies with \(T\) and \(\langle T_f\rangle\).</td></tr>
+      <tr><th>Parameters in Tf Studio</th><td>\(T_g,\ m,\ x,\ \beta\)</td><td>\(T_g,\ m,\ \eta_\infty,\ A,\ B,\ C,\ p,\ K_s,\ \beta\)</td><td>\(T_g,\ m,\ \log_{10}\tau_0,\ f,\ \beta_0\)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 7 -->
+<section id="reading" class="prose refs">
+  <h2><span class="num">12</span>Further reading</h2>
+  <p><b>Experiments</b></p>
+  <p>A. J. Kovacs, “Transition vitreuse dans les polymères amorphes. Etude phénoménologique,” <i>Fortschr. Hochpolym.-Forsch.</i> <b>3</b>, 394–507 (1963). <a href="https://doi.org/10.1007/BFb0050366">doi:10.1007/BFb0050366</a></p>
+  <p>A. J. Kovacs, J. J. Aklonis, J. M. Hutchinson and A. R. Ramos, “Isobaric volume and enthalpy recovery of glasses. II. A transparent multiparameter theory,” <i>J. Polym. Sci. Polym. Phys. Ed.</i> <b>17</b>, 1097–1162 (1979).</p>
+  <p>P. B. Macedo and A. Napolitano, “Effects of a distribution of volume relaxation times in the annealing of BSC glass,” <i>J. Res. Natl. Bur. Stand.</i> <b>71A</b>, 231–238 (1967).</p>
+  <p>C. T. Moynihan, A. J. Easteal, M. A. DeBolt and J. Tucker, “Dependence of the fictive temperature of glass on cooling rate,” <i>J. Am. Ceram. Soc.</i> <b>59</b>, 12–16 (1976).</p>
+  <p>I. M. Hodge, “Enthalpy relaxation and recovery in amorphous materials,” <i>J. Non-Cryst. Solids</i> <b>169</b>, 211 (1994).</p>
+  <p>J. E. K. Schawe, “Principles for the interpretation of modulated temperature DSC measurements. Part 1. Glass transition,” <i>Thermochim. Acta</i> <b>261</b>, 183–194 (1995). <a href="https://doi.org/10.1016/0040-6031(95)02315-S">doi:10.1016/0040-6031(95)02315-S</a></p>
+  <p>J. M. Hutchinson and S. Montserrat, “The application of modulated differential scanning calorimetry to the glass transition,” <i>J. Therm. Anal.</i> <b>47</b>, 103–115 (1996). <a href="https://doi.org/10.1007/BF01982690">doi:10.1007/BF01982690</a></p>
+  <p><b>Takeda–Lucas</b></p>
+  <p>W. Takeda and P. Lucas, <i>J. Chem. Phys.</i> <b>160</b>, 174504 (2024). <a href="https://doi.org/10.1063/5.0196812">doi:10.1063/5.0196812</a></p>
+  <p>W. Takeda and P. Lucas, <i>Mater. Adv.</i> <b>7</b>, 5729 (2026). <a href="https://doi.org/10.1039/d6ma00442c">doi:10.1039/d6ma00442c</a></p>
+  <p><b>TNM</b></p>
+  <p>A. Q. Tool, <i>J. Am. Ceram. Soc.</i> <b>29</b>, 240–253 (1946). O. S. Narayanaswamy, <i>J. Am. Ceram. Soc.</i> <b>54</b>, 491–498 (1971). C. T. Moynihan et al., <i>J. Am. Ceram. Soc.</i> <b>59</b>, 12–16 (1976). I. M. Hodge, <i>Macromolecules</i> <b>20</b>, 2897 (1987). G. W. Scherer, <i>J. Am. Ceram. Soc.</i> <b>69</b>, 374–381 (1986).</p>
+  <p><b>MAP / RelaxPy</b></p>
+  <p>J. C. Mauro, D. C. Allan and M. Potuzak, <i>Phys. Rev. B</i> <b>80</b>, 094204 (2009). X. Guo et al., <i>J. Am. Ceram. Soc.</i> <b>101</b>, 1169–1179 (2018). J. C. Mauro and Y. Z. Mauro, <i>Physica A</i> <b>506</b>, 75–87 (2018). J. C. Mauro, R. J. Loucks and P. K. Gupta, <i>J. Am. Ceram. Soc.</i> <b>92</b>, 75–86 (2009). C. J. Wilkinson, Y. Z. Mauro and J. C. Mauro, <i>SoftwareX</i> <b>7</b>, 255–258 (2018).</p>
+  <p class="small">Full citations with DOIs are on the <a href="index.html#refs">Tf Studio home page</a>.</p>
+</section>
+
+<footer>Tf Studio · Learn · Lucas group, Materials Science &amp; Engineering, University of Arizona</footer>
+</main>
+</div>
+
+<script src="vendor/katex/katex.min.js"></script>
+<script src="vendor/katex/auto-render.min.js"></script>
+<script>
+try { renderMathInElement(document.body, { delimiters: [{ left: "$$", right: "$$", display: true }, { left: "\\(", right: "\\)", display: false }], throwOnError: false }); } catch (e) { console.warn("KaTeX", e); }
+</script>
+<script>
+/*%%CORE%%*/
+/*%%MODELS%%*/
+TL.setLibrary(/*%%LIB%%*/);
+MODELS.setTables(/*%%PRONYFIT%%*/, /*%%PRONYRP%%*/);
+/*%%ENGINE%%*/
+/*%%PLOT%%*/
+/*%%LEARN%%*/
+/*%%EXP%%*/
+/*%%APP%%*/
+/*%%EXPUI%%*/
+</script>
+</body>
+</html>

@@ -47,6 +47,7 @@ h2{font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute
 .cite{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px 16px}
 .cite p{margin:10px 0;font-size:14px}
 footer{border-top:1px solid var(--line);margin-top:34px;padding:18px 0 34px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.labline{margin:14px 2px 0;color:var(--muted);font-size:14.5px}
 .desktop-only{display:none}
 body.desktop .web-only{display:none}
 body.desktop .desktop-only{display:inline-flex}
@@ -60,7 +61,7 @@ body.desktop .lead{font-size:16px;margin-top:14px}
     <div class="brand"><img src="icon.png" alt=""><div><h1><i>T</i><sub style="font-family:Georgia,serif;font-style:italic;font-size:.62em">f</sub> Studio</h1><p>Thermal Fingerprint</p></div></div>
     <p class="lead">Every glass carries the <b>thermal fingerprint</b> of how it was made, written in its fictive temperature. Tf Studio simulates and fits that history, using the heterogeneous <b>Takeda–Lucas</b> model alongside <b>TNM</b> and <b>RelaxPy</b>, for DSC, MDSC, enthalpy, volume and annealing data.</p>
     <div class="cta">
-      <a class="btn primary" href="explorer.html" data-tool="explorer">Open Explorer</a>
+      <a class="btn primary" href="learn.html" data-tool="learn">Start learning</a>
       <a class="btn ghost" href="fitter.html" data-tool="fitter">Open Fitter</a>
       <a class="btn ghost web-only" href="https://github.com/Wtakeda0129/tf-studio/releases/latest">Download for Mac / Windows</a>
       <button class="btn ghost desktop-only" id="upd" type="button">Check for updates</button>
@@ -71,11 +72,11 @@ body.desktop .lead{font-size:16px;margin-top:14px}
 <main class="wrap">
   <h2>Tools</h2>
   <div class="tools">
-    <a class="tool" href="explorer.html" data-tool="explorer">
-      <div class="name">Explorer <span class="tag">quick look</span></div>
-      <p>See how a glass responds to a cool–heat scan, an anneal or a T-jump, in real time as you move the parameters.</p>
-      <ul><li>Heat capacity, fictive temperature, relaxation time, δT<sub>f</sub></li><li>Relaxation-time distributions and β<sub>KWW</sub>(T) from the TL model</li><li>TL, TNM and RelaxPy side by side</li></ul>
-      <div class="go">Open Explorer →</div>
+    <a class="tool" href="learn.html" data-tool="learn">
+      <div class="name">Learn <span class="tag">experiments &amp; models</span></div>
+      <p>How structural relaxation is measured, and what the TNM, MAP and Takeda–Lucas models assume, with live simulations throughout.</p>
+      <ul><li>Annealing, Kovacs asymmetry and memory, DSC, enthalpy recovery, MDSC (C<sub>p</sub>*, reversing/non-reversing and their caveats)</li><li>The mathematics of TNM, MAP (RelaxPy) and TL</li><li>Mean field vs Prony vs domain T<sub>f,i</sub>: see the distributions</li></ul>
+      <div class="go">Open Learn →</div>
     </a>
     <a class="tool" href="fitter.html" data-tool="fitter">
       <div class="name">Fitter <span class="tag">step by step</span></div>
@@ -84,6 +85,8 @@ body.desktop .lead{font-size:16px;margin-top:14px}
       <div class="go">Open Fitter →</div>
     </a>
   </div>
+
+  <p class="labline">Hands-on: the <a href="explorer.html" data-tool="explorer">Lab</a> runs cool–heat scans, anneals and T-jumps with all three models side by side, with relaxation-time distributions and β<sub>KWW</sub>(T).</p>
 
   <h2>Models</h2>
   <div class="grid3">
@@ -99,7 +102,7 @@ body.desktop .lead{font-size:16px;margin-top:14px}
     <p>W. Takeda and P. Lucas, “Relationship between enthalpy fluctuation and nonexponential relaxation in glass-forming liquids,” <i>Mater. Adv.</i> <b>7</b>, 5729 (2026). <a href="https://doi.org/10.1039/d6ma00442c">doi:10.1039/d6ma00442c</a></p>
   </div>
 
-  <h2>References for the comparison models</h2>
+  <h2 id="refs">References for the comparison models</h2>
   <div class="cite">
     <p><b>Tool–Narayanaswamy–Moynihan (TNM)</b></p>
     <p>A. Q. Tool, “Relation between inelastic deformability and thermal expansion of glass in its annealing range,” <i>J. Am. Ceram. Soc.</i> <b>29</b>, 240–253 (1946).</p>
