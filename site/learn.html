@@ -244,8 +244,8 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
     <span class="small">Underlying rate 1 K/min, amplitude 0.5 K</span>
   </div>
   <div class="cols2">
-    <div class="card"><h4><span>MDSC signals (normalized)</span></h4><p class="sub">Total ⟨Φ⟩/q, reversing |C*|, non-reversing = total − reversing, and loss C″</p><div id="x-md"></div></div>
-    <div class="card"><h4><span>Reversing C<sub>p</sub> depends on the period</span></h4><p class="sub">|C*| for 40, 120 and 400 s, compared with the total (conventional) signal</p><div id="x-md2"></div></div>
+    <div class="card"><h4><span>Reversing and non-reversing</span></h4><p class="sub">Conventional MDSC analysis at the selected period: total ⟨Φ⟩/q, reversing |C*| and non-reversing = total − reversing</p><div id="x-md"></div></div>
+    <div class="card"><h4><span>Complex heat capacity C* = C′ − iC″</span></h4><p class="sub">Linear-response analysis: storage C′ and loss C″ for 40, 120 and 400 s (selected period in bold). Both shift with the period.</p><div id="x-md2"></div></div>
   </div>
 </div>
 
@@ -1589,17 +1589,21 @@ if (false && typeof module !== 'undefined') module.exports = EXP;
     const dir = $("#md-dir").value, P = +$("#md-P").value;
     const M = get(`mdsc-${dir}-${P}`, () => EXP.mdsc(model, P, dir));
     const Tlo = EXP.G.Tg - 50, Thi = EXP.G.Tg + 60;
-    const vals = [...M.total, ...M.rev, ...M.nonrev, ...M.im].filter(isFinite);
+    // (a) conventional MDSC analysis: total, reversing and non-reversing
+    const vals = [...M.total, ...M.rev, ...M.nonrev].filter(isFinite);
     $("#x-md").innerHTML = svg({ W: 560, H: 270, xdom: [Tlo, Thi], ydom: [Math.min(-0.1, ...vals) - 0.05, Math.min(3, Math.max(...vals)) + 0.1], xlabel: "T (K)", ylabel: "normalized C<tspan dy='3' font-size='9'>p</tspan>",
-      lines: [{ x: M.T, y: M.total, color: "var(--ink)", w: 2.2 }, { x: M.T, y: M.rev, color: PAL[0], w: 2.2 }, { x: M.T, y: M.nonrev, color: PAL[1], w: 2 }, { x: M.T, y: M.im, color: PAL[2], w: 1.8, dash: "5 4" }, { x: [Tlo, Thi], y: [0, 0], color: "var(--muted)", w: 0.8 }],
+      lines: [{ x: M.T, y: M.total, color: "var(--ink)", w: 2.2 }, { x: M.T, y: M.rev, color: PAL[0], w: 2.2 }, { x: M.T, y: M.nonrev, color: PAL[1], w: 2 }, { x: [Tlo, Thi], y: [0, 0], color: "var(--muted)", w: 0.8 }],
       vlines: [{ x: EXP.G.Tg, color: "var(--muted)", dash: "2 3", w: 1 }] })
-      + leg([["var(--ink)", "total ⟨Φ⟩/q"], [PAL[0], "reversing |C*|"], [PAL[1], "non-reversing"], [PAL[2], "C″ (loss)", 1]]);
-    const Ps = [40, 120, 400], lines = [];
-    Ps.forEach((p, j) => { const r = get(`mdsc-${dir}-${p}`, () => EXP.mdsc(model, p, dir)); lines.push({ x: r.T, y: r.rev, color: PAL[j + 3], w: p === P ? 2.8 : 1.8 }); });
-    lines.push({ x: M.T, y: M.total, color: "var(--ink)", w: 2, dash: "5 4" });
-    $("#x-md2").innerHTML = svg({ W: 560, H: 270, xdom: [Tlo, Thi], ydom: [-0.05, Math.min(3, Math.max(1.1, ...M.total.filter(isFinite)) + 0.05)], xlabel: "T (K)", ylabel: "normalized C<tspan dy='3' font-size='9'>p</tspan>", lines,
+      + leg([["var(--ink)", "total ⟨Φ⟩/q"], [PAL[0], "reversing |C*|"], [PAL[1], "non-reversing = total − reversing"]]);
+    // (b) complex heat capacity: C′ (solid) and C″ (dashed) for the three periods
+    const Ps = [40, 120, 400], lines = [], cv = [];
+    Ps.forEach((p, j) => { const r = get(`mdsc-${dir}-${p}`, () => EXP.mdsc(model, p, dir)), wd = p === P ? 2.8 : 1.7;
+      lines.push({ x: r.T, y: r.re, color: PAL[j + 3], w: wd }, { x: r.T, y: r.im, color: PAL[j + 3], w: wd, dash: "5 4" }); cv.push(...r.re, ...r.im); });
+    lines.push({ x: [Tlo, Thi], y: [0, 0], color: "var(--muted)", w: 0.8 });
+    const cvf = cv.filter(isFinite);
+    $("#x-md2").innerHTML = svg({ W: 560, H: 270, xdom: [Tlo, Thi], ydom: [Math.min(-0.05, ...cvf), Math.min(3, Math.max(1.1, ...cvf) + 0.05)], xlabel: "T (K)", ylabel: "C′, C″ (normalized)", lines,
       vlines: [{ x: EXP.G.Tg, color: "var(--muted)", dash: "2 3", w: 1 }] })
-      + leg(Ps.map((p, j) => [PAL[j + 3], `|C*|, P = ${p} s (ωτ = 1 where τ = ${(p / 2 / Math.PI).toFixed(0)} s)`]).concat([["var(--ink)", "total (conventional DSC)", 1]]));
+      + leg(Ps.map((p, j) => [PAL[j + 3], `P = ${p} s (ωτ = 1 where τ = ${(p / 2 / Math.PI).toFixed(0)} s)`]).concat([["var(--ink)", "C′ (storage)"], ["var(--ink)", "C″ (loss)", 1]]));
   }
 
   const DRAW = [drawAnneal, drawKovacs, drawDSC, drawRecovery, drawMDSC];
