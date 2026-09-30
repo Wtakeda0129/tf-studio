@@ -1,4 +1,4 @@
-# Tf Studio: macOS desktop app
+# Tf Studio: desktop app (macOS and Windows)
 
 A desktop wrapper (Electron) around the website in `../site`: the launcher page (`index.html`), the **Explorer** (`explorer.html`) and the **Fitter** (`fitter.html`).
 
@@ -67,6 +67,13 @@ The workflow uploads the DMGs, the update ZIPs and `latest-mac.yml` to a GitHub 
 Nobody has to download a new DMG.
 
 You can also build locally on your Mac with `npm ci && npm run release`, using the same environment variables as the workflow.
+
+## Windows
+
+- The release workflow also builds `Tf-Studio-Setup-<version>.exe` on a Windows runner. This is a per-user installer with Start-menu and desktop shortcuts, and it needs no admin rights.
+- **Auto-update works on Windows without code signing.** Installed copies read `latest.yml` from the newest release.
+- Unsigned installers show a SmartScreen "unknown publisher" warning. Users click **More info → Run anyway**. To remove the warning, buy a code-signing certificate and add `WIN_CERT_P12_BASE64` and `WIN_CERT_PASSWORD` as repository secrets.
+- Local Windows build on a Windows PC: `cd desktop && npm ci && bash sync_apps.sh && npm run dist:win`.
 
 ## 3. Updates vs. accounts
 

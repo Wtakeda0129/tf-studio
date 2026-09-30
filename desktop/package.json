@@ -10,7 +10,9 @@
     "start": "electron .",
     "sync": "bash sync_apps.sh",
     "dist": "electron-builder --config electron-builder.config.js --mac --publish never",
-    "release": "electron-builder --config electron-builder.config.js --mac --publish always"
+    "release": "electron-builder --config electron-builder.config.js --mac --publish always",
+    "dist:win": "electron-builder --config electron-builder.config.js --win --publish never",
+    "release:win": "electron-builder --config electron-builder.config.js --win --publish always"
   },
   "dependencies": {
     "electron-updater": "^6.3.9"

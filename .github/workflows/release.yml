@@ -1,5 +1,5 @@
-# Builds the macOS desktop app on a Mac runner and publishes it to GitHub Releases when a tag like v1.0.1 is pushed.
-# Installed copies update themselves from these releases (requires a Developer ID-signed build; see desktop/README.md).
+# Builds the desktop app for macOS and Windows and publishes it to GitHub Releases when a tag like v1.0.1 is pushed.
+# Installed copies update themselves from these releases (macOS needs a Developer ID-signed build; see desktop/README.md).
 name: Release desktop app
 on:
   push:
@@ -8,28 +8,38 @@ on:
 permissions:
   contents: write
 jobs:
-  build-mac:
-    runs-on: macos-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: --mac
+          - os: windows-latest
+            target: --win
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: desktop
+        shell: bash
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: desktop/package-lock.json
       - run: npm ci
       - run: bash sync_apps.sh
-      - name: Build, sign, notarize and publish
-        run: npx electron-builder --config electron-builder.config.js --mac --publish always
+      - name: Build and publish
+        run: npx electron-builder --config electron-builder.config.js ${{ matrix.target }} --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_OWNER: ${{ github.repository_owner }}
           GH_REPO: ${{ github.event.repository.name }}
-          CSC_LINK: ${{ secrets.MAC_CERT_P12_BASE64 }}
-          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          # macOS signing + notarization (optional; unsigned builds are produced when these are not set)
+          CSC_LINK: ${{ matrix.os == 'macos-latest' && secrets.MAC_CERT_P12_BASE64 || secrets.WIN_CERT_P12_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ matrix.os == 'macos-latest' && secrets.MAC_CERT_PASSWORD || secrets.WIN_CERT_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}

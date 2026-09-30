@@ -2,7 +2,7 @@
 
 <h1 align="center">Tf Studio</h1>
 <p align="center"><b>Thermal Fingerprint</b>: compute and fit glass relaxation dynamics with structural relaxation models.</p>
-<p align="center"><a href="https://wtakeda0129.github.io/tf-studio/"><b>Open in your browser</b></a> · <a href="https://github.com/Wtakeda0129/tf-studio/releases/latest">Download for macOS</a></p>
+<p align="center"><a href="https://wtakeda0129.github.io/tf-studio/"><b>Open in your browser</b></a> · <a href="https://github.com/Wtakeda0129/tf-studio/releases/latest">Download for macOS / Windows</a></p>
 
 Every glass carries a thermal fingerprint of how it was made, written in its fictive temperature *T*<sub>f</sub>. Tf Studio simulates that history and fits it to measurements. It uses the heterogeneous **Takeda–Lucas (TL)** model, alongside the **Tool–Narayanaswamy–Moynihan (TNM)** model and **RelaxPy** (MAP viscosity).
 
@@ -19,8 +19,8 @@ Everything runs locally, in the browser or in the desktop app. No data is upload
 site/                 the website, published to GitHub Pages (index.html, explorer.html, fitter.html)
 src/explorer/         sources of explorer.html  → python3 src/explorer/make_app.py
 src/fitter/           sources of fitter.html    → python3 src/fitter/make_fitter.py   (tests in src/fitter/tests)
-desktop/              Electron wrapper for macOS with auto-update → see desktop/README.md
-.github/workflows/    pages.yml (website on every push) · release.yml (desktop app on tags v*)
+desktop/              Electron desktop app (macOS dmg, Windows installer) with auto-update → see desktop/README.md
+.github/workflows/    pages.yml (website on every push) · release.yml (macOS + Windows apps on tags v*)
 ```
 
 The TL implementation is a line-by-line port of the reference Python code (`TL_model.py`). It agrees to 1 × 10⁻¹³ K on a glycerol cool/heat run. The embedded β-library contains the *G*(ln τ) tables for f = 0.10–0.99.
