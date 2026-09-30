@@ -1,8 +1,8 @@
 # Tf Studio: desktop app (macOS and Windows)
 
-A desktop wrapper (Electron) around the website in `../site`: the launcher page (`index.html`), the **Explorer** (`explorer.html`) and the **Fitter** (`fitter.html`).
+A desktop wrapper (Electron) around the website in `../site`: the launcher page (`index.html`), **Learn** (`learn.html`), the **Lab** (`explorer.html`) and the **Fitter** (`fitter.html`).
 
-The app opens the launcher. Each tool opens in its own window (⌘1, ⌘2). The app checks for updates on launch and every 6 hours, and has **Check for Updates…** in the app menu.
+The app opens the launcher. Each tool opens in its own window (⌘1 Learn, ⌘2 Lab, ⌘3 Fitter). The app checks for updates on launch and every 6 hours, and has **Check for Updates…** in the app menu.
 
 ```
 desktop/
@@ -10,20 +10,18 @@ desktop/
 ├── preload.js                   bridge for the launcher buttons
 ├── app/                         copied from ../site by sync_apps.sh (not committed)
 ├── build/icon.png               app icon (1024 px)
+├── build/adhoc-sign.js          afterPack hook: ad-hoc signature when no Developer ID certificate is configured
 ├── electron-builder.config.js   packaging: dmg + zip, signing/notarization, update feed
-├── ../.github/workflows/release.yml  builds, signs and publishes on a Mac runner when you push a tag
+├── ../.github/workflows/release.yml  builds and publishes macOS + Windows when the version in package.json changes
 ├── sync_apps.sh                 copies ../site into app/
 └── make_dmg_linux.sh            unsigned test DMGs without a Mac (how the test builds were made)
 ```
 
-## 1. Test build (unsigned)
+## 1. Current releases (ad-hoc signed)
 
-`npm ci && ./sync_apps.sh && npm run dist` on a Mac, or `make_dmg_linux.sh` without one, gives:
+Every release on GitHub has `Tf-Studio-<version>-universal.dmg` (Apple silicon and Intel) and `Tf-Studio-Setup-<version>.exe` (Windows). Locally, `npm ci && ./sync_apps.sh && npm run dist` on a Mac gives the same DMG; `make_dmg_linux.sh` builds test DMGs without a Mac.
 
-- `Tf Studio-1.0.0-arm64.dmg` for Apple-silicon Macs.
-- `Tf Studio-1.0.0-x64.dmg` for Intel Macs.
-
-These builds have only an ad-hoc signature, not a Developer ID. So on first launch:
+Until a Developer ID certificate is configured, the macOS app has only an ad-hoc signature. So on first launch:
 
 1. Open the DMG and drag the app into Applications.
 2. Double-click the app. macOS will say it cannot verify the developer.
