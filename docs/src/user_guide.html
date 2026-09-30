@@ -90,7 +90,7 @@
     <tr><th style="width:24%">Control</th><th>What it does</th></tr>
     <tr><td><b>Tf Studio</b> (logo)</td><td>Back to the home page or the launcher.</td></tr>
     <tr><td><b>Temperature</b> K / °C</td><td>Unit for every temperature on screen: plots, thermal-history inputs, <i>T</i><sub>g</sub> and its bounds, data limits. Values are stored in kelvin, so switching never changes a calculation.</td></tr>
-    <tr><td><b>Time axis</b> log / linear</td><td>Scale of every time axis (history, relaxation during holds, τ, time-domain data).</td></tr>
+    <tr><td><b>Time axis</b> auto / linear / log</td><td><i>Auto</i> (default): real (linear) time whenever the temperature changes with time (ramps, MDSC), so scans are shown in real time; log time only for isothermal histories (jump + hold). Relaxation during holds and time-domain hold data stay on log time. <i>Linear</i> or <i>log</i> force one scale for every time axis.</td></tr>
     <tr><td><b>◐</b></td><td>Switches between the light (default) and dark colour scheme.</td></tr>
     <tr><td><b>SVG</b> (on each plot)</td><td>Saves that plot as a vector graphic for slides or papers.</td></tr>
     <tr><td>Hover on a plot</td><td>Shows the nearest data point and its values.</td></tr>
@@ -207,13 +207,13 @@
   <p><span class="ui">Export report (.json)</span> (parameters, errors, statistics, history), <span class="ui">Model vs data (.csv)</span>, <span class="ui">Simulation (.csv)</span> (t, T, T<sub>f</sub>, τ, τ<sub>eq</sub>, segment), and the <b>SVG</b> button on each plot.</p>
 
   <h3>6.5 Projects and examples</h3>
-  <p><b>Project ▾</b>: <i>New project</i>, <i>Save project (.json)</i> (history, data, model, values, bounds, fit options) and <i>Open project…</i>. <b>Examples ▾</b> loads ready-made cases: a glycerol DSC cycle, aging + DSC with synthetic enthalpy data, and MDSC with synthetic C<sub>p</sub>′/C<sub>p</sub>″.</p>
+  <p><b>Project ▾</b>: <i>New project</i>, <i>Save project (.json)</i> (history, data, model, values, bounds, fit options) and <i>Open project…</i>. <b>Examples ▾</b> loads ready-made cases: a selenium DSC cycle, aging + DSC with synthetic enthalpy data, and MDSC with synthetic C<sub>p</sub>′/C<sub>p</sub>″.</p>
 </section>
 
 <!-- 7 -->
 <section class="chapter">
   <h2>7 · Data Analysis</h2>
-  <p>Data Analysis prepares your own measurements. It has three tabs across the top. Each tab has <span class="ui">Load example data</span> (synthetic glycerol data made with the TL model) so you can try everything first.</p>
+  <p>Data Analysis prepares your own measurements. It has three tabs across the top. Each tab has <span class="ui">Load example data</span> (synthetic selenium data made with the TL model, parameters of Se from Takeda &amp; Lucas 2024) so you can try everything first.</p>
 
   <h3>7.1 Heat-flow scans</h3>
   <figure class="half"><img src="img/an_editor.png" alt=""><figcaption><b>Figure 7.1.</b> Adding a run: paste or load a file, then check the detected columns and units.</figcaption></figure>

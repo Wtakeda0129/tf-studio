@@ -33,7 +33,7 @@ function plot(el,cfg){
   if(!isFinite(X0)||!isFinite(X1)){X0=0;X1=1;} if(!isFinite(Y0)||!isFinite(Y1)){Y0=0;Y1=1;}
   if(X1===X0)X1=X0+1; if(Y1===Y0)Y1=Y0+1;
   const sx=v=>m.l+(fx(v)-X0)/(X1-X0)*(W-m.l-m.r), sy=v=>H-m.b-(fy(v)-Y0)/(Y1-Y0)*(H-m.t-m.b);
-  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${cfg.title}"><g class="axis">`;
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" data-xscale="${cfg.xlog?"log":"lin"}" aria-label="${cfg.title}"><g class="axis">`;
   const xt=cfg.xlog?range(Math.ceil(X0),Math.floor(X1)).map(e=>Math.pow(10,e)):niceTicks(X0,X1,6);
   const yt=cfg.ylog?range(Math.ceil(Y0),Math.floor(Y1)).map(e=>Math.pow(10,e)):niceTicks(Y0,Y1,6);
   xt.forEach(v=>{const x=sx(v); if(x<m.l-1||x>W-m.r+1)return; if(cfg.xlabel===""){g+=`<line x1="${x}" x2="${x}" y1="${m.t}" y2="${H-m.b}" stroke="var(--grid)"/>`;return;} g+=`<line x1="${x}" x2="${x}" y1="${m.t}" y2="${H-m.b}" stroke="var(--grid)"/><text x="${x}" y="${H-m.b+15}" text-anchor="middle">${cfg.xlog?"1e"+Math.round(Math.log10(v)):fmt(v)}</text>`;});

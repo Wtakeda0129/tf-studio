@@ -132,7 +132,7 @@
   }
   function renderRight1() {
     const r = A.runs[A.sel];
-    if (!r) { $("#right").innerHTML = `<div class="rhead"><h3>Heat-flow scans</h3></div>${empty("Add a run or load the example data (synthetic scans of glycerol computed with the TL model).")}`; return; }
+    if (!r) { $("#right").innerHTML = `<div class="rhead"><h3>Heat-flow scans</h3></div>${empty("Add a run or load the example data (synthetic scans of selenium computed with the TL model).")}`; return; }
     $("#right").innerHTML = `<div class="rhead"><h3>${esc(r.name)}</h3></div><div class="plots">${card("a1raw")}${card("a1cp")}${card("a1tf")}${card("a1all")}</div>`;
     const N = norm(r), c = col(A.sel), X = N.T.map(tU);
     const lo = N.T[0], hi = N.T[N.T.length - 1];
@@ -160,7 +160,7 @@
     A.runs.push(r); A.sel = A.runs.length - 1; A.ed = null; render();
   }
   function loadExampleRuns() {
-    A.runs = EXAMPLES.runs.map(x => ({ name: x.name, kind: x.kind, q: x.q, mass: x.mass, hfUnit: "mW", ta: x.ta || 0, Ta: x.Ta == null ? NaN : x.Ta, T: x.T.slice(), HF: x.HF.slice(), rg: { g: [150, 170], l: [205, 225] } }));
+    A.runs = EXAMPLES.runs.map(x => ({ name: x.name, kind: x.kind, q: x.q, mass: x.mass, hfUnit: "mW", ta: x.ta || 0, Ta: x.Ta == null ? NaN : x.Ta, T: x.T.slice(), HF: x.HF.slice(), rg: { g: [245, 265], l: [325, 343] } }));
     A.sel = 1; A.ed = null; A.rec.ref = 1; A.rec.int = null; A.rec.Ta = ""; render();
   }
   function exportNorm() {
@@ -284,7 +284,7 @@
   }
   function renderRight3() {
     const v = A.vols[A.vsel];
-    if (!v) { $("#right").innerHTML = `<div class="rhead"><h3>Property relaxation</h3></div>${empty("Add a dataset or load the example (specific volume of glycerol during annealing, computed with the TL model).")}`; return; }
+    if (!v) { $("#right").innerHTML = `<div class="rhead"><h3>Property relaxation</h3></div>${empty("Add a dataset or load the example (specific volume of selenium during annealing, computed with the TL model).")}`; return; }
     $("#right").innerHTML = `<div class="rhead"><h3>${esc(v.name)}</h3></div><div class="plots">${card("a3v")}${card("a3phi")}${card("a3r")}</div>`;
     const F = vfit(v), c = col(A.vsel), tmax = Math.max(...v.t), tmin = Math.min(...v.t.filter(t => t > 0));
     const tt = A.logt ? logspace(tmin, tmax, 200) : Array.from({ length: 200 }, (_, k) => tmax * k / 199);

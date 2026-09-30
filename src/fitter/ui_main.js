@@ -22,15 +22,20 @@ const S = {
   step: 1, T0: 229.73, segs: [], datasets: [], model: "TL", P: freshParams(),
   opts: { method: "local", maxEval: 1500, perPoint: false, seed: 1 },
   hist: null, histErr: null, sim: null, simErr: null, simMs: 0, evalRes: null, fitRes: null, fitUndo: null,
-  selSeg: 0, selDs: -1, tlBeta: false, unit: "K", logt: true, live: true, editor: null, job: null, dirtySim: true, mode4: "compute", compRes: null, autoComp: true,
+  selSeg: 0, selDs: -1, tlBeta: false, unit: "K", tmode: "auto", live: true, editor: null, job: null, dirtySim: true, mode4: "compute", compRes: null, autoComp: true,
 };
 function defaultHistory(Tg) {
   S.T0 = +(Tg + 40).toFixed(2);
   S.segs = [{ type: "ramp", T: +(Tg - 60).toFixed(2), rate: 10, dT: 0.5 }, { type: "ramp", T: +(Tg + 40).toFixed(2), rate: 10, dT: 0.5 }];
 }
-defaultHistory(189.73);
+defaultHistory(308.13);
 
 /* ================= helpers ================= */
+// time axis: "auto" = linear (real time) whenever the history has a dynamic temperature (ramp or MDSC), log otherwise;
+// plots that only cover isothermal holds (φ(t), time-domain hold data) stay logarithmic in auto mode
+const dynHist = () => S.segs.some(s => s.type === "ramp" || s.type === "mdsc");
+const HL = () => S.tmode === "log" || (S.tmode === "auto" && !dynHist());
+const holdLog = () => S.tmode !== "lin";
 const tU = v => v + (S.unit === "C" ? -273.15 : 0), uL = () => S.unit === "C" ? "°C" : "K";
 // inputs are shown in the chosen unit and stored in K; tK converts a typed value back to K
 const tK = v => v + (S.unit === "C" ? 273.15 : 0);
@@ -102,7 +107,7 @@ function P(elId, cfg) {
 }
 function histPlotCfg(opts) {
   opts = opts || {}; const h = S.hist; if (!h) return null;
-  const tx = Array.from(h.t, (v, i) => S.logt ? (i === 0 ? NaN : v) : v);
+  const tx = Array.from(h.t, (v, i) => HL() ? (i === 0 ? NaN : v) : v);
   const series = [];
   const many = h.T.length > 4000;
   S.segs.forEach((s, si) => { const inf = h.info[si]; if (!inf.n) return; const a = Math.max(0, inf.i0 - 1), x = [], y = []; for (let i = a; i <= inf.i1; i++) { x.push(tx[i]); y.push(tU(h.T[i])); }
@@ -111,14 +116,14 @@ function histPlotCfg(opts) {
   const showTf = S.sim && S.step === 4 && opts.tf !== false;
   if (showTf) series.push({ name: `T_f (${MODEL_NAMES[S.model]})`, x: tx, y: Array.from(S.sim.Tf, tU), color: css("--ink"), w: 1.6, dash: "5 3" });
   const bands = []; const sel = opts.band !== undefined ? opts.band : S.selSeg; const inf = h.info[sel];
-  if (inf && inf.n) bands.push({ x0: S.logt ? Math.max(inf.tstart, h.t[Math.max(1, inf.i0)] * 0.9) : inf.tstart, x1: inf.tend, color: css(segColor(sel)) });
-  return { title: opts.title || "Temperature program" + (showTf ? " and fictive temperature" : ""), xlabel: "time (s)", ylabel: `T (${uL()})`, xlog: S.logt, series, bands, xshort: "t", yshort: "T" };
+  if (inf && inf.n) bands.push({ x0: HL() ? Math.max(inf.tstart, h.t[Math.max(1, inf.i0)] * 0.9) : inf.tstart, x1: inf.tend, color: css(segColor(sel)) });
+  return { title: opts.title || "Temperature program" + (showTf ? " and fictive temperature" : ""), xlabel: "time (s)", ylabel: `T (${uL()})`, xlog: HL(), series, bands, xshort: "t", yshort: "T" };
 }
 function dtPlotCfg() {
   const h = S.hist; if (!h) return null; const series = [];
   S.segs.forEach((s, si) => { const inf = h.info[si]; if (!inf.n) return; const x = [], y = []; for (let i = Math.max(1, inf.i0); i <= inf.i1; i++) { const d = h.t[i] - h.t[i - 1]; if (d > 0) { x.push(h.t[i]); y.push(d); } }
     series.push({ name: segLabel(si), x, y, color: css(segColor(si)), pts: true, r: si === S.selSeg ? 2.4 : 1.6 }); });
-  return { title: "Time step Δt of every simulation step", xlabel: "time (s)", ylabel: "Δt (s)", xlog: S.logt, ylog: true, series, xshort: "t", yshort: "Δt" };
+  return { title: "Time step Δt of every simulation step", xlabel: "time (s)", ylabel: "Δt (s)", xlog: HL(), ylog: true, series, xshort: "t", yshort: "Δt" };
 }
 // simulation overview plots into a container
 function simOverviewHTML(prefix) {
@@ -134,13 +139,13 @@ function simOverviewPlot(prefix) {
   if (!sim) return;
   if (document.getElementById(prefix + "cp")) { const series = []; S.segs.forEach((s, si) => { if (s.type !== "ramp") return; const c = E.cpSeries(h, sim, si); const cool = h.info[si].Tend < h.info[si].Tstart; series.push({ name: segLabel(si), x: c.x.map(tU), y: c.y, color: css(DS_COLORS[si % DS_COLORS.length]), w: 2, dash: cool ? "6 4" : null }); });
     P(prefix + "cp", { title: "Normalized C_p = dT_f/dT on each ramp", xlabel: `Temperature (${uL()})`, ylabel: "C_p,norm", series, xshort: "T", yshort: "Cp" }); }
-  if (document.getElementById(prefix + "phi")) { const series = []; S.segs.forEach((s, si) => { if (s.type !== "hold") return; const hs = E.holdSeries(h, sim, si); const den = hs.Tf0 - hs.Th; series.push({ name: segLabel(si), x: S.logt ? hs.x.slice(1) : hs.x, y: (S.logt ? hs.y.slice(1) : hs.y).map(v => Math.abs(den) > 1e-9 ? (v - hs.Th) / den : NaN), color: css(DS_COLORS[si % DS_COLORS.length]), w: 2 }); });
-    P(prefix + "phi", { title: "Relaxation during holds  φ(t) = (T_f − T)/(T_f,0 − T)", xlabel: "time since hold start (s)", ylabel: "φ", xlog: S.logt, series, xshort: "t", yshort: "φ" }); }
+  if (document.getElementById(prefix + "phi")) { const series = []; S.segs.forEach((s, si) => { if (s.type !== "hold") return; const hs = E.holdSeries(h, sim, si); const den = hs.Tf0 - hs.Th; series.push({ name: segLabel(si), x: holdLog() ? hs.x.slice(1) : hs.x, y: (holdLog() ? hs.y.slice(1) : hs.y).map(v => Math.abs(den) > 1e-9 ? (v - hs.Th) / den : NaN), color: css(DS_COLORS[si % DS_COLORS.length]), w: 2 }); });
+    P(prefix + "phi", { title: "Relaxation during holds  φ(t) = (T_f − T)/(T_f,0 − T)", xlabel: "time since hold start (s)", ylabel: "φ", xlog: holdLog(), series, xshort: "t", yshort: "φ" }); }
   if (document.getElementById(prefix + "md")) { const series = []; S.segs.forEach((s, si) => { if (s.type !== "mdsc") return; const m = E.mdscSeries(h, sim, si, s); const c = css(DS_COLORS[si % DS_COLORS.length]); series.push({ name: `${segLabel(si)} C_p′`, x: m.T.map(tU), y: m.re, color: c, w: 2 }, { name: "C_p″", x: m.T.map(tU), y: m.im, color: c, w: 2, dash: "6 4" }); });
     P(prefix + "md", { title: "MDSC complex heat capacity (normalized)", xlabel: `Temperature (${uL()})`, ylabel: "C_p′, C_p″", series, xshort: "T", yshort: "Cp" }); }
-  const tx = Array.from(h.t, (v, i) => S.logt ? (i === 0 ? NaN : v) : v);
+  const tx = Array.from(h.t, (v, i) => HL() ? (i === 0 ? NaN : v) : v);
   if (S.model === "TL" && sim.raw) tlPlots(prefix);
-  P(prefix + "tau", { title: "Relaxation time", xlabel: "time (s)", ylabel: "log₁₀ τ (s)", xlog: S.logt, series: [{ name: "τ (model)", x: tx, y: Array.from(sim.tau, Math.log10), color: css("--c4"), w: 2 }, { name: "τ_eq(T)", x: tx, y: Array.from(sim.tauEq, Math.log10), color: css("--eq"), w: 1.4, dash: "4 3" }], xshort: "t", yshort: "log τ" });
+  P(prefix + "tau", { title: "Relaxation time", xlabel: "time (s)", ylabel: "log₁₀ τ (s)", xlog: HL(), series: [{ name: "τ (model)", x: tx, y: Array.from(sim.tau, Math.log10), color: css("--c4"), w: 2 }, { name: "τ_eq(T)", x: tx, y: Array.from(sim.tauEq, Math.log10), color: css("--eq"), w: 1.4, dash: "4 3" }], xshort: "t", yshort: "log τ" });
 }
 function simStatus() {
   if (S.simErr) return `<div class="banner err">Simulation: ${esc(S.simErr)}</div>`;
@@ -208,11 +213,11 @@ function tlPlots(prefix) {
 function tlMap(prefix) {
   const h = S.hist, raw = S.sim.raw, N = raw.dist.N, n = h.T.length, A = raw.TfiAll, Y = raw.dist.Yi;
   // time columns uniform on the displayed axis (log or linear); each takes the nearest simulation step
-  const t0 = S.logt ? Math.max(h.t[1] || 1e-3, 1e-6) : 0, t1 = h.t[n - 1]; if (!(t1 > t0)) return;
+  const t0 = HL() ? Math.max(h.t[1] || 1e-3, 1e-6) : 0, t1 = h.t[n - 1]; if (!(t1 > t0)) return;
   // T_f,i at each column time is interpolated linearly between the two neighbouring simulation steps
   const NC = 360, NB = 140, cols = new Int32Array(NC), frac = new Float64Array(NC);
-  const fx = S.logt ? Math.log10 : (v => v), X0 = fx(t0), X1 = fx(t1);
-  for (let c = 0, j = 0; c < NC; c++) { const x = X0 + (X1 - X0) * (c + 0.5) / NC, tt = S.logt ? Math.pow(10, x) : x;
+  const fx = HL() ? Math.log10 : (v => v), X0 = fx(t0), X1 = fx(t1);
+  for (let c = 0, j = 0; c < NC; c++) { const x = X0 + (X1 - X0) * (c + 0.5) / NC, tt = HL() ? Math.pow(10, x) : x;
     while (j < n - 2 && h.t[j + 1] <= tt) j++; const dt = h.t[j + 1] - h.t[j]; cols[c] = j; frac[c] = dt > 0 ? Math.min(1, Math.max(0, (tt - h.t[j]) / dt)) : 1; }
   const colVals = (c, out) => { const i = cols[c], f = frac[c], i2 = Math.min(n - 1, i + 1); for (let k = 0; k < N; k++) out[k] = A[i * N + k] * (1 - f) + A[i2 * N + k] * f; return out; };
   // T_f grid: 0.5–99.5 % weight range over the whole run
@@ -227,8 +232,8 @@ function tlMap(prefix) {
   const cv = document.createElement("canvas"); cv.width = NC; cv.height = NB; const cx = cv.getContext("2d"), id = cx.createImageData(NC, NB);
   for (let c = 0; c < NC; c++) for (let b = 0; b < NB; b++) { const [r, g, bl] = viridis(img[c * NB + b] / vmax), o = ((NB - 1 - b) * NC + c) * 4; id.data[o] = r; id.data[o + 1] = g; id.data[o + 2] = bl; id.data[o + 3] = 255; }
   cx.putImageData(id, 0, 0);
-  const tx = Array.from(h.t, (v, i) => S.logt ? (i === 0 ? NaN : v) : v);
-  P(prefix + "map", { title: "Local fictive temperatures T_f,i vs time (TL), rebinned on a uniform T_f grid", xlabel: "time (s)", ylabel: `T_f,i (${uL()})`, xlog: S.logt, W: 1120, H: 360,
+  const tx = Array.from(h.t, (v, i) => HL() ? (i === 0 ? NaN : v) : v);
+  P(prefix + "map", { title: "Local fictive temperatures T_f,i vs time (TL), rebinned on a uniform T_f grid", xlabel: "time (s)", ylabel: `T_f,i (${uL()})`, xlog: HL(), W: 1120, H: 360,
     xdom: [t0, t1], ydom: [tU(lo), tU(hi)], image: { href: cv.toDataURL(), x0: t0, x1: t1, y0: tU(lo), y1: tU(hi) },
     series: [{ name: "T (white, dashed)", x: tx, y: Array.from(h.T, tU), color: "#ffffff", w: 1.3, dash: "5 4" }, { name: "⟨T_f⟩", x: tx, y: Array.from(S.sim.Tf, tU), color: "#ff6b6b", w: 1.8 }], xshort: "t", yshort: "T_f,i" });
   const cb = document.getElementById(prefix + "cbar");
@@ -415,13 +420,13 @@ function plotDataset(elId, ds, i, withRes) {
   const xf = v => isT ? tU(v) : v;
   const series = [{ name: "data", x: ds.x.map(xf), y: ds.y, color: col, pts: true, r: 2.2, op: .6 }];
   if (ev && ev.pr && ev.pr.curve) series.push({ name: `${MODEL_NAMES[S.model]} model`, x: ev.pr.curve.x.map(xf), y: ev.pr.curve.y, color: css("--ink"), w: 2 });
-  let xdom = null; if (ds.x.length) { const lo = Math.min(...ds.x), hi = Math.max(...ds.x), pad = isT ? (hi - lo) * 0.03 : 0; xdom = isT ? [xf(lo - pad), xf(hi + pad)] : S.logt ? [lo / 1.3, hi * 1.3] : [0, hi * 1.05]; }
+  let xdom = null; if (ds.x.length) { const lo = Math.min(...ds.x), hi = Math.max(...ds.x), pad = isT ? (hi - lo) * 0.03 : 0; xdom = isT ? [xf(lo - pad), xf(hi + pad)] : holdLog() ? [lo / 1.3, hi * 1.3] : [0, hi * 1.05]; }
   const xl = isT ? `Temperature (${uL()})` : "time since hold start (s)";
-  P(elId, { title: `${ds.name}${ev ? ` · R² ${ev.R2.toFixed(4)}` : ""}`, xlabel: withRes ? "" : xl, ylabel: K.ylab, xlog: !isT && S.logt, series, xdom, xshort: isT ? "T" : "t", yshort: "y", H: withRes ? 250 : 310 });
+  P(elId, { title: `${ds.name}${ev ? ` · R² ${ev.R2.toFixed(4)}` : ""}`, xlabel: withRes ? "" : xl, ylabel: K.ylab, xlog: !isT && holdLog(), series, xdom, xshort: isT ? "T" : "t", yshort: "y", H: withRes ? 250 : 310 });
   if (withRes && ev) {
     const rx = [], ry = []; ds.x.forEach((x, k) => { const yh = ev.pr.yhat[k]; if (isFinite(yh)) { rx.push(xf(x)); ry.push(ds.y[k] - yh); } });
     const el = document.getElementById(elId); const rb = document.createElement("div"); rb.className = "resbox"; el.appendChild(rb);
-    plot(rb, { id: elId + "r", title: "", xlabel: xl, ylabel: "residual", xlog: !isT && S.logt, xdom, H: 130, series: [{ name: "", x: xdom || [0, 1], y: [0, 0], color: css("--eq"), w: 1, dash: "3 3" }, { name: "", x: rx, y: ry, color: col, pts: true, r: 1.8 }], xshort: isT ? "T" : "t", yshort: "res" });
+    plot(rb, { id: elId + "r", title: "", xlabel: xl, ylabel: "residual", xlog: !isT && holdLog(), xdom, H: 130, series: [{ name: "", x: xdom || [0, 1], y: [0, 0], color: css("--eq"), w: 1, dash: "3 3" }, { name: "", x: rx, y: ry, color: col, pts: true, r: 1.8 }], xshort: isT ? "T" : "t", yshort: "res" });
   }
 }
 function commitEditor() {
@@ -682,7 +687,7 @@ function loadGeAsSe(c) {
   S.selDs = 1; S.selSeg = 1; S.fitRes = null; S.compRes = null; S.fitUndo = null; S.editor = null; recompile(); simulateNow();
 }
 function synthExample(kind) {
-  const gl = TL_PRESETS["Glycerol"]; S.model = kind === "aging" ? "TNM" : "TL"; S.P = freshParams();
+  const gl = TL_PRESETS["Selenium"]; S.model = kind === "aging" ? "TNM" : "TL"; S.P = freshParams();
   const v = S.P.TL.v; [v.Tg, v.m, v.log10tau0, v.f, v.beta0] = gl; S.P.TNM.v.Tg = gl[0]; S.P.TNM.v.m = gl[1]; ["TL", "TNM", "RP"].forEach(autoBounds);
   const Tg = gl[0]; S.T0 = Tg + 40; S.datasets = []; S.fitRes = null; S.compRes = null; S.fitUndo = null; S.editor = null;
   if (kind === "aging") S.segs = TEMPLATES.aging.f(Tg).map(s => ({ ...s, T: s.T !== undefined ? +s.T.toFixed(2) : s.T }));
@@ -699,7 +704,7 @@ function synthExample(kind) {
   S.selDs = 0; S.selSeg = 1; simulateNow();
 }
 function buildExampleMenu() {
-  $("#exList").innerHTML = `<button class="item" data-ex="default">Glycerol DSC cycle (TL, simulation only)</button>
+  $("#exList").innerHTML = `<button class="item" data-ex="default">Selenium DSC cycle (TL, simulation only)</button>
     <button class="item" data-ex="aging">Aging + DSC with synthetic enthalpy data (TNM)</button>
     <button class="item" data-ex="mdsc">MDSC with synthetic C_p′ / C_p″ (TL)</button>
     ${Object.keys(EXAMPLES.geasse || {}).length ? `<hr><div class="note" style="padding:0 8px 4px">Ge–As–Se DSC (10 K/min) — also in step 2</div>
@@ -715,10 +720,10 @@ document.addEventListener("click", e => {
   if (t.dataset.step) { go(+t.dataset.step); return; }
   if (t.dataset.go) { go(+t.dataset.go); return; }
   if (t.dataset.ex) { const k = t.dataset.ex; $$(".menu").forEach(m => m.classList.remove("open"));
-    if (k === "default") { S.P = freshParams(); S.model = "TL"; defaultHistory(189.73); S.datasets = []; S.selDs = -1; S.fitRes = null; S.compRes = null; recompile(); simulateNow(); }
+    if (k === "default") { S.P = freshParams(); S.model = "TL"; defaultHistory(308.13); S.datasets = []; S.selDs = -1; S.fitRes = null; S.compRes = null; recompile(); simulateNow(); }
     else if (k === "geasse") loadGeAsSe($("#exComp2").value); else synthExample(k);
     go(k === "default" ? 1 : 2); return; }
-  if (t.id === "pNew") { if (confirm("Start a new project? Unsaved changes are lost.")) { S.P = freshParams(); S.model = "TL"; defaultHistory(189.73); S.datasets = []; S.selDs = -1; S.fitRes = null; S.compRes = null; S.fitUndo = null; recompile(); simulateNow(); go(1); } return; }
+  if (t.id === "pNew") { if (confirm("Start a new project? Unsaved changes are lost.")) { S.P = freshParams(); S.model = "TL"; defaultHistory(308.13); S.datasets = []; S.selDs = -1; S.fitRes = null; S.compRes = null; S.fitUndo = null; recompile(); simulateNow(); go(1); } return; }
   if (t.id === "pSave") { saveProject(); return; }
   if (t.id === "themeBtn") { const r = document.documentElement, cur = r.dataset.theme || "light"; r.dataset.theme = cur === "dark" ? "light" : "dark"; renderRight(); return; }
   if (t.id === "csvSim") { exportSimCSV(); return; }
@@ -776,10 +781,9 @@ document.addEventListener("change", e => {
   const t = e.target;
   if (t.dataset.i !== undefined && t.closest("#segList")) { onSegInput(t, true); return; }
   if (t.id === "tpl" && t.value) { const Tg = S.P[S.model].v.Tg; S.segs = TEMPLATES[t.value].f(Tg).map(s => { const o = { ...s }; if (o.T !== undefined) o.T = +o.T.toFixed(2); return o; }); S.T0 = +(t.value === "tjump" || t.value === "qiso" ? Tg + 5 : Tg + 40).toFixed(2); if (t.value === "qiso") S.T0 = +(Tg + 5).toFixed(2); S.selSeg = 0; S.datasets.forEach(d => { if (d.seg >= S.segs.length) d.seg = -1; }); recompile(); S.fitRes = null; S.compRes = null; simulateNow(); render(); return; }
-  if (t.id === "logt") { S.logt = t.checked; renderRight(); return; }
   if (t.id === "unit") { S.unit = t.value; render(); return; }
   if (t.id === "tlBeta") { S.tlBeta = t.checked; if (S.step === 4 && S.sim) { const w = $("#right"), y = w.scrollTop; renderRight4(); w.scrollTop = y; } return; }
-  if (t.id === "tscale") { S.logt = t.value === "log"; renderRight(); return; }
+  if (t.id === "tscale") { S.tmode = t.value; renderRight(); return; }
   if (t.id === "pOpen") { const f = t.files[0]; if (!f) return; f.text().then(txt => { try { openProject(JSON.parse(txt)); go(1); } catch (err) { alert("Could not open project: " + err.message); } }); t.value = ""; return; }
   // datasets
   if (t.dataset.en !== undefined) { S.datasets[+t.dataset.en].enabled = t.checked; S.fitRes = null; S.compRes = null; simulateNow(); renderStepper(); renderRight2(); return; }

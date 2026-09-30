@@ -41,20 +41,21 @@
 <h2>2 · Good to know</h2>
 <ul>
   <li><b>Nothing runs until you click.</b> In the Fitter the model runs only on <b>Compute</b> or <b>Run fit</b>; any change clears the old result.</li>
-  <li><b>Temperature K / °C</b> and <b>Time axis log / linear</b> (top right) apply everywhere, including inputs and T<sub>g</sub>.</li>
+  <li><b>Temperature K / °C</b> and <b>Time axis</b> (top right) apply everywhere; K/°C also converts inputs and T<sub>g</sub>. Time axis <i>auto</i> shows real time whenever the temperature changes (scans), log time for isothermal holds.</li>
   <li><b>Try before your own data</b>: every tool has examples (Fitter <b>Examples ▾</b>, Data Analysis <b>Load example data</b>).</li>
   <li><b>Save your work</b>: Fitter <b>Project ▾ → Save project</b>; exports as CSV, JSON, and SVG for every plot.</li>
   <li><b>Private</b>: everything runs on your computer; no data are uploaded.</li>
   <li><b>Help</b>: see the User Guide, or report issues at <a href="https://github.com/Wtakeda0129/tf-studio/issues">github.com/Wtakeda0129/tf-studio/issues</a>.</li>
 </ul>
+<p style="font-size:9pt;color:var(--muted);margin-top:6pt">Please cite W. Takeda and P. Lucas, <i>J. Chem. Phys.</i> <b>160</b>, 174504 (2024) and <i>Mater. Adv.</i> <b>7</b>, 5729 (2026) when Tf Studio contributes to your work.</p>
 
-<h2>3 · Three things to try</h2>
+<h2 style="break-before:page">3 · Three things to try</h2>
 
 <div class="flow"><span class="time">≈ 2 min</span>
 <h3>A · Simulate a DSC scan after aging (Fitter)</h3>
 <ol class="steps">
   <li>Open <b>Fitter</b>. In step <b>1 Thermal history</b>, choose the template <b>Aging below T<sub>g</sub>, then DSC heating</b>.</li>
-  <li>Step <b>3 Model &amp; parameters</b>: keep <b>Takeda–Lucas</b> or pick a <b>Preset</b> (e.g. Glycerol).</li>
+  <li>Step <b>3 Model &amp; parameters</b>: keep <b>Takeda–Lucas</b> or pick a <b>Preset</b> (e.g. Selenium).</li>
   <li>Step <b>4 Compute &amp; fit</b>: click <b>Compute</b>. You get T<sub>f</sub>, normalized C<sub>p</sub>, relaxation during the hold, τ and, for TL, the map of local fictive temperatures.</li>
 </ol>
 
@@ -69,15 +70,14 @@
 </ol>
 </div>
 
-<div class="flow"><span class="time">≈ 3 min</span>
+<div class="flow" style="break-inside:auto"><span class="time">≈ 3 min</span>
 <h3>C · Analyze raw DSC heat flow (Data Analysis)</h3>
 <ol class="steps">
   <li>Open <b>Data Analysis</b> → <b>+ Add run</b>. Load your file or paste columns; check temperature and heat-flow columns, units, the <b>sign convention</b> (endo up/down), rate and mass. For scans after annealing, enter <b>t<sub>a</sub></b> and <b>T<sub>a</sub></b>.</li>
   <li>Set the <b>glass range</b> and <b>liquid range</b> (or <b>Auto ranges</b>). Read <b>T<sub>f</sub>′</b>, the midpoint and ΔC<sub>p</sub>; <b>Apply to all runs</b>.</li>
   <li>Tab <b>2 Enthalpy recovery</b>: choose the unaged reference and enter <b>T<sub>a</sub></b> to get ΔH, T<sub>f</sub> and φ(t<sub>a</sub>) with a KWW fit. Tab <b>3</b> fits volume (density, length…) during annealing.</li>
 </ol>
-<figure style="margin:4pt 0 6pt"><img src="img/an_tab2.png" style="max-width:88%" alt=""></figure>
+<figure style="margin:4pt 0 6pt"><img src="img/an_tab2.png" style="max-width:62%" alt=""></figure>
 </div>
 
-<p style="font-size:9pt;color:var(--muted);margin-top:10pt">Please cite W. Takeda and P. Lucas, <i>J. Chem. Phys.</i> <b>160</b>, 174504 (2024) and <i>Mater. Adv.</i> <b>7</b>, 5729 (2026) when Tf Studio contributes to your work.</p>
 </body></html>

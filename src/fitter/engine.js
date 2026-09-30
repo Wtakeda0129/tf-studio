@@ -71,19 +71,19 @@ const ENGINE = (function () {
     TL: {
       name: 'Takeda–Lucas (TL)',
       params: [
-        { k: 'Tg', label: 'T_g', unit: 'K', v: 189.73, lo: 150, hi: 250, free: true, tip: 'temperature where ⟨τ⟩ = 100 s' },
-        { k: 'm', label: 'm', unit: '', v: 52.25, lo: 15, hi: 150, free: false, tip: 'fragility index' },
-        { k: 'log10tau0', label: 'log₁₀ τ₀', unit: 's', v: -25.4, lo: -45, hi: -8, free: true },
-        { k: 'f', label: 'f', unit: '', v: 0.64, lo: 0.10, hi: 0.99, free: true, discrete: 0.01, tip: 'shape of the T_v,i distribution (β-library index)' },
-        { k: 'beta0', label: 'β₀', unit: '', v: 0.82, lo: 0.3, hi: 1, free: false, tip: 'local stretching exponent' },
+        { k: 'Tg', label: 'T_g', unit: 'K', v: 308.13, lo: 250, hi: 370, free: true, tip: 'temperature where ⟨τ⟩ = 100 s' },
+        { k: 'm', label: 'm', unit: '', v: 64.14, lo: 15, hi: 150, free: false, tip: 'fragility index' },
+        { k: 'log10tau0', label: 'log₁₀ τ₀', unit: 's', v: -23.41, lo: -45, hi: -8, free: true },
+        { k: 'f', label: 'f', unit: '', v: 0.59, lo: 0.10, hi: 0.99, free: true, discrete: 0.01, tip: 'shape of the T_v,i distribution (β-library index)' },
+        { k: 'beta0', label: 'β₀', unit: '', v: 1, lo: 0.3, hi: 1, free: false, tip: 'local stretching exponent' },
       ],
       fixed: { N: 200 },
     },
     TNM: {
       name: 'Tool–Narayanaswamy–Moynihan (TNM)',
       params: [
-        { k: 'Tg', label: 'T_g', unit: 'K', v: 189.73, lo: 150, hi: 250, free: true, tip: 'τ(T_g) = 100 s' },
-        { k: 'm', label: 'm', unit: '', v: 52.25, lo: 15, hi: 150, free: true, tip: 'Δh/R = m ln10 T_g' },
+        { k: 'Tg', label: 'T_g', unit: 'K', v: 308.13, lo: 250, hi: 370, free: true, tip: 'τ(T_g) = 100 s' },
+        { k: 'm', label: 'm', unit: '', v: 64.14, lo: 15, hi: 150, free: true, tip: 'Δh/R = m ln10 T_g' },
         { k: 'x', label: 'x', unit: '', v: 0.5, lo: 0.05, hi: 1, free: true, tip: 'nonlinearity' },
         { k: 'beta', label: 'β', unit: '', v: 0.55, lo: 0.15, hi: 1, free: true, tip: 'KWW stretching' },
       ],
@@ -92,11 +92,11 @@ const ENGINE = (function () {
     RP: {
       name: 'RelaxPy (MAP viscosity)',
       params: [
-        { k: 'Tg', label: 'T_g', unit: 'K', v: 189.73, lo: 150, hi: 250, free: true, tip: 'η(T_g) = 10¹² Pa·s' },
-        { k: 'm', label: 'm', unit: '', v: 52.25, lo: 15, hi: 150, free: true },
+        { k: 'Tg', label: 'T_g', unit: 'K', v: 308.13, lo: 250, hi: 370, free: true, tip: 'η(T_g) = 10¹² Pa·s' },
+        { k: 'm', label: 'm', unit: '', v: 64.14, lo: 15, hi: 150, free: true },
         { k: 'B', label: 'B', unit: 'K', v: 4136.7, lo: 0, hi: 200000, free: true, tip: 'ΔH/(k ln10)' },
         { k: 'C', label: 'C', unit: '', v: 135.09, lo: 0, hi: 3000, free: false, tip: 'S∞/(k ln10)' },
-        { k: 'pexp', label: 'p', unit: '', v: 16.1, lo: 0.1, hi: 300, free: true, tip: 'ergodicity exponent' },
+        { k: 'pexp', label: 'p', unit: '', v: 19.77, lo: 0.1, hi: 300, free: true, tip: 'ergodicity exponent' },
         { k: 'A', label: 'A', unit: '', v: 1.2, lo: -200, hi: 300, free: false, tip: 'set by continuity at T_g unless freed' },
         { k: 'eta_inf', label: 'log₁₀ η∞', unit: 'Pa·s', v: -2.9, lo: -8, hi: 2, free: false },
         { k: 'log10Ks', label: 'log₁₀ K_s', unit: 'Pa', v: 10.544068, lo: 6, hi: 14, free: false },
