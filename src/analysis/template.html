@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tf Studio Beta · Data Analysis</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+/*%%STYLE%%*/
+.dsitem .pill{min-width:34px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html" title="Tf Studio home"><h1>Tf Studio</h1><b class="beta-badge" title="Beta: still in development">Beta</b><span>Data Analysis</span></a>
+  <nav class="stepper">
+    <button class="step" data-tab="1"><span class="num">1</span><span><b>Heat-flow scans</b><small id="st1">upload DSC heat flow</small></span></button>
+    <button class="step" data-tab="2"><span class="num">2</span><span><b>Enthalpy recovery</b><small id="st2">heating after annealing</small></span></button>
+    <button class="step" data-tab="3"><span class="num">3</span><span><b>Property relaxation</b><small id="st3">volume, density, length…</small></span></button>
+  </nav>
+  <span class="sp"></span>
+  <a class="btn small" href="fitter.html" data-tool="fitter" style="text-decoration:none">Fitter →</a>
+  <label class="chk" title="Unit for every temperature">Temperature <select id="unit"><option value="K">K</option><option value="C">°C</option></select></label>
+  <label class="chk" title="Time axis of all time plots">Time axis <select id="tscale"><option value="log">log</option><option value="lin">linear</option></select></label>
+  <button class="btn small" id="themeBtn" title="Light / dark">◐</button>
+</header>
+<main>
+  <section id="left"></section>
+  <section id="right"></section>
+</main>
+<script>
+/*%%PLOT%%*/
+</script>
+<script>
+/*%%CORE%%*/
+</script>
+<script>
+const EXAMPLES = /*%%EXAMPLES%%*/;
+</script>
+<script>
+/*%%UI%%*/
+</script>
+</body>
+</html>

@@ -29,7 +29,8 @@ a{color:var(--accent)}
 .btn:hover{filter:brightness(.95)}
 main{padding:34px 0 20px}
 h2{font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:30px 0 12px}
-.tools{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:980px){.tools{grid-template-columns:1fr 1fr}}
 @media (max-width:760px){.tools{grid-template-columns:1fr}.brand h1{font-size:28px}}
 .tool{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 20px 18px;transition:border-color .12s, box-shadow .12s;cursor:pointer;text-align:left;font:inherit}
 .tool:hover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
@@ -62,6 +63,7 @@ body.desktop .lead{font-size:16px;margin-top:14px}
     <p class="lead">Every glass carries the <b>thermal fingerprint</b> of how it was made, written in its fictive temperature. Tf Studio simulates and fits that history, using the heterogeneous <b>Takeda–Lucas</b> model alongside <b>TNM</b> and <b>RelaxPy</b>, for DSC, MDSC, enthalpy, volume and annealing data.</p>
     <div class="cta">
       <a class="btn primary" href="learn.html" data-tool="learn">Start learning</a>
+      <a class="btn ghost" href="analysis.html" data-tool="analysis">Analyze data</a>
       <a class="btn ghost" href="fitter.html" data-tool="fitter">Open Fitter</a>
       <a class="btn ghost web-only" href="https://github.com/Wtakeda0129/tf-studio/releases/latest">Download for Mac / Windows</a>
       <button class="btn ghost desktop-only" id="upd" type="button">Check for updates</button>
@@ -77,6 +79,12 @@ body.desktop .lead{font-size:16px;margin-top:14px}
       <p>How structural relaxation is measured, and what the TNM, MAP and Takeda–Lucas models assume, with live simulations throughout.</p>
       <ul><li>Annealing, Kovacs asymmetry and memory, DSC, enthalpy recovery, MDSC (C<sub>p</sub>*, reversing/non-reversing and their caveats)</li><li>The mathematics of TNM, MAP (RelaxPy) and TL</li><li>Mean field vs Prony vs domain T<sub>f,i</sub>: see the distributions</li></ul>
       <div class="go">Open Learn →</div>
+    </a>
+    <a class="tool" href="analysis.html" data-tool="analysis">
+      <div class="name">Data Analysis <span class="tag">your data</span></div>
+      <p>Turn raw DSC heat flow and relaxation data into normalized curves, fictive temperatures and enthalpy.</p>
+      <ul><li>Glass and liquid baselines → C<sub>p</sub><sup>N</sup>, T<sub>f</sub>(T), T<sub>f</sub>′ for heating and cooling scans</li><li>Heating after annealing: aligned scans, ΔHF, recovered ΔH(t<sub>a</sub>), φ and a KWW fit</li><li>Volume / density / length during annealing: stretched-exponential fit</li></ul>
+      <div class="go">Open Data Analysis →</div>
     </a>
     <a class="tool" href="fitter.html" data-tool="fitter">
       <div class="name">Fitter <span class="tag">step by step</span></div>

@@ -1,5 +1,5 @@
 // Tf Studio (Thermal Fingerprint) — Electron shell
-// Opens a launcher window; each tool (Learn, Lab, Fitter) is a self-contained HTML page in ./app.
+// Opens a launcher window; each tool (Learn, Lab, Fitter, Data Analysis) is a self-contained HTML page in ./app.
 // Updates: electron-updater checks the "publish" feed configured in package.json (GitHub Releases by default).
 const { app, BrowserWindow, Menu, dialog, shell, ipcMain } = require("electron");
 const path = require("path");
@@ -10,6 +10,7 @@ const TOOLS = {
   learn: { file: "learn.html", title: "Tf Studio Beta · Learn" },
   explorer: { file: "explorer.html", title: "Tf Studio Beta · Lab" },
   fitter: { file: "fitter.html", title: "Tf Studio Beta · Fitter" },
+  analysis: { file: "analysis.html", title: "Tf Studio Beta · Data Analysis" },
 };
 // a link to another tool's page opens (or focuses) that tool's own window
 function toolForUrl(url) { for (const [k, t] of Object.entries(TOOLS)) if (new RegExp("/" + t.file.replace(".", "\\.") + "(#.*)?$").test(url)) return k; return null; }
@@ -96,6 +97,7 @@ function buildMenu() {
       { label: "Learn", accelerator: "CmdOrCtrl+1", click: () => openTool("learn") },
       { label: "Lab", accelerator: "CmdOrCtrl+2", click: () => openTool("explorer") },
       { label: "Fitter", accelerator: "CmdOrCtrl+3", click: () => openTool("fitter") },
+      { label: "Data Analysis", accelerator: "CmdOrCtrl+4", click: () => openTool("analysis") },
       { type: "separator" }, isMac ? { role: "close" } : { role: "quit" } ] },
     { role: "editMenu" },
     { label: "View", submenu: [{ role: "reload" }, { role: "toggleDevTools" }, { type: "separator" }, { role: "resetZoom" }, { role: "zoomIn" }, { role: "zoomOut" }, { type: "separator" }, { role: "togglefullscreen" }] },

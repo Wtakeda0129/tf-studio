@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p app
-cp ../site/index.html ../site/learn.html ../site/explorer.html ../site/fitter.html ../site/icon.png ../site/favicon.png app/
+cp ../site/index.html ../site/learn.html ../site/explorer.html ../site/fitter.html ../site/analysis.html ../site/icon.png ../site/favicon.png app/
 rm -rf app/vendor && cp -R ../site/vendor app/vendor   # KaTeX for the Learn page (works offline)
 cp ../site/icon.png build/icon.png
 echo "synced $(ls app | wc -l) files into desktop/app"

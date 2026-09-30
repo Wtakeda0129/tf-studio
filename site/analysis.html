@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tf Studio Beta · Data Analysis</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+
+:root{
+  --bg:#f4f5f7; --panel:#ffffff; --ink:#1b2430; --muted:#5d6b7c; --line:#dfe3e9; --grid:#e9ecf1; --soft:#f7f8fa;
+  --accent:#2a6fdb; --accent-ink:#ffffff; --eq:#7a8696; --warn:#b42318; --warnbg:#fdecea; --ok:#1f7a3a; --okbg:#e8f5ec;
+  --c1:#2a6fdb; --c2:#d9480f; --c3:#2b9348; --c4:#8e44ad; --c5:#b8860b; --c6:#0e8f9c; --c7:#c2185b; --c8:#546e7a;
+  --shadow:0 1px 2px rgba(20,30,50,.06),0 4px 14px rgba(20,30,50,.05);
+}
+:root[data-theme="dark"]{
+  --bg:#12161c; --panel:#1a2029; --ink:#e6ebf2; --muted:#93a1b3; --line:#2c3543; --grid:#252d39; --soft:#161b22;
+  --accent:#5b9bff; --accent-ink:#0b1220; --eq:#8b98a9; --warn:#ff8f85; --warnbg:#3a1d1b; --ok:#6fd48b; --okbg:#173022;
+  --c1:#5b9bff; --c2:#ff8a4c; --c3:#5fd17f; --c4:#c08be0; --c5:#e3b341; --c6:#4fd0dc; --c7:#f06292; --c8:#90a4ae; --shadow:none;
+}
+*{box-sizing:border-box} [hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;display:flex;flex-direction:column;min-height:100vh}
+button,select,input,textarea{font:inherit;color:inherit}
+.btn{border:1px solid var(--line);background:var(--panel);padding:5px 11px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--accent)} .btn:disabled{opacity:.45;cursor:default;border-color:var(--line)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.small{padding:2px 8px;font-size:12px} .btn.danger:hover{border-color:var(--warn);color:var(--warn)}
+.btn.icon{padding:1px 6px;font-size:13px;line-height:1.3}
+header{display:flex;align-items:center;gap:14px;padding:7px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{font-size:15.5px;margin:0;font-weight:680}
+.brand{display:flex;align-items:baseline;gap:7px;color:inherit;text-decoration:none}.brand span{font-size:12.5px;color:var(--muted);font-weight:600}
+header .sp{flex:1}
+.stepper{display:flex;gap:4px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:4px 12px 4px 5px;cursor:pointer;text-align:left;min-width:150px}
+.step .num{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:12px;background:var(--soft);border:1px solid var(--line)}
+.step b{display:block;font-size:12.5px} .step small{display:block;color:var(--muted);font-size:11px;max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step[aria-current=true]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.step[aria-current=true] .num{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.step.done .num{background:var(--okbg);color:var(--ok);border-color:var(--ok)}
+.menu{position:relative} .menu>div{position:absolute;right:0;top:calc(100% + 4px);background:var(--panel);border:1px solid var(--line);border-radius:9px;box-shadow:var(--shadow);padding:6px;z-index:30;min-width:260px;display:none}
+.menu.open>div{display:block}
+.menu button.item{display:block;width:100%;text-align:left;border:none;background:none;padding:6px 8px;border-radius:6px;cursor:pointer}
+.menu button.item:hover{background:var(--soft)}
+.menu hr{border:none;border-top:1px solid var(--line);margin:5px 0}
+main{flex:1;display:grid;grid-template-columns:390px minmax(0,1fr);gap:12px;padding:10px 14px;min-height:0}
+@media (min-width:981px){ body{height:100vh;overflow:hidden} #left,#right{overflow-y:auto;min-height:0} #left{padding-right:4px;scrollbar-gutter:stable} }
+@media (max-width:980px){ main{grid-template-columns:1fr} .step{min-width:0} .step small{display:none} header{flex-wrap:wrap} }
+.card{background:var(--panel);border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow);margin-bottom:10px}
+.card>h2{margin:0;padding:8px 12px;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:650;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card>h2 .sub{text-transform:none;letter-spacing:0;font-weight:500}
+.card .body{padding:10px 12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px} .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px 8px} .full{grid-column:1/-1}
+label.f{display:block;font-size:11.5px;color:var(--muted);line-height:1.3}
+label.f>input,label.f>select,label.f>textarea,label.f>.inrow{display:block;margin-top:3px;width:100%}
+input[type=number],input[type=text],select,textarea{padding:4px 7px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font-size:13px;min-width:0}
+textarea{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:0}
+input[type=range]{accent-color:var(--accent);width:100%;margin:0}
+.inrow{display:flex;gap:6px;align-items:center} .inrow>input[type=number]{width:74px;flex:1 1 60px;min-width:0} .inrow>input[type=range]{flex:1}
+.inrow>select{flex:none;width:auto}
+.note{font-size:11.5px;color:var(--muted);margin:6px 0 0;line-height:1.4}
+.chk{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.pill{display:inline-block;font-size:10.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;padding:1px 7px;border-radius:999px;color:#fff;background:var(--pc)}
+/* segments */
+.seg{border:1px solid var(--line);border-left:4px solid var(--pc);border-radius:9px;padding:7px 9px 8px;margin-bottom:7px;background:var(--panel)}
+.seg.sel{box-shadow:0 0 0 1.5px var(--pc)}
+.seg .top{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.seg .top .desc{font-size:12px;color:var(--ink);font-weight:550;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.seg .res{font-size:11px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+.addrow{display:flex;gap:5px;flex-wrap:wrap}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:4px 8px;background:var(--panel)} .stat b{display:block;font-size:14px;font-variant-numeric:tabular-nums} .stat span{font-size:10.5px;color:var(--muted)}
+/* datasets */
+.dsitem{border:1px solid var(--line);border-left:4px solid var(--pc);border-radius:9px;padding:6px 9px;margin-bottom:6px;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;align-items:center}
+.dsitem.sel{box-shadow:0 0 0 1.5px var(--pc)} .dsitem .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .dsitem .meta{grid-column:2/4;font-size:11px;color:var(--muted)}
+.tabs2{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:6px 0 8px}
+.tabs2 button{border:none;background:none;padding:5px 10px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;font-weight:600;font-size:12px}
+.tabs2 button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+/* params */
+table.pt{width:100%;border-collapse:collapse;font-size:12.5px}
+table.pt th{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:650;text-align:left;padding:3px 4px;border-bottom:1px solid var(--line)}
+table.pt td{padding:3px 4px;border-bottom:1px solid var(--grid);vertical-align:middle}
+table.pt td input[type=number]{width:100%;font-size:12px;padding:3px 5px}
+table.pt tr.fixed td input.b{opacity:.35}
+table.pt .nm{white-space:nowrap}
+table.pt td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.flag{font-size:10.5px;color:var(--warn);font-weight:650}
+.mcard{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;border:1px solid var(--line);border-radius:9px;padding:7px 9px;margin-bottom:6px;cursor:pointer;align-items:start}
+.mcard input{margin-top:3px;accent-color:var(--accent)} .mcard b{font-size:12.5px} .mcard span{grid-column:2;font-size:11.5px;color:var(--muted)}
+.mcard.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+/* right panel */
+.rhead{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.rhead h3{margin:0;font-size:14px}
+.plots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:1250px){.plots{grid-template-columns:1fr}}
+@media (min-width:1900px){.plots.three{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.plotcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 8px 4px;position:relative;min-width:0}
+.plotcard h3{margin:0 0 2px;font-size:12.5px;font-weight:650;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.plotcard svg{width:100%;height:auto;display:block;overflow:visible}
+.plotbox,.resbox{position:relative}
+.plotcard .plotbox svg{max-height:max(220px,calc((100vh - 330px)/2))}
+.plotcard .resbox svg{max-height:120px}
+.legend{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:11.5px;color:var(--muted);margin-top:2px}
+.legend i{display:inline-block;width:16px;height:0;border-top:2.5px solid;vertical-align:middle;margin-right:4px}
+.legend i.dash{border-top-style:dashed} .legend i.dot{width:7px;height:7px;border-radius:50%;border:none;background:currentColor}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;z-index:5;display:none}
+.axis text{fill:var(--muted);font-size:11px} .axlabel{fill:var(--ink);font-size:12px}
+.empty{display:flex;align-items:center;justify-content:center;min-height:200px;color:var(--muted);text-align:center;padding:20px;border:1px dashed var(--line);border-radius:10px;background:var(--panel)}
+.banner{padding:7px 11px;border-radius:8px;margin-bottom:8px;font-weight:550}
+.banner.err{background:var(--warnbg);color:var(--warn)} .banner.ok{background:var(--okbg);color:var(--ok)}
+.progress{height:6px;border-radius:3px;background:var(--grid);overflow:hidden;margin-top:8px} .progress>div{height:100%;background:var(--accent);width:0;transition:width .15s}
+.navbar{display:flex;justify-content:space-between;gap:8px;margin:4px 0 12px}
+table.dt{border-collapse:collapse;font-size:11.5px;font-variant-numeric:tabular-nums} table.dt td,table.dt th{padding:2px 8px;border-bottom:1px solid var(--grid);text-align:right} table.dt th{color:var(--muted);font-weight:600}
+table.metrics{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+table.metrics th{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:3px 4px;border-bottom:1px solid var(--line)}
+table.metrics td{padding:3px 4px;border-bottom:1px solid var(--grid)} table.metrics td.num{text-align:right}
+table.corr{border-collapse:collapse;font-size:11.5px;font-variant-numeric:tabular-nums} table.corr td,table.corr th{padding:4px 7px;text-align:center} table.corr th{color:var(--muted);font-weight:600}
+.kbd{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:var(--soft);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+details summary{cursor:pointer;color:var(--muted);font-size:12px}
+.eqn{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.55;background:var(--soft);border-radius:7px;padding:7px 9px;margin-top:6px;overflow-x:auto;white-space:pre}
+.plotcard.wide{grid-column:1/-1}
+.cbar{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);padding:0 8px 6px 56px;flex-wrap:wrap}
+.cbar i{display:inline-block;width:180px;height:10px;border-radius:2px}
+.brand{flex-shrink:0}.brand h1{white-space:nowrap}
+.beta-badge{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:1px 7px;border-radius:999px;border:1.5px solid var(--accent);color:var(--accent);margin-left:6px;vertical-align:middle;line-height:1.5;align-self:center}
+
+.dsitem .pill{min-width:34px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html" title="Tf Studio home"><h1>Tf Studio</h1><b class="beta-badge" title="Beta: still in development">Beta</b><span>Data Analysis</span></a>
+  <nav class="stepper">
+    <button class="step" data-tab="1"><span class="num">1</span><span><b>Heat-flow scans</b><small id="st1">upload DSC heat flow</small></span></button>
+    <button class="step" data-tab="2"><span class="num">2</span><span><b>Enthalpy recovery</b><small id="st2">heating after annealing</small></span></button>
+    <button class="step" data-tab="3"><span class="num">3</span><span><b>Property relaxation</b><small id="st3">volume, density, length…</small></span></button>
+  </nav>
+  <span class="sp"></span>
+  <a class="btn small" href="fitter.html" data-tool="fitter" style="text-decoration:none">Fitter →</a>
+  <label class="chk" title="Unit for every temperature">Temperature <select id="unit"><option value="K">K</option><option value="C">°C</option></select></label>
+  <label class="chk" title="Time axis of all time plots">Time axis <select id="tscale"><option value="log">log</option><option value="lin">linear</option></select></label>
+  <button class="btn small" id="themeBtn" title="Light / dark">◐</button>
+</header>
+<main>
+  <section id="left"></section>
+  <section id="right"></section>
+</main>
+<script>
+// ---------- plotting (SVG, no dependencies) ----------
+let PLOT_UID=0;
+const NS="http://www.w3.org/2000/svg";
+function niceTicks(lo,hi,target){
+  if(!(hi>lo)){hi=lo+1;}
+  const span=hi-lo, raw=span/target, mag=Math.pow(10,Math.floor(Math.log10(raw))), r=raw/mag;
+  const step=(r<1.5?1:r<3?2:r<7?5:10)*mag, out=[];
+  const start=Math.ceil(lo/step-1e-9), n=Math.floor(hi/step+1e-9)-start;
+  // a span that is tiny relative to the values (or non-finite) would give endless ticks: fall back to the two ends
+  if(!isFinite(step)||!(step>0)||!isFinite(n)||n>1000||step<Math.max(Math.abs(lo),Math.abs(hi))*1e-12) return [lo,hi];
+  for(let i=0;i<=n;i++){const v=(start+i)*step; out.push(Math.abs(v)<step*1e-6?0:+v.toPrecision(12));}
+  return out;
+}
+function fmt(v){ if(v===0)return "0"; const a=Math.abs(v); if(a>=1e5||a<1e-3) return v.toExponential(1).replace("e+","e"); return +v.toPrecision(4)+""; }
+function plot(el,cfg){
+  // cfg: {title,xlabel,ylabel,series:[{name,x,y,color,dash,w,pts}],ylog,xlog,ydom,xdom,id}
+  const W=cfg.W||560,H=cfg.H||310,m={l:cfg.ml||56,r:12,t:8,b:cfg.xlabel===""?22:40}; const uid="c"+(++PLOT_UID);
+  const S=cfg.series.filter(s=>s.x&&s.x.length);
+  let xs=[],ys=[];
+  S.forEach(s=>{for(let i=0;i<s.x.length;i++){const X=s.x[i],Y=s.y[i]; if(isFinite(X)&&isFinite(Y)&&(!cfg.ylog||Y>0)&&(!cfg.xlog||X>0)&&(!cfg.xdom||(X>=cfg.xdom[0]&&X<=cfg.xdom[1]))){xs.push(X);ys.push(Y);}}});
+  let xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
+  if(!xs.length){xmin=0;xmax=1;ymin=0;ymax=1;}
+  if(cfg.xdom){[xmin,xmax]=cfg.xdom;} if(cfg.ydom){[ymin,ymax]=cfg.ydom;}
+  // a (nearly) constant series: open the range around it instead of zooming into rounding noise
+  const flatRange=(a,b)=>!(b-a>1e-9*Math.max(Math.abs(a),Math.abs(b)));
+  if(!cfg.xdom&&!cfg.xlog&&flatRange(xmin,xmax)){const c=(xmin+xmax)/2,d=Math.abs(c)>1e-6?Math.abs(c)*0.01:0.5;xmin=c-d;xmax=c+d;}
+  if(!cfg.ydom&&!cfg.ylog&&flatRange(ymin,ymax)){const c=(ymin+ymax)/2,d=Math.abs(c)>1e-6?Math.abs(c)*0.01:0.5;ymin=c-d;ymax=c+d;}
+  const padY=(ymax-ymin)*0.05||1; if(!cfg.ydom&&!cfg.ylog){ymin-=padY;ymax+=padY;}
+  const fx=cfg.xlog?Math.log10:(v=>v), fy=cfg.ylog?Math.log10:(v=>v);
+  let X0=fx(xmin),X1=fx(xmax),Y0=fy(ymin),Y1=fy(ymax);
+  if(cfg.ylog&&!cfg.ydom){Y0=Math.floor(Y0);Y1=Math.ceil(Y1);} if(cfg.xlog&&!cfg.xdom){X0=Math.floor(X0);X1=Math.ceil(X1);}
+  // log axis without any positive value (or overflowing values): fall back to one decade instead of an unbounded axis
+  if(!isFinite(X0)||!isFinite(X1)){X0=0;X1=1;} if(!isFinite(Y0)||!isFinite(Y1)){Y0=0;Y1=1;}
+  if(X1===X0)X1=X0+1; if(Y1===Y0)Y1=Y0+1;
+  const sx=v=>m.l+(fx(v)-X0)/(X1-X0)*(W-m.l-m.r), sy=v=>H-m.b-(fy(v)-Y0)/(Y1-Y0)*(H-m.t-m.b);
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${cfg.title}"><g class="axis">`;
+  const xt=cfg.xlog?range(Math.ceil(X0),Math.floor(X1)).map(e=>Math.pow(10,e)):niceTicks(X0,X1,6);
+  const yt=cfg.ylog?range(Math.ceil(Y0),Math.floor(Y1)).map(e=>Math.pow(10,e)):niceTicks(Y0,Y1,6);
+  xt.forEach(v=>{const x=sx(v); if(x<m.l-1||x>W-m.r+1)return; if(cfg.xlabel===""){g+=`<line x1="${x}" x2="${x}" y1="${m.t}" y2="${H-m.b}" stroke="var(--grid)"/>`;return;} g+=`<line x1="${x}" x2="${x}" y1="${m.t}" y2="${H-m.b}" stroke="var(--grid)"/><text x="${x}" y="${H-m.b+15}" text-anchor="middle">${cfg.xlog?"1e"+Math.round(Math.log10(v)):fmt(v)}</text>`;});
+  yt.forEach(v=>{const y=sy(v); if(y<m.t-1||y>H-m.b+1)return; g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="var(--grid)"/><text x="${m.l-6}" y="${y+3.5}" text-anchor="end">${cfg.ylog?"1e"+Math.round(Math.log10(v)):fmt(v)}</text>`;});
+  g+=`<rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}" fill="none" stroke="var(--line)"/></g>`;
+  // bands (e.g. highlighted segment)
+  (cfg.bands||[]).forEach(b=>{const a=Math.max(m.l,sx(b.x0)),c=Math.min(W-m.r,sx(b.x1)); if(c>a) g+=`<rect x="${a}" y="${m.t}" width="${c-a}" height="${H-m.t-m.b}" fill="${b.color}" opacity="${b.op||0.12}"/>`;});
+  g+=`<clipPath id="${uid}"><rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}"/></clipPath><g clip-path="url(#${uid})">`;
+  // raster image in data coordinates (e.g. a colour map), drawn under the lines
+  if(cfg.image){const im=cfg.image,a=sx(im.x0),b=sx(im.x1),c=sy(im.y1),d=sy(im.y0); g+=`<image href="${im.href}" x="${Math.min(a,b).toFixed(1)}" y="${Math.min(c,d).toFixed(1)}" width="${Math.abs(b-a).toFixed(1)}" height="${Math.abs(d-c).toFixed(1)}" preserveAspectRatio="none"/>`;}
+  const flat=[];
+  S.forEach((s,si)=>{
+    if(s.pts){ for(let i=0;i<s.x.length;i++){ if(!isFinite(s.x[i])||!isFinite(s.y[i])||(cfg.xlog&&!(s.x[i]>0))||(cfg.ylog&&!(s.y[i]>0)))continue; g+=s.hollow?`<circle cx="${sx(s.x[i]).toFixed(1)}" cy="${sy(s.y[i]).toFixed(1)}" r="${s.r||2.6}" fill="none" stroke="${s.color}" stroke-width="1.2"/>`:`<circle cx="${sx(s.x[i]).toFixed(1)}" cy="${sy(s.y[i]).toFixed(1)}" r="${s.r||2.6}" fill="${s.color}" fill-opacity="${s.op||.75}"/>`; flat.push([sx(s.x[i]),sy(s.y[i]),si,i]); } return; }
+    let d="",pen=false;
+    for(let i=0;i<s.x.length;i++){
+      const ok=isFinite(s.x[i])&&isFinite(s.y[i])&&(!cfg.ylog||s.y[i]>0)&&(!cfg.xlog||s.x[i]>0);
+      if(!ok){pen=false;continue;}
+      const X=sx(s.x[i]),Y=sy(s.y[i]); d+=(pen?"L":"M")+X.toFixed(1)+" "+Y.toFixed(1); pen=true; flat.push([X,Y,si,i]);
+    }
+    g+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.w||2}" ${s.dash?`stroke-dasharray="${s.dash}"`:""} stroke-linejoin="round" stroke-linecap="round" ${s.op?`opacity="${s.op}"`:""}/>`;
+  });
+  g+=`</g><text class="axlabel" x="${(m.l+W-m.r)/2}" y="${H-6}" text-anchor="middle">${cfg.xlabel}</text>`;
+  g+=`<text class="axlabel" transform="translate(13 ${(m.t+H-m.b)/2}) rotate(-90)" text-anchor="middle">${cfg.ylabel}</text>`;
+  g+=`<g class="hov" style="display:none"><line class="vl" y1="${m.t}" y2="${H-m.b}" stroke="var(--muted)" stroke-dasharray="3 3"/><circle r="4" fill="none" stroke="var(--ink)" stroke-width="1.6"/></g>`;
+  g+=`<rect class="cap" x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}" fill="transparent"/></svg>`;
+  const legend=S.filter(s=>s.name).map(s=>`<span style="color:${s.color}"><i class="${s.pts?"dot":s.dash?"dash":""}" style="border-color:${s.color}"></i><span style="color:var(--muted)">${s.name}</span></span>`).join("");
+  el.classList.remove("isempty");
+  el.innerHTML=(cfg.title?`<h3><span>${cfg.title}</span><span class="tools"><button class="btn small" data-svg>SVG</button></span></h3>`:"")+`${g}`+(legend?`<div class="legend">${legend}</div>`:"")+`<div class="tip"></div>`;
+  const svg=el.querySelector("svg"),tip=el.querySelector(".tip"),hov=svg.querySelector(".hov"),cap=svg.querySelector(".cap");
+  cap.addEventListener("mousemove",ev=>{
+    const sp=svg.createSVGPoint(); sp.x=ev.clientX; sp.y=ev.clientY; const q=sp.matrixTransform(svg.getScreenCTM().inverse()), px=q.x, py=q.y;
+    let best=null,bd=1e9; for(const q of flat){const dd=(q[0]-px)**2+(q[1]-py)**2*0.25; if(dd<bd){bd=dd;best=q;}}
+    if(!best||bd>1600){hov.style.display="none";tip.style.display="none";return;}
+    const s=S[best[2]],i=best[3]; hov.style.display="";hov.querySelector("circle").setAttribute("cx",best[0]);hov.querySelector("circle").setAttribute("cy",best[1]);
+    hov.querySelector(".vl").setAttribute("x1",best[0]);hov.querySelector(".vl").setAttribute("x2",best[0]);
+    tip.style.display="block"; tip.innerHTML=`${s.name?`<b style="color:${s.color}">${s.name}</b><br>`:""}${cfg.xshort||"x"} = ${fmt(s.x[i])}<br>${cfg.yshort||"y"} = ${fmt(s.y[i])}`;
+    const cr=el.getBoundingClientRect(); tip.style.left=Math.min(ev.clientX-cr.left+12,cr.width-150)+"px"; tip.style.top=(ev.clientY-cr.top-8)+"px";
+  });
+  cap.addEventListener("mouseleave",()=>{hov.style.display="none";tip.style.display="none";});
+  const sb=el.querySelector("[data-svg]"); if(sb) sb.addEventListener("click",()=>exportSVG(svg,cfg.id));
+}
+function range(a,b){const o=[];if(!isFinite(a)||!isFinite(b))return o;const st=Math.max(1,Math.ceil((b-a)/12));for(let i=a;i<=b;i+=st)o.push(i);return o;}
+function exportSVG(svg,name){
+  const cs=getComputedStyle(document.documentElement); let s=new XMLSerializer().serializeToString(svg);
+  s=s.replace(/var\((--[a-z0-9-]+)\)/g,(_,v)=>cs.getPropertyValue(v).trim()||"#000");
+  s=s.replace("<svg ",'<svg xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif" ').replace(/<text class="(axis|axlabel)?/g,'<text ');
+  s=s.replace(/<g class="axis">/,'<g class="axis" fill="'+cs.getPropertyValue("--muted").trim()+'" font-size="11">').replace(/<text /g,'<text fill="'+cs.getPropertyValue("--ink").trim()+'" font-size="12" ');
+  dl(new Blob([s],{type:"image/svg+xml"}),`fitter_${name}.svg`);
+}
+function dl(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+
+
+</script>
+<script>
+/* ============================================================
+   Tf Studio · Data Analysis — numerical core (no DOM)
+   - parse pasted / uploaded tables
+   - DSC heat flow: linear glass and liquid baselines → normalized C_p^N = (HF − HF_g)/(HF_l − HF_g),
+     fictive temperature T_f(T) by integration (Moynihan area matching), limiting T_f′
+   - enthalpy recovery: aged heating scan aligned to the unaged reference, ΔHF(T), ΔH = ∫ΔHF dT / q
+   - KWW fits of φ(t) and of property relaxation V(t) = V∞ + (V₀ − V∞)·exp[−(t/τ)^β]
+   ============================================================ */
+const AN = (function () {
+  /* ---------- tables ---------- */
+  function parseTable(text) {
+    const rows = [], lines = String(text || "").split(/\r?\n/);
+    let names = null;
+    for (const raw of lines) {
+      const line = raw.trim(); if (!line) continue;
+      // delimiters: comma, semicolon or tab when present (headers may contain spaces), otherwise whitespace
+      const tok = (/[,;\t]/.test(line) ? line.split(/\s*[,;\t]\s*/) : line.split(/\s+/)).map(s => s.trim()).filter(s => s !== "");
+      const num = tok.map(s => Number(s.replace(/^"|"$/g, "")));
+      const nNum = num.filter(v => isFinite(v)).length;
+      if (nNum >= 2 && nNum >= tok.length - 1) rows.push(num);
+      else if (!rows.length && tok.length >= 2) names = tok.map(s => s.replace(/^"|"$/g, ""));
+    }
+    const nc = rows.reduce((m, r) => Math.max(m, r.length), 0);
+    const cols = Array.from({ length: nc }, (_, j) => rows.map(r => (j < r.length ? r[j] : NaN)));
+    const nm = Array.from({ length: nc }, (_, j) => (names && names[j]) || `column ${j + 1}`);
+    return { cols, names: nm, n: rows.length };
+  }
+
+  /* ---------- small numerics ---------- */
+  function linfit(x, y) {   // y = a + b x
+    let n = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+    for (let i = 0; i < x.length; i++) { const X = x[i], Y = y[i]; if (!isFinite(X) || !isFinite(Y)) continue; n++; sx += X; sy += Y; sxx += X * X; sxy += X * Y; }
+    if (n < 2) return null; const d = n * sxx - sx * sx; if (!(Math.abs(d) > 0)) return { a: sy / n, b: 0, n };
+    const b = (n * sxy - sx * sy) / d; return { a: (sy - b * sx) / n, b, n };
+  }
+  function interp(xs, ys, x) {   // xs ascending
+    const n = xs.length; if (n < 2 || !(x >= xs[0] && x <= xs[n - 1])) return NaN;
+    let lo = 0, hi = n - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (xs[m] <= x) lo = m; else hi = m; }
+    const d = xs[hi] - xs[lo]; return d > 0 ? ys[lo] + (x - xs[lo]) / d * (ys[hi] - ys[lo]) : ys[lo];
+  }
+  function trapz(x, y, a, b) {   // ∫_a^b y dx over ascending x (linear interpolation at the ends)
+    if (!(b > a)) return 0; let s = 0;
+    const pts = [[a, interp(x, y, a)]];
+    for (let i = 0; i < x.length; i++) if (x[i] > a && x[i] < b) pts.push([x[i], y[i]]);
+    pts.push([b, interp(x, y, b)]);
+    for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; if (isFinite(y0) && isFinite(y1)) s += (x1 - x0) * (y0 + y1) / 2; }
+    return s;
+  }
+  function sortByX(x, y) { const idx = x.map((_, i) => i).filter(i => isFinite(x[i]) && isFinite(y[i])).sort((a, b) => x[a] - x[b]); return { x: idx.map(i => x[i]), y: idx.map(i => y[i]) }; }
+  function inRange(x, r) { return x >= Math.min(r[0], r[1]) && x <= Math.max(r[0], r[1]); }
+  function nelderMead(f, x0, step, iters) {
+    const n = x0.length; let P = [x0.slice()]; for (let i = 0; i < n; i++) { const p = x0.slice(); p[i] += step[i]; P.push(p); }
+    let F = P.map(f);
+    for (let it = 0; it < (iters || 400); it++) {
+      const o = F.map((v, i) => i).sort((a, b) => F[a] - F[b]); P = o.map(i => P[i]); F = o.map(i => F[i]);
+      if (Math.abs(F[n] - F[0]) < 1e-14 * (1 + Math.abs(F[0]))) break;
+      const c = Array(n).fill(0); for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) c[j] += P[i][j] / n;
+      const xr = c.map((v, j) => v + (v - P[n][j])), fr = f(xr);
+      if (fr < F[0]) { const xe = c.map((v, j) => v + 2 * (v - P[n][j])), fe = f(xe); if (fe < fr) { P[n] = xe; F[n] = fe; } else { P[n] = xr; F[n] = fr; } }
+      else if (fr < F[n - 1]) { P[n] = xr; F[n] = fr; }
+      else { const xc = c.map((v, j) => v + 0.5 * (P[n][j] - v)), fc = f(xc);
+        if (fc < F[n]) { P[n] = xc; F[n] = fc; } else { for (let i = 1; i <= n; i++) { P[i] = P[i].map((v, j) => P[0][j] + 0.5 * (v - P[0][j])); F[i] = f(P[i]); } } }
+    }
+    const o = F.map((v, i) => i).sort((a, b) => F[a] - F[b]); return { x: P[o[0]], f: F[o[0]] };
+  }
+  const gammaFn = z => { // Lanczos
+    if (z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * gammaFn(1 - z));
+    const g = 7, c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+    z -= 1; let x = c[0]; for (let i = 1; i < g + 2; i++) x += c[i] / (z + i); const t = z + g + 0.5; return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+  };
+
+  /* ---------- DSC normalization ---------- */
+  // run: {T[], HF[]} (any order); r: {g:[T1,T2], l:[T3,T4]} in K. Returns sorted arrays and derived quantities.
+  function defaultRanges(T) {
+    const lo = Math.min(...T), hi = Math.max(...T), s = hi - lo;
+    return { g: [lo + 0.05 * s, lo + 0.25 * s], l: [hi - 0.2 * s, hi - 0.03 * s] };
+  }
+  function normalize(run, r) {
+    const { x: T, y: HF } = sortByX(run.T, run.HF);
+    const gx = [], gy = [], lx = [], ly = [];
+    T.forEach((t, i) => { if (inRange(t, r.g)) { gx.push(t); gy.push(HF[i]); } if (inRange(t, r.l)) { lx.push(t); ly.push(HF[i]); } });
+    const fg = linfit(gx, gy), fl = linfit(lx, ly);
+    if (!fg || !fl) return { ok: false, msg: "Each range needs at least two data points.", T, HF };
+    const g = t => fg.a + fg.b * t, l = t => fl.a + fl.b * t;
+    const cpN = T.map((t, i) => (HF[i] - g(t)) / (l(t) - g(t)));
+    // T_f(T) = T* − ∫_T^{T*} C_p^N dT', with T* at the start of the liquid range (T_f = T above it)
+    const Ts = Math.min(r.l[0], r.l[1]), Tf = new Array(T.length);
+    let acc = 0, k = T.findIndex(t => t >= Ts); if (k < 0) k = T.length - 1;
+    for (let i = T.length - 1; i >= 0; i--) {
+      if (T[i] >= Ts) { Tf[i] = T[i]; continue; }
+      const hiT = i + 1 < T.length ? Math.min(T[i + 1], Ts) : Ts, hiC = i + 1 < T.length && T[i + 1] <= Ts ? cpN[i + 1] : interp(T, cpN, Ts);
+      acc += (hiT - T[i]) * (cpN[i] + hiC) / 2; Tf[i] = Ts - acc;
+    }
+    const Tg2 = Math.max(r.g[0], r.g[1]), TfPrime = interp(T, Tf, Tg2);
+    // midpoint temperature (C_p^N = 0.5) inside the transition
+    let Tmid = NaN; for (let i = 1; i < T.length; i++) if (T[i] > Tg2 && T[i - 1] < Ts && (cpN[i - 1] - 0.5) * (cpN[i] - 0.5) <= 0 && cpN[i] !== cpN[i - 1]) { Tmid = T[i - 1] + (0.5 - cpN[i - 1]) * (T[i] - T[i - 1]) / (cpN[i] - cpN[i - 1]); break; }
+    return { ok: true, T, HF, cpN, Tf, fg, fl, g, l, TfPrime, Tmid, dHF: t => l(t) - g(t) };
+  }
+
+  /* ---------- enthalpy recovery ---------- */
+  // ref, aged: normalize() results (heating scans at the same rate). o: {g, l, mode: "liquid"|"linear", int:[a,b]}
+  function recovery(ref, aged, o) {
+    const lo = Math.max(ref.T[0], aged.T[0]), hi = Math.min(ref.T[ref.T.length - 1], aged.T[aged.T.length - 1]);
+    const step = Math.max(0.02, Math.min(0.5, (hi - lo) / 1500)), x = [];
+    for (let t = lo; t <= hi + 1e-9; t += step) x.push(t);
+    const hr = x.map(t => interp(ref.T, ref.HF, t)), ha = x.map(t => interp(aged.T, aged.HF, t)), d = x.map((t, i) => ha[i] - hr[i]);
+    let base;
+    if (o.mode === "linear") { const bx = [], by = []; x.forEach((t, i) => { if (inRange(t, o.g) || inRange(t, o.l)) { bx.push(t); by.push(d[i]); } }); const f = linfit(bx, by) || { a: 0, b: 0 }; base = t => f.a + f.b * t; }
+    else { let s = 0, n = 0; x.forEach((t, i) => { if (inRange(t, o.l)) { s += d[i]; n++; } }); const c = n ? s / n : 0; base = () => c; }
+    const aligned = ha.map((v, i) => v - base(x[i])), dHF = x.map((t, i) => aligned[i] - hr[i]);
+    const a = Math.max(lo, Math.min(o.int[0], o.int[1])), b = Math.min(hi, Math.max(o.int[0], o.int[1]));
+    return { x, ref: hr, aged: aligned, dHF, integral: trapz(x, dHF, a, b), int: [a, b] };
+  }
+
+  /* ---------- KWW fits ---------- */
+  // φ(t) = exp[−(t/τ)^β]; returns {tau, beta, mean τ, sse}
+  function kwwFit(t, phi) {
+    const pts = t.map((v, i) => [v, phi[i]]).filter(p => p[0] > 0 && isFinite(p[1]));
+    if (pts.length < 3) return null;
+    const lt = pts.map(p => Math.log(p[0])), guess = (() => { let k = pts.findIndex(p => p[1] < Math.exp(-1)); return k < 0 ? lt[lt.length - 1] : lt[k]; })();
+    const f = u => { const tau = Math.exp(u[0]), b = u[1]; if (!(b > 0.05 && b <= 1.5)) return 1e9; let s = 0; for (const [x, y] of pts) { const r = y - Math.exp(-Math.pow(x / tau, b)); s += r * r; } return s; };
+    const r = nelderMead(f, [guess, 0.6], [1, 0.15], 600);
+    const tau = Math.exp(r.x[0]), beta = r.x[1];
+    return { tau, beta, meanTau: tau / beta * gammaFn(1 / beta), sse: r.f, n: pts.length };
+  }
+  // property relaxation during annealing: V(t) = V∞ + ΔV·exp[−(t/τ)^β]; V∞ and ΔV are solved linearly for every (τ, β)
+  function relaxFit(t, v, vinfFixed) {
+    const pts = t.map((x, i) => [x, v[i]]).filter(p => p[0] >= 0 && isFinite(p[1])); if (pts.length < 4) return null;
+    const lin = (tau, b) => {
+      const e = pts.map(p => Math.exp(-Math.pow(p[0] / tau, b)));
+      if (isFinite(vinfFixed)) { let se = 0, sy = 0; pts.forEach((p, i) => { se += e[i] * e[i]; sy += e[i] * (p[1] - vinfFixed); }); const dv = se > 0 ? sy / se : 0; return { vinf: vinfFixed, dv, e }; }
+      const f = linfit(e, pts.map(p => p[1])); return f ? { vinf: f.a, dv: f.b, e } : null;
+    };
+    const sse = u => { const tau = Math.exp(u[0]), b = u[1]; if (!(b > 0.05 && b <= 1.5)) return 1e30; const L = lin(tau, b); if (!L) return 1e30; let s = 0; pts.forEach((p, i) => { const r = p[1] - (L.vinf + L.dv * L.e[i]); s += r * r; }); return s; };
+    const lts = pts.filter(p => p[0] > 0).map(p => Math.log(p[0])); if (!lts.length) return null;
+    let best = null;   // coarse grid for a robust start
+    for (let k = 0; k <= 16; k++) for (const b of [0.3, 0.5, 0.7, 0.9]) { const u = [lts[0] + (lts[lts.length - 1] - lts[0]) * k / 16, b], s = sse(u); if (!best || s < best.s) best = { u, s }; }
+    const r = nelderMead(sse, best.u, [0.7, 0.1], 800), tau = Math.exp(r.x[0]), beta = r.x[1], L = lin(tau, beta);
+    const ys = pts.map(p => p[1]), mu = ys.reduce((a, b) => a + b, 0) / ys.length, sst = ys.reduce((a, y) => a + (y - mu) ** 2, 0);
+    return { tau, beta, vinf: L.vinf, dv: L.dv, v0: L.vinf + L.dv, meanTau: tau / beta * gammaFn(1 / beta), R2: 1 - r.f / sst, sse: r.f, n: pts.length };
+  }
+
+  return { parseTable, linfit, interp, trapz, sortByX, defaultRanges, normalize, recovery, kwwFit, relaxFit, nelderMead, gammaFn };
+})();
+if (false && typeof module !== "undefined") module.exports = AN;
+
+</script>
+<script>
+const EXAMPLES = {"note":"Synthetic data from the Takeda–Lucas model (glycerol parameters, JCP 160, 174504 (2024)) with noise; heat flow in mW (endo up), sample mass 10 mg.","model":{"Tg":189.73,"m":52.25,"log10tau0":-25.4,"f":0.64,"beta0":0.82,"N":200},"runs":[{"name":"Cooling 10 K/min","kind":"cool","q":10,"mass":10,"ta":null,"Ta":null,"T":[229.58,229.38,229.18,228.98,228.78,228.58,228.38,228.18,227.98,227.78,227.58,227.38,227.18,226.98,226.78,226.58,226.38,226.18,225.98,225.78,225.58,225.38,225.18,224.98,224.78,224.58,224.38,224.18,223.98,223.78,223.58,223.38,223.18,222.98,222.78,222.58,222.38,222.18,221.98,221.78,221.58,221.38,221.18,220.98,220.78,220.58,220.38,220.18,219.98,219.78,219.58,219.38,219.18,218.98,218.78,218.58,218.38,218.18,217.98,217.78,217.58,217.38,217.18,216.98,216.78,216.58,216.38,216.18,215.98,215.78,215.58,215.38,215.18,214.98,214.78,214.58,214.38,214.18,213.98,213.78,213.58,213.38,213.18,212.98,212.78,212.58,212.38,212.18,211.98,211.78,211.58,211.38,211.18,210.98,210.78,210.58,210.38,210.18,209.98,209.78,209.58,209.38,209.18,208.98,208.78,208.58,208.38,208.18,207.98,207.78,207.58,207.38,207.18,206.98,206.78,206.58,206.38,206.18,205.98,205.78,205.58,205.38,205.18,204.98,204.78,204.58,204.38,204.18,203.98,203.78,203.58,203.38,203.18,202.98,202.78,202.58,202.38,202.18,201.98,201.78,201.58,201.38,201.18,200.98,200.78,200.58,200.38,200.18,199.98,199.78,199.58,199.38,199.18,198.98,198.78,198.58,198.38,198.18,197.98,197.78,197.58,197.38,197.18,196.98,196.78,196.58,196.38,196.18,195.98,195.78,195.58,195.38,195.18,194.98,194.78,194.58,194.38,194.18,193.98,193.78,193.58,193.38,193.18,192.98,192.78,192.58,192.38,192.18,191.98,191.78,191.58,191.38,191.18,190.98,190.78,190.58,190.38,190.18,189.98,189.78,189.58,189.38,189.18,188.98,188.78,188.58,188.38,188.18,187.98,187.78,187.58,187.38,187.18,186.98,186.78,186.58,186.38,186.18,185.98,185.78,185.58,185.38,185.18,184.98,184.78,184.58,184.38,184.18,183.98,183.78,183.58,183.38,183.18,182.98,182.78,182.58,182.38,182.18,181.98,181.78,181.58,181.38,181.18,180.98,180.78,180.58,180.38,180.18,179.98,179.78,179.58,179.38,179.18,178.98,178.78,178.58,178.38,178.18,177.98,177.78,177.58,177.38,177.18,176.98,176.78,176.58,176.38,176.18,175.98,175.78,175.58,175.38,175.18,174.98,174.78,174.58,174.38,174.18,173.98,173.78,173.58,173.38,173.18,172.98,172.78,172.58,172.38,172.18,171.98,171.78,171.58,171.38,171.18,170.98,170.78,170.58,170.38,170.18,169.98,169.78,169.58,169.38,169.18,168.98,168.78,168.58,168.38,168.18,167.98,167.78,167.58,167.38,167.18,166.98,166.78,166.58,166.38,166.18,165.98,165.78,165.58,165.38,165.18,164.98,164.78,164.58,164.38,164.18,163.98,163.78,163.58,163.38,163.18,162.98,162.78,162.58,162.38,162.18,161.98,161.78,161.58,161.38,161.18,160.98,160.78,160.58,160.38,160.18,159.98,159.78,159.58,159.38,159.18,158.98,158.78,158.58,158.38,158.18,157.98,157.78,157.58,157.38,157.18,156.98,156.78,156.58,156.38,156.18,155.98,155.78,155.58,155.38,155.18,154.98,154.78,154.58,154.38,154.18,153.98,153.78,153.58,153.38,153.18,152.98,152.78,152.58,152.38,152.18,151.98,151.78,151.58,151.38,151.18,150.98,150.78,150.58,150.38,150.18,149.98,149.78,149.58,149.38,149.18,148.98,148.78,148.58,148.38,148.18,147.98,147.78,147.58,147.38,147.18,146.98,146.78,146.58,146.38,146.18,145.98,145.78,145.58,145.38,145.18,144.98,144.78,144.58,144.38,144.18,143.98,143.78,143.58,143.38,143.18,142.98,142.78,142.58,142.38,142.18,141.98,141.78,141.58,141.38,141.18,140.98,140.78,140.58,140.38,140.18,139.98,139.78],"HF":[-2.832564,-2.83233,-2.833072,-2.820534,-2.827233,-2.824304,-2.837056,-2.823736,-2.83301,-2.830183,-2.832157,-2.837111,-2.825351,-2.819957,-2.831161,-2.82446,-2.82689,-2.825195,-2.823451,-2.826648,-2.829657,-2.824257,-2.821855,-2.825088,-2.828403,-2.825749,-2.8212,-2.819313,-2.824053,-2.822603,-2.82428,-2.815096,-2.821316,-2.825358,-2.824464,-2.827027,-2.820714,-2.820955,-2.826129,-2.816762,-2.814587,-2.826165,-2.81931,-2.819295,-2.819886,-2.821013,-2.815786,-2.812053,-2.807593,-2.816532,-2.813479,-2.818014,-2.81612,-2.814935,-2.816902,-2.814722,-2.82193,-2.802741,-2.810136,-2.811761,-2.803393,-2.809067,-2.807478,-2.809326,-2.813324,-2.811693,-2.809628,-2.815735,-2.80786,-2.807105,-2.818525,-2.813103,-2.807197,-2.81102,-2.807226,-2.804361,-2.812394,-2.800046,-2.808201,-2.797311,-2.814417,-2.809733,-2.801573,-2.80396,-2.809899,-2.805174,-2.808026,-2.809198,-2.801312,-2.804902,-2.802853,-2.800509,-2.803229,-2.798803,-2.809598,-2.797354,-2.798143,-2.799744,-2.795352,-2.813557,-2.797387,-2.79872,-2.795159,-2.798569,-2.797044,-2.799942,-2.797501,-2.79014,-2.800399,-2.79602,-2.798571,-2.796245,-2.797478,-2.79573,-2.788651,-2.788448,-2.795324,-2.789254,-2.792641,-2.792994,-2.792367,-2.790355,-2.796802,-2.79574,-2.792012,-2.79014,-2.795079,-2.787103,-2.786909,-2.794574,-2.790161,-2.794537,-2.788336,-2.789289,-2.779576,-2.779714,-2.777961,-2.781439,-2.780946,-2.774527,-2.769526,-2.769761,-2.763009,-2.767452,-2.758302,-2.762465,-2.755662,-2.752289,-2.749247,-2.744818,-2.738553,-2.733872,-2.72815,-2.723849,-2.723688,-2.716446,-2.705627,-2.694889,-2.69677,-2.685817,-2.675034,-2.663773,-2.659399,-2.649959,-2.644065,-2.632749,-2.622621,-2.606243,-2.595876,-2.58645,-2.56507,-2.556559,-2.539809,-2.52421,-2.510153,-2.491773,-2.476692,-2.466457,-2.452054,-2.429601,-2.41851,-2.393625,-2.376692,-2.359279,-2.349025,-2.323414,-2.307383,-2.281946,-2.271145,-2.246712,-2.22993,-2.208525,-2.195831,-2.170405,-2.149315,-2.131065,-2.109459,-2.090645,-2.081147,-2.055731,-2.039161,-2.018986,-2.004589,-1.993529,-1.966319,-1.962602,-1.935746,-1.915808,-1.903705,-1.886191,-1.87256,-1.850808,-1.840732,-1.822937,-1.811905,-1.793178,-1.783583,-1.771349,-1.760107,-1.747444,-1.728964,-1.714944,-1.703769,-1.6831,-1.674931,-1.661189,-1.651283,-1.650639,-1.634567,-1.622202,-1.610999,-1.604839,-1.597609,-1.584085,-1.57126,-1.567038,-1.561455,-1.554364,-1.543914,-1.527931,-1.518796,-1.50965,-1.509315,-1.503454,-1.495031,-1.479308,-1.472005,-1.47054,-1.462896,-1.456946,-1.447499,-1.444052,-1.431057,-1.438711,-1.432923,-1.424371,-1.416629,-1.419437,-1.408887,-1.404893,-1.390045,-1.396123,-1.391327,-1.380033,-1.378065,-1.377493,-1.368001,-1.368125,-1.360608,-1.363771,-1.349681,-1.353093,-1.345877,-1.339907,-1.33958,-1.338325,-1.335737,-1.329306,-1.331594,-1.322406,-1.324739,-1.316856,-1.323805,-1.317915,-1.317189,-1.312734,-1.306192,-1.306612,-1.30219,-1.301261,-1.301496,-1.28854,-1.288872,-1.294993,-1.285471,-1.289076,-1.287334,-1.289219,-1.284702,-1.281367,-1.284377,-1.274061,-1.273286,-1.272961,-1.262088,-1.272936,-1.272673,-1.262675,-1.26826,-1.2664,-1.259283,-1.264028,-1.258165,-1.250911,-1.253325,-1.259427,-1.258563,-1.256088,-1.244297,-1.249151,-1.247182,-1.245889,-1.246577,-1.240581,-1.243415,-1.236025,-1.235475,-1.235912,-1.235109,-1.234159,-1.241769,-1.234604,-1.229675,-1.235062,-1.229785,-1.227079,-1.231512,-1.2244,-1.220539,-1.219401,-1.228141,-1.222355,-1.217128,-1.229306,-1.220226,-1.222125,-1.216492,-1.218366,-1.220459,-1.217059,-1.216008,-1.215898,-1.219651,-1.207701,-1.205289,-1.209883,-1.210632,-1.212712,-1.202872,-1.205196,-1.199344,-1.202431,-1.195736,-1.193917,-1.200084,-1.20534,-1.199545,-1.197223,-1.18967,-1.188667,-1.196645,-1.186767,-1.185556,-1.195471,-1.190817,-1.186603,-1.188051,-1.194738,-1.189094,-1.18896,-1.186289,-1.186245,-1.181,-1.178632,-1.176864,-1.182666,-1.179624,-1.183718,-1.17011,-1.172689,-1.171634,-1.171868,-1.177855,-1.176346,-1.168263,-1.16568,-1.166978,-1.167342,-1.158663,-1.167309,-1.162575,-1.170555,-1.163383,-1.16037,-1.162154,-1.16317,-1.166682,-1.159663,-1.16446,-1.151819,-1.156415,-1.159587,-1.164091,-1.153894,-1.149146,-1.153406,-1.148788,-1.150114,-1.14437,-1.142573,-1.140955,-1.140199,-1.148717,-1.143373,-1.145127,-1.137969,-1.13789,-1.136994,-1.139505,-1.134062,-1.13627,-1.136717,-1.14045,-1.137107,-1.131818,-1.136814,-1.129993,-1.134513,-1.131364,-1.136559,-1.126219,-1.124798,-1.125094,-1.12362,-1.125279,-1.121159,-1.116217,-1.122482,-1.116088,-1.120223]},{"name":"Heating 10 K/min (reference, unaged)","kind":"heat","q":10,"mass":10,"ta":0,"Ta":null,"T":[139.78,139.98,140.18,140.38,140.58,140.78,140.98,141.18,141.38,141.58,141.78,141.98,142.18,142.38,142.58,142.78,142.98,143.18,143.38,143.58,143.78,143.98,144.18,144.38,144.58,144.78,144.98,145.18,145.38,145.58,145.78,145.98,146.18,146.38,146.58,146.78,146.98,147.18,147.38,147.58,147.78,147.98,148.18,148.38,148.58,148.78,148.98,149.18,149.38,149.58,149.78,149.98,150.18,150.38,150.58,150.78,150.98,151.18,151.38,151.58,151.78,151.98,152.18,152.38,152.58,152.78,152.98,153.18,153.38,153.58,153.78,153.98,154.18,154.38,154.58,154.78,154.98,155.18,155.38,155.58,155.78,155.98,156.18,156.38,156.58,156.78,156.98,157.18,157.38,157.58,157.78,157.98,158.18,158.38,158.58,158.78,158.98,159.18,159.38,159.58,159.78,159.98,160.18,160.38,160.58,160.78,160.98,161.18,161.38,161.58,161.78,161.98,162.18,162.38,162.58,162.78,162.98,163.18,163.38,163.58,163.78,163.98,164.18,164.38,164.58,164.78,164.98,165.18,165.38,165.58,165.78,165.98,166.18,166.38,166.58,166.78,166.98,167.18,167.38,167.58,167.78,167.98,168.18,168.38,168.58,168.78,168.98,169.18,169.38,169.58,169.78,169.98,170.18,170.38,170.58,170.78,170.98,171.18,171.38,171.58,171.78,171.98,172.18,172.38,172.58,172.78,172.98,173.18,173.38,173.58,173.78,173.98,174.18,174.38,174.58,174.78,174.98,175.18,175.38,175.58,175.78,175.98,176.18,176.38,176.58,176.78,176.98,177.18,177.38,177.58,177.78,177.98,178.18,178.38,178.58,178.78,178.98,179.18,179.38,179.58,179.78,179.98,180.18,180.38,180.58,180.78,180.98,181.18,181.38,181.58,181.78,181.98,182.18,182.38,182.58,182.78,182.98,183.18,183.38,183.58,183.78,183.98,184.18,184.38,184.58,184.78,184.98,185.18,185.38,185.58,185.78,185.98,186.18,186.38,186.58,186.78,186.98,187.18,187.38,187.58,187.78,187.98,188.18,188.38,188.58,188.78,188.98,189.18,189.38,189.58,189.78,189.98,190.18,190.38,190.58,190.78,190.98,191.18,191.38,191.58,191.78,191.98,192.18,192.38,192.58,192.78,192.98,193.18,193.38,193.58,193.78,193.98,194.18,194.38,194.58,194.78,194.98,195.18,195.38,195.58,195.78,195.98,196.18,196.38,196.58,196.78,196.98,197.18,197.38,197.58,197.78,197.98,198.18,198.38,198.58,198.78,198.98,199.18,199.38,199.58,199.78,199.98,200.18,200.38,200.58,200.78,200.98,201.18,201.38,201.58,201.78,201.98,202.18,202.38,202.58,202.78,202.98,203.18,203.38,203.58,203.78,203.98,204.18,204.38,204.58,204.78,204.98,205.18,205.38,205.58,205.78,205.98,206.18,206.38,206.58,206.78,206.98,207.18,207.38,207.58,207.78,207.98,208.18,208.38,208.58,208.78,208.98,209.18,209.38,209.58,209.78,209.98,210.18,210.38,210.58,210.78,210.98,211.18,211.38,211.58,211.78,211.98,212.18,212.38,212.58,212.78,212.98,213.18,213.38,213.58,213.78,213.98,214.18,214.38,214.58,214.78,214.98,215.18,215.38,215.58,215.78,215.98,216.18,216.38,216.58,216.78,216.98,217.18,217.38,217.58,217.78,217.98,218.18,218.38,218.58,218.78,218.98,219.18,219.38,219.58,219.78,219.98,220.18,220.38,220.58,220.78,220.98,221.18,221.38,221.58,221.78,221.98,222.18,222.38,222.58,222.78,222.98,223.18,223.38,223.58,223.78,223.98,224.18,224.38,224.58,224.78,224.98,225.18,225.38,225.58,225.78,225.98,226.18,226.38,226.58,226.78,226.98,227.18,227.38,227.58,227.78,227.98,228.18,228.38,228.58,228.78,228.98,229.18,229.38,229.58],"HF":[1.113096,1.116642,1.114912,1.117965,1.115752,1.120945,1.117758,1.120445,1.117583,1.124802,1.121973,1.120296,1.121556,1.126358,1.129096,1.12461,1.129893,1.137208,1.130503,1.135874,1.134625,1.13181,1.132718,1.131672,1.145891,1.145752,1.134794,1.138817,1.138098,1.14134,1.138346,1.141834,1.150818,1.143761,1.151763,1.14457,1.148043,1.143002,1.141026,1.154623,1.155043,1.159465,1.153343,1.154131,1.15906,1.156168,1.165481,1.161212,1.169873,1.16551,1.166569,1.162444,1.161522,1.166644,1.166989,1.171295,1.170112,1.167067,1.171995,1.181743,1.175167,1.183055,1.179696,1.177517,1.172153,1.179654,1.179385,1.187895,1.180921,1.185471,1.193542,1.190938,1.192157,1.198937,1.186559,1.178162,1.186608,1.199676,1.198859,1.19523,1.200082,1.200739,1.200577,1.203227,1.201934,1.203316,1.199016,1.203933,1.206235,1.204641,1.207177,1.203442,1.2074,1.208591,1.216847,1.211532,1.212478,1.216459,1.211642,1.218333,1.221346,1.220266,1.21661,1.219638,1.21975,1.218718,1.223916,1.219643,1.218603,1.23165,1.228943,1.231949,1.229119,1.231128,1.229792,1.23096,1.233487,1.225504,1.232005,1.234421,1.235595,1.227553,1.245416,1.23989,1.244627,1.250513,1.249151,1.244118,1.240577,1.236855,1.246737,1.250917,1.242141,1.248294,1.248848,1.256196,1.247648,1.257595,1.25225,1.249056,1.257196,1.248076,1.253422,1.26446,1.256416,1.262071,1.259258,1.261666,1.264148,1.2552,1.265386,1.262383,1.261235,1.266079,1.257888,1.263836,1.266277,1.266284,1.26777,1.272226,1.269752,1.268427,1.27025,1.262576,1.270256,1.268634,1.272136,1.280871,1.274102,1.265097,1.280366,1.272097,1.274399,1.27471,1.27727,1.283047,1.27946,1.273886,1.285606,1.266834,1.284735,1.279016,1.275054,1.274088,1.274883,1.285361,1.277696,1.283378,1.276426,1.275336,1.285749,1.286232,1.287189,1.288786,1.287675,1.295395,1.291268,1.293271,1.288754,1.296318,1.294521,1.297906,1.296258,1.304959,1.300275,1.302361,1.303001,1.312701,1.301434,1.304674,1.313663,1.320843,1.319754,1.32143,1.322912,1.328092,1.341529,1.340829,1.350718,1.356576,1.354488,1.363769,1.374818,1.380858,1.385562,1.396956,1.404151,1.41238,1.41328,1.427265,1.442201,1.451846,1.462865,1.475208,1.495049,1.504878,1.522659,1.534368,1.551494,1.567275,1.59259,1.611094,1.627136,1.658956,1.677169,1.703246,1.730706,1.756613,1.796319,1.82383,1.856477,1.893067,1.928711,1.972215,2.013746,2.057286,2.107655,2.155667,2.209819,2.258294,2.318225,2.379103,2.441351,2.502996,2.567649,2.64643,2.721064,2.795117,2.862576,2.947727,3.029569,3.09898,3.17246,3.247096,3.310282,3.367568,3.41433,3.453525,3.484927,3.497961,3.497825,3.493232,3.468704,3.428885,3.381321,3.344819,3.27539,3.219322,3.171504,3.115042,3.072195,3.037306,2.993568,2.9676,2.944055,2.927282,2.908907,2.900952,2.884051,2.879181,2.871349,2.858549,2.858461,2.853742,2.847774,2.849835,2.847879,2.84645,2.842574,2.830234,2.834218,2.842035,2.831722,2.831736,2.832359,2.828892,2.825338,2.828434,2.834495,2.834107,2.832006,2.825089,2.831898,2.826531,2.824317,2.834284,2.828899,2.827187,2.829364,2.831657,2.829889,2.827353,2.829359,2.835679,2.835486,2.8337,2.837624,2.838557,2.840177,2.837653,2.832212,2.838229,2.838661,2.838724,2.837142,2.840261,2.84024,2.836658,2.83662,2.846577,2.83573,2.834048,2.839011,2.839159,2.844188,2.846493,2.844689,2.845698,2.83774,2.849604,2.844432,2.841569,2.839093,2.846499,2.849323,2.845509,2.847132,2.848001,2.849705,2.850236,2.852372,2.847888,2.854726,2.851957,2.84753,2.853631,2.857275,2.858261,2.858461,2.846868,2.851715,2.862435,2.855334,2.85941,2.852248,2.862952,2.845696,2.853148,2.851196,2.85919,2.861536,2.854838,2.856125,2.858204,2.859606,2.860957,2.861859,2.854793,2.857844,2.861027,2.867371,2.862179,2.863039,2.862684,2.864042,2.863778,2.871614,2.87175,2.867422,2.86969,2.864516,2.871066,2.87225,2.873974,2.873245,2.872782,2.868215,2.876183,2.869917,2.87608,2.869221,2.868619,2.874348,2.883342,2.877121,2.879964,2.873988,2.877433,2.87336,2.881281,2.880498,2.873005,2.876769,2.875935,2.874557,2.881515,2.870748,2.876132,2.871486,2.870853,2.877905,2.87897,2.881044,2.883769,2.884784,2.881521,2.885108,2.889926,2.884445,2.885778]},{"name":"Heating 10 K/min after 10² s at 177.73 K","kind":"heat","q":10,"mass":10,"ta":100,"Ta":177.73,"truth":{"Tf0":189.15241613962834,"TfA":188.5592940947295},"T":[139.78,139.98,140.18,140.38,140.58,140.78,140.98,141.18,141.38,141.58,141.78,141.98,142.18,142.38,142.58,142.78,142.98,143.18,143.38,143.58,143.78,143.98,144.18,144.38,144.58,144.78,144.98,145.18,145.38,145.58,145.78,145.98,146.18,146.38,146.58,146.78,146.98,147.18,147.38,147.58,147.78,147.98,148.18,148.38,148.58,148.78,148.98,149.18,149.38,149.58,149.78,149.98,150.18,150.38,150.58,150.78,150.98,151.18,151.38,151.58,151.78,151.98,152.18,152.38,152.58,152.78,152.98,153.18,153.38,153.58,153.78,153.98,154.18,154.38,154.58,154.78,154.98,155.18,155.38,155.58,155.78,155.98,156.18,156.38,156.58,156.78,156.98,157.18,157.38,157.58,157.78,157.98,158.18,158.38,158.58,158.78,158.98,159.18,159.38,159.58,159.78,159.98,160.18,160.38,160.58,160.78,160.98,161.18,161.38,161.58,161.78,161.98,162.18,162.38,162.58,162.78,162.98,163.18,163.38,163.58,163.78,163.98,164.18,164.38,164.58,164.78,164.98,165.18,165.38,165.58,165.78,165.98,166.18,166.38,166.58,166.78,166.98,167.18,167.38,167.58,167.78,167.98,168.18,168.38,168.58,168.78,168.98,169.18,169.38,169.58,169.78,169.98,170.18,170.38,170.58,170.78,170.98,171.18,171.38,171.58,171.78,171.98,172.18,172.38,172.58,172.78,172.98,173.18,173.38,173.58,173.78,173.98,174.18,174.38,174.58,174.78,174.98,175.18,175.38,175.58,175.78,175.98,176.18,176.38,176.58,176.78,176.98,177.18,177.38,177.58,177.78,177.98,178.18,178.38,178.58,178.78,178.98,179.18,179.38,179.58,179.78,179.98,180.18,180.38,180.58,180.78,180.98,181.18,181.38,181.58,181.78,181.98,182.18,182.38,182.58,182.78,182.98,183.18,183.38,183.58,183.78,183.98,184.18,184.38,184.58,184.78,184.98,185.18,185.38,185.58,185.78,185.98,186.18,186.38,186.58,186.78,186.98,187.18,187.38,187.58,187.78,187.98,188.18,188.38,188.58,188.78,188.98,189.18,189.38,189.58,189.78,189.98,190.18,190.38,190.58,190.78,190.98,191.18,191.38,191.58,191.78,191.98,192.18,192.38,192.58,192.78,192.98,193.18,193.38,193.58,193.78,193.98,194.18,194.38,194.58,194.78,194.98,195.18,195.38,195.58,195.78,195.98,196.18,196.38,196.58,196.78,196.98,197.18,197.38,197.58,197.78,197.98,198.18,198.38,198.58,198.78,198.98,199.18,199.38,199.58,199.78,199.98,200.18,200.38,200.58,200.78,200.98,201.18,201.38,201.58,201.78,201.98,202.18,202.38,202.58,202.78,202.98,203.18,203.38,203.58,203.78,203.98,204.18,204.38,204.58,204.78,204.98,205.18,205.38,205.58,205.78,205.98,206.18,206.38,206.58,206.78,206.98,207.18,207.38,207.58,207.78,207.98,208.18,208.38,208.58,208.78,208.98,209.18,209.38,209.58,209.78,209.98,210.18,210.38,210.58,210.78,210.98,211.18,211.38,211.58,211.78,211.98,212.18,212.38,212.58,212.78,212.98,213.18,213.38,213.58,213.78,213.98,214.18,214.38,214.58,214.78,214.98,215.18,215.38,215.58,215.78,215.98,216.18,216.38,216.58,216.78,216.98,217.18,217.38,217.58,217.78,217.98,218.18,218.38,218.58,218.78,218.98,219.18,219.38,219.58,219.78,219.98,220.18,220.38,220.58,220.78,220.98,221.18,221.38,221.58,221.78,221.98,222.18,222.38,222.58,222.78,222.98,223.18,223.38,223.58,223.78,223.98,224.18,224.38,224.58,224.78,224.98,225.18,225.38,225.58,225.78,225.98,226.18,226.38,226.58,226.78,226.98,227.18,227.38,227.58,227.78,227.98,228.18,228.38,228.58,228.78,228.98,229.18,229.38,229.58],"HF":[1.111905,1.114257,1.12392,1.118028,1.112395,1.116717,1.122507,1.120318,1.117123,1.123982,1.1165,1.119915,1.124466,1.128358,1.127152,1.12557,1.125037,1.130825,1.127599,1.131676,1.134864,1.132155,1.13128,1.129831,1.138215,1.142914,1.134506,1.142131,1.146676,1.14367,1.13271,1.149222,1.147956,1.141375,1.148401,1.150678,1.154943,1.159216,1.146488,1.158066,1.152395,1.156477,1.153484,1.152324,1.165147,1.15693,1.157153,1.159941,1.162966,1.158746,1.16557,1.161804,1.170421,1.168448,1.169717,1.172582,1.176776,1.171562,1.173297,1.168942,1.179887,1.16976,1.176806,1.18312,1.171216,1.180388,1.182785,1.177662,1.189727,1.190728,1.186979,1.193278,1.188037,1.184686,1.187163,1.187216,1.18525,1.190956,1.194405,1.198023,1.199393,1.207612,1.197692,1.203111,1.200181,1.20022,1.198874,1.202619,1.202563,1.207061,1.209154,1.201527,1.206718,1.206278,1.204943,1.204342,1.211228,1.213174,1.220907,1.218601,1.218392,1.224261,1.221126,1.226321,1.216491,1.21461,1.221351,1.230867,1.225813,1.228596,1.225079,1.231829,1.224115,1.225479,1.232421,1.233165,1.230778,1.237406,1.241426,1.238986,1.242831,1.236369,1.24057,1.23863,1.244099,1.242541,1.244921,1.242539,1.247032,1.250484,1.245981,1.243212,1.248404,1.245501,1.251802,1.257882,1.252661,1.243592,1.248941,1.259628,1.260368,1.250521,1.259282,1.264495,1.256973,1.244014,1.257537,1.264202,1.2595,1.257866,1.267608,1.257659,1.268713,1.266623,1.267368,1.265869,1.259626,1.270011,1.267847,1.274792,1.272347,1.272868,1.28301,1.267521,1.279592,1.273236,1.2777,1.275566,1.280596,1.283087,1.275817,1.285237,1.277751,1.291,1.280917,1.284694,1.297123,1.28854,1.28343,1.288177,1.288454,1.290438,1.291947,1.295251,1.297186,1.294971,1.299628,1.293113,1.300136,1.300318,1.303812,1.302056,1.298494,1.298838,1.302391,1.307089,1.306107,1.315994,1.315353,1.312024,1.317056,1.316901,1.322869,1.326255,1.3225,1.326332,1.330451,1.340914,1.332492,1.333829,1.350785,1.343729,1.349017,1.355222,1.363296,1.360351,1.369318,1.3686,1.374615,1.392651,1.398378,1.401043,1.409062,1.405063,1.418925,1.430423,1.438886,1.450653,1.458354,1.470334,1.488555,1.492592,1.508943,1.51303,1.532511,1.546515,1.558709,1.577997,1.594358,1.609115,1.626943,1.646338,1.680758,1.703603,1.71918,1.745933,1.774252,1.797733,1.830281,1.860169,1.89662,1.937918,1.972303,2.005495,2.048257,2.100479,2.142242,2.188827,2.247834,2.301336,2.362678,2.416989,2.482256,2.547862,2.616007,2.688794,2.760798,2.841737,2.917634,2.990123,3.064868,3.141236,3.218139,3.292708,3.349168,3.414353,3.460476,3.493409,3.522261,3.535131,3.532738,3.519988,3.479578,3.448524,3.400157,3.346161,3.2858,3.233119,3.171448,3.127031,3.079417,3.032915,3.007117,2.96679,2.94104,2.931423,2.902461,2.89634,2.884699,2.881407,2.868383,2.864532,2.865591,2.85789,2.852945,2.84609,2.837178,2.845833,2.841779,2.829648,2.836418,2.838122,2.831438,2.830978,2.830364,2.833496,2.828851,2.829654,2.824421,2.82767,2.829157,2.828432,2.826736,2.827245,2.827054,2.831932,2.827541,2.825136,2.836402,2.82812,2.828934,2.830467,2.830443,2.83344,2.831536,2.834725,2.828574,2.836813,2.834876,2.835192,2.833824,2.83438,2.836991,2.833855,2.838875,2.83496,2.844446,2.838067,2.83946,2.838495,2.83544,2.840457,2.843641,2.838683,2.843033,2.847165,2.844436,2.83929,2.839216,2.846296,2.843175,2.848562,2.841785,2.842375,2.843783,2.849528,2.848572,2.84475,2.847642,2.849893,2.841981,2.84546,2.843437,2.854512,2.8491,2.856118,2.851289,2.846776,2.851501,2.847083,2.854021,2.853968,2.862955,2.852394,2.857488,2.856941,2.858286,2.854532,2.854541,2.85895,2.859532,2.861937,2.856821,2.862668,2.859369,2.861516,2.855304,2.85503,2.868211,2.861002,2.862195,2.858141,2.86136,2.863091,2.866624,2.8624,2.862021,2.869855,2.867547,2.863687,2.86252,2.862687,2.873035,2.87258,2.867022,2.869033,2.86823,2.867522,2.870461,2.860275,2.873565,2.867624,2.872437,2.873823,2.872035,2.875816,2.875642,2.875883,2.881802,2.879453,2.878762,2.877255,2.879511,2.875038,2.874151,2.879897,2.875523,2.878694,2.875734,2.874473,2.879842,2.886742,2.884096,2.883703,2.882336,2.884069,2.883671,2.891634,2.884851,2.89318]},{"name":"Heating 10 K/min after 10³ s at 177.73 K","kind":"heat","q":10,"mass":10,"ta":1000,"Ta":177.73,"truth":{"Tf0":189.15241613962834,"TfA":187.02086259953313},"T":[139.78,139.98,140.18,140.38,140.58,140.78,140.98,141.18,141.38,141.58,141.78,141.98,142.18,142.38,142.58,142.78,142.98,143.18,143.38,143.58,143.78,143.98,144.18,144.38,144.58,144.78,144.98,145.18,145.38,145.58,145.78,145.98,146.18,146.38,146.58,146.78,146.98,147.18,147.38,147.58,147.78,147.98,148.18,148.38,148.58,148.78,148.98,149.18,149.38,149.58,149.78,149.98,150.18,150.38,150.58,150.78,150.98,151.18,151.38,151.58,151.78,151.98,152.18,152.38,152.58,152.78,152.98,153.18,153.38,153.58,153.78,153.98,154.18,154.38,154.58,154.78,154.98,155.18,155.38,155.58,155.78,155.98,156.18,156.38,156.58,156.78,156.98,157.18,157.38,157.58,157.78,157.98,158.18,158.38,158.58,158.78,158.98,159.18,159.38,159.58,159.78,159.98,160.18,160.38,160.58,160.78,160.98,161.18,161.38,161.58,161.78,161.98,162.18,162.38,162.58,162.78,162.98,163.18,163.38,163.58,163.78,163.98,164.18,164.38,164.58,164.78,164.98,165.18,165.38,165.58,165.78,165.98,166.18,166.38,166.58,166.78,166.98,167.18,167.38,167.58,167.78,167.98,168.18,168.38,168.58,168.78,168.98,169.18,169.38,169.58,169.78,169.98,170.18,170.38,170.58,170.78,170.98,171.18,171.38,171.58,171.78,171.98,172.18,172.38,172.58,172.78,172.98,173.18,173.38,173.58,173.78,173.98,174.18,174.38,174.58,174.78,174.98,175.18,175.38,175.58,175.78,175.98,176.18,176.38,176.58,176.78,176.98,177.18,177.38,177.58,177.78,177.98,178.18,178.38,178.58,178.78,178.98,179.18,179.38,179.58,179.78,179.98,180.18,180.38,180.58,180.78,180.98,181.18,181.38,181.58,181.78,181.98,182.18,182.38,182.58,182.78,182.98,183.18,183.38,183.58,183.78,183.98,184.18,184.38,184.58,184.78,184.98,185.18,185.38,185.58,185.78,185.98,186.18,186.38,186.58,186.78,186.98,187.18,187.38,187.58,187.78,187.98,188.18,188.38,188.58,188.78,188.98,189.18,189.38,189.58,189.78,189.98,190.18,190.38,190.58,190.78,190.98,191.18,191.38,191.58,191.78,191.98,192.18,192.38,192.58,192.78,192.98,193.18,193.38,193.58,193.78,193.98,194.18,194.38,194.58,194.78,194.98,195.18,195.38,195.58,195.78,195.98,196.18,196.38,196.58,196.78,196.98,197.18,197.38,197.58,197.78,197.98,198.18,198.38,198.58,198.78,198.98,199.18,199.38,199.58,199.78,199.98,200.18,200.38,200.58,200.78,200.98,201.18,201.38,201.58,201.78,201.98,202.18,202.38,202.58,202.78,202.98,203.18,203.38,203.58,203.78,203.98,204.18,204.38,204.58,204.78,204.98,205.18,205.38,205.58,205.78,205.98,206.18,206.38,206.58,206.78,206.98,207.18,207.38,207.58,207.78,207.98,208.18,208.38,208.58,208.78,208.98,209.18,209.38,209.58,209.78,209.98,210.18,210.38,210.58,210.78,210.98,211.18,211.38,211.58,211.78,211.98,212.18,212.38,212.58,212.78,212.98,213.18,213.38,213.58,213.78,213.98,214.18,214.38,214.58,214.78,214.98,215.18,215.38,215.58,215.78,215.98,216.18,216.38,216.58,216.78,216.98,217.18,217.38,217.58,217.78,217.98,218.18,218.38,218.58,218.78,218.98,219.18,219.38,219.58,219.78,219.98,220.18,220.38,220.58,220.78,220.98,221.18,221.38,221.58,221.78,221.98,222.18,222.38,222.58,222.78,222.98,223.18,223.38,223.58,223.78,223.98,224.18,224.38,224.58,224.78,224.98,225.18,225.38,225.58,225.78,225.98,226.18,226.38,226.58,226.78,226.98,227.18,227.38,227.58,227.78,227.98,228.18,228.38,228.58,228.78,228.98,229.18,229.38,229.58],"HF":[1.11388,1.114177,1.110573,1.118254,1.108881,1.117875,1.119409,1.119204,1.123684,1.124112,1.127833,1.123874,1.126054,1.123618,1.124909,1.128061,1.117559,1.131205,1.136733,1.133353,1.134041,1.135452,1.139059,1.138571,1.140005,1.145974,1.140056,1.142368,1.148117,1.139235,1.150568,1.1493,1.146319,1.143846,1.139747,1.147019,1.155257,1.151616,1.153649,1.149248,1.15328,1.153241,1.160482,1.159863,1.162838,1.163582,1.158387,1.157458,1.16142,1.167481,1.161291,1.164744,1.167523,1.168359,1.173921,1.16498,1.168591,1.167474,1.167086,1.168294,1.176571,1.174396,1.187637,1.179532,1.174873,1.18708,1.172408,1.178647,1.185645,1.181885,1.186181,1.189208,1.188615,1.185943,1.199484,1.194984,1.191995,1.189068,1.187384,1.190172,1.196869,1.196657,1.1936,1.204404,1.196788,1.205605,1.192955,1.208816,1.205487,1.210736,1.201851,1.201097,1.211157,1.203019,1.21365,1.209117,1.217654,1.209497,1.215784,1.218798,1.213849,1.214431,1.223972,1.215629,1.229499,1.221414,1.224361,1.221464,1.221946,1.22375,1.226132,1.234535,1.231354,1.23507,1.23817,1.232032,1.233991,1.239743,1.24033,1.24076,1.237503,1.238312,1.245392,1.240932,1.243902,1.238872,1.246829,1.245784,1.250389,1.249453,1.250017,1.253145,1.254349,1.255591,1.248055,1.250615,1.253506,1.259085,1.253513,1.256537,1.255377,1.258585,1.260174,1.259479,1.260534,1.26548,1.268281,1.262337,1.267248,1.269263,1.267142,1.26574,1.270728,1.266979,1.275439,1.268454,1.272563,1.271457,1.277801,1.285583,1.27772,1.282919,1.280008,1.276554,1.281596,1.282649,1.283799,1.289816,1.293788,1.2882,1.292567,1.281351,1.296615,1.29861,1.289213,1.292179,1.300542,1.294862,1.303344,1.295462,1.297611,1.309327,1.305607,1.304485,1.316644,1.310473,1.315029,1.314747,1.315193,1.316013,1.319567,1.323881,1.321296,1.329714,1.334238,1.332493,1.329826,1.336351,1.342709,1.343018,1.352308,1.345934,1.347243,1.361978,1.362654,1.36123,1.369713,1.372799,1.375752,1.381945,1.385726,1.393024,1.399834,1.409978,1.414438,1.409283,1.426033,1.429958,1.443779,1.438243,1.451884,1.465626,1.478689,1.485109,1.494286,1.499037,1.504429,1.524327,1.534602,1.54237,1.559411,1.57584,1.582121,1.611664,1.616641,1.638836,1.656008,1.676696,1.690867,1.710822,1.729072,1.750681,1.789154,1.809253,1.834785,1.853174,1.891413,1.913497,1.956386,1.988631,2.027222,2.063288,2.099584,2.136287,2.186125,2.241041,2.281532,2.335837,2.394544,2.450888,2.510902,2.572781,2.634931,2.7095,2.774242,2.85694,2.936123,3.013177,3.100836,3.171461,3.254285,3.339283,3.415221,3.487009,3.558226,3.607922,3.648312,3.682211,3.697317,3.707785,3.696022,3.660877,3.617465,3.56258,3.493722,3.41928,3.342048,3.277755,3.212985,3.14149,3.093662,3.03807,3.011763,2.970055,2.941024,2.929688,2.916076,2.894679,2.887754,2.876977,2.864374,2.866819,2.854391,2.852351,2.847706,2.843323,2.849578,2.846774,2.837089,2.827991,2.84041,2.832846,2.835739,2.835095,2.827848,2.829103,2.829863,2.832478,2.828349,2.82655,2.831106,2.826537,2.826081,2.826899,2.832329,2.827554,2.834325,2.837146,2.820743,2.831543,2.833141,2.830026,2.82306,2.837106,2.836694,2.828052,2.834219,2.832224,2.835202,2.833354,2.836696,2.839468,2.835037,2.833855,2.837703,2.837258,2.839831,2.834615,2.83573,2.840095,2.840933,2.839294,2.842368,2.845108,2.840809,2.845124,2.845643,2.851322,2.839598,2.847807,2.839043,2.84472,2.850616,2.848195,2.841558,2.850311,2.850945,2.846554,2.845821,2.849109,2.84791,2.84614,2.847655,2.844522,2.851027,2.85056,2.852408,2.850396,2.851521,2.856231,2.854405,2.84777,2.850585,2.861361,2.857746,2.852861,2.852086,2.860161,2.848237,2.858223,2.86268,2.860544,2.860906,2.860469,2.851672,2.866349,2.867869,2.861214,2.859325,2.866613,2.860102,2.870923,2.863834,2.861894,2.863095,2.863816,2.865028,2.870483,2.865248,2.866654,2.870857,2.875267,2.865316,2.872702,2.864177,2.870409,2.871641,2.875377,2.869569,2.868506,2.874003,2.87244,2.870488,2.876848,2.883146,2.870715,2.873034,2.87464,2.879806,2.883022,2.878037,2.878899,2.881592,2.879952,2.878198,2.877016,2.873814,2.881695,2.877143,2.887239,2.883666,2.883286,2.878958,2.884127,2.880067,2.884418,2.88438,2.878288,2.889549,2.881149]},{"name":"Heating 10 K/min after 10⁴ s at 177.73 K","kind":"heat","q":10,"mass":10,"ta":10000,"Ta":177.73,"truth":{"Tf0":189.15241613962834,"TfA":184.18099624784966},"T":[139.78,139.98,140.18,140.38,140.58,140.78,140.98,141.18,141.38,141.58,141.78,141.98,142.18,142.38,142.58,142.78,142.98,143.18,143.38,143.58,143.78,143.98,144.18,144.38,144.58,144.78,144.98,145.18,145.38,145.58,145.78,145.98,146.18,146.38,146.58,146.78,146.98,147.18,147.38,147.58,147.78,147.98,148.18,148.38,148.58,148.78,148.98,149.18,149.38,149.58,149.78,149.98,150.18,150.38,150.58,150.78,150.98,151.18,151.38,151.58,151.78,151.98,152.18,152.38,152.58,152.78,152.98,153.18,153.38,153.58,153.78,153.98,154.18,154.38,154.58,154.78,154.98,155.18,155.38,155.58,155.78,155.98,156.18,156.38,156.58,156.78,156.98,157.18,157.38,157.58,157.78,157.98,158.18,158.38,158.58,158.78,158.98,159.18,159.38,159.58,159.78,159.98,160.18,160.38,160.58,160.78,160.98,161.18,161.38,161.58,161.78,161.98,162.18,162.38,162.58,162.78,162.98,163.18,163.38,163.58,163.78,163.98,164.18,164.38,164.58,164.78,164.98,165.18,165.38,165.58,165.78,165.98,166.18,166.38,166.58,166.78,166.98,167.18,167.38,167.58,167.78,167.98,168.18,168.38,168.58,168.78,168.98,169.18,169.38,169.58,169.78,169.98,170.18,170.38,170.58,170.78,170.98,171.18,171.38,171.58,171.78,171.98,172.18,172.38,172.58,172.78,172.98,173.18,173.38,173.58,173.78,173.98,174.18,174.38,174.58,174.78,174.98,175.18,175.38,175.58,175.78,175.98,176.18,176.38,176.58,176.78,176.98,177.18,177.38,177.58,177.78,177.98,178.18,178.38,178.58,178.78,178.98,179.18,179.38,179.58,179.78,179.98,180.18,180.38,180.58,180.78,180.98,181.18,181.38,181.58,181.78,181.98,182.18,182.38,182.58,182.78,182.98,183.18,183.38,183.58,183.78,183.98,184.18,184.38,184.58,184.78,184.98,185.18,185.38,185.58,185.78,185.98,186.18,186.38,186.58,186.78,186.98,187.18,187.38,187.58,187.78,187.98,188.18,188.38,188.58,188.78,188.98,189.18,189.38,189.58,189.78,189.98,190.18,190.38,190.58,190.78,190.98,191.18,191.38,191.58,191.78,191.98,192.18,192.38,192.58,192.78,192.98,193.18,193.38,193.58,193.78,193.98,194.18,194.38,194.58,194.78,194.98,195.18,195.38,195.58,195.78,195.98,196.18,196.38,196.58,196.78,196.98,197.18,197.38,197.58,197.78,197.98,198.18,198.38,198.58,198.78,198.98,199.18,199.38,199.58,199.78,199.98,200.18,200.38,200.58,200.78,200.98,201.18,201.38,201.58,201.78,201.98,202.18,202.38,202.58,202.78,202.98,203.18,203.38,203.58,203.78,203.98,204.18,204.38,204.58,204.78,204.98,205.18,205.38,205.58,205.78,205.98,206.18,206.38,206.58,206.78,206.98,207.18,207.38,207.58,207.78,207.98,208.18,208.38,208.58,208.78,208.98,209.18,209.38,209.58,209.78,209.98,210.18,210.38,210.58,210.78,210.98,211.18,211.38,211.58,211.78,211.98,212.18,212.38,212.58,212.78,212.98,213.18,213.38,213.58,213.78,213.98,214.18,214.38,214.58,214.78,214.98,215.18,215.38,215.58,215.78,215.98,216.18,216.38,216.58,216.78,216.98,217.18,217.38,217.58,217.78,217.98,218.18,218.38,218.58,218.78,218.98,219.18,219.38,219.58,219.78,219.98,220.18,220.38,220.58,220.78,220.98,221.18,221.38,221.58,221.78,221.98,222.18,222.38,222.58,222.78,222.98,223.18,223.38,223.58,223.78,223.98,224.18,224.38,224.58,224.78,224.98,225.18,225.38,225.58,225.78,225.98,226.18,226.38,226.58,226.78,226.98,227.18,227.38,227.58,227.78,227.98,228.18,228.38,228.58,228.78,228.98,229.18,229.38,229.58],"HF":[1.11133,1.114843,1.114667,1.119583,1.115671,1.117312,1.116132,1.12246,1.120103,1.121997,1.121075,1.123271,1.121676,1.12344,1.126067,1.127083,1.130039,1.126215,1.127232,1.128837,1.129319,1.138906,1.141073,1.133073,1.142966,1.133241,1.138665,1.140791,1.146515,1.145413,1.147825,1.146362,1.139888,1.143791,1.145325,1.147565,1.14876,1.154525,1.143706,1.148587,1.149783,1.160151,1.157986,1.156855,1.165718,1.168346,1.16319,1.151757,1.170034,1.159254,1.166878,1.168043,1.172635,1.173914,1.172567,1.173702,1.180394,1.169054,1.170837,1.175222,1.173667,1.168251,1.173796,1.181479,1.181825,1.186991,1.175329,1.183632,1.186972,1.187732,1.187437,1.185313,1.189213,1.193908,1.195106,1.187545,1.191389,1.194263,1.190985,1.195265,1.196703,1.200251,1.203637,1.204379,1.200607,1.196414,1.195998,1.209476,1.202291,1.203362,1.213607,1.206131,1.211442,1.209522,1.209678,1.216285,1.211603,1.206765,1.218093,1.216232,1.21292,1.213598,1.214279,1.213865,1.226548,1.230262,1.222507,1.226347,1.227438,1.234488,1.232035,1.229708,1.233947,1.225494,1.225219,1.23569,1.23064,1.237621,1.2391,1.234107,1.242906,1.243783,1.241901,1.244023,1.241148,1.247771,1.246776,1.239543,1.249133,1.245182,1.247023,1.25234,1.257963,1.25374,1.251467,1.254015,1.256177,1.249222,1.263832,1.265279,1.26835,1.256624,1.25902,1.271619,1.266135,1.263197,1.265503,1.27097,1.268538,1.269241,1.271027,1.268242,1.26989,1.272595,1.275088,1.275682,1.287005,1.282421,1.278588,1.28199,1.284563,1.283154,1.271169,1.285885,1.291506,1.286278,1.28883,1.290423,1.285126,1.291366,1.293765,1.293083,1.295823,1.30282,1.300394,1.303441,1.302695,1.304408,1.30445,1.295861,1.307847,1.305848,1.31401,1.308532,1.31292,1.3179,1.314962,1.31882,1.322427,1.320488,1.327175,1.326067,1.328951,1.33344,1.336913,1.330047,1.340127,1.341963,1.345349,1.352467,1.35677,1.355409,1.358071,1.359823,1.365954,1.359282,1.373072,1.376085,1.378379,1.389883,1.390637,1.400245,1.403463,1.41928,1.419194,1.43098,1.43319,1.438336,1.447596,1.449124,1.455915,1.479939,1.483245,1.491439,1.496943,1.508498,1.523247,1.537082,1.544366,1.562007,1.568743,1.589389,1.608245,1.618714,1.635067,1.658222,1.675517,1.689732,1.711165,1.728766,1.758838,1.778407,1.813616,1.829417,1.862207,1.900579,1.93314,1.961079,2.001578,2.038651,2.076275,2.111969,2.166052,2.218445,2.27551,2.329676,2.39392,2.447678,2.519064,2.594107,2.668729,2.757107,2.840228,2.948496,3.045676,3.152064,3.266709,3.382935,3.516972,3.650269,3.781527,3.928051,4.062401,4.204575,4.334617,4.459366,4.568536,4.646377,4.690492,4.710801,4.682065,4.611329,4.489945,4.340499,4.160845,3.978634,3.783276,3.610613,3.450884,3.318647,3.204049,3.115366,3.04942,3.009131,2.959246,2.93753,2.917497,2.900477,2.890327,2.879993,2.869067,2.86951,2.857175,2.848081,2.851694,2.848974,2.843653,2.83659,2.833455,2.825605,2.834157,2.831778,2.834265,2.836168,2.830732,2.827299,2.833428,2.822353,2.827671,2.833211,2.824715,2.834113,2.82228,2.836282,2.829379,2.825537,2.827423,2.82905,2.823913,2.835193,2.826406,2.836621,2.834727,2.833003,2.831739,2.834633,2.82704,2.836067,2.822571,2.827369,2.833681,2.832656,2.830213,2.833331,2.836221,2.835938,2.833408,2.839623,2.83495,2.843159,2.840478,2.838123,2.847614,2.83759,2.826316,2.842451,2.840253,2.848747,2.841321,2.848076,2.846249,2.836499,2.837033,2.850578,2.846135,2.848626,2.845583,2.84618,2.844557,2.845487,2.85089,2.849874,2.860185,2.845937,2.857531,2.847935,2.852162,2.851899,2.852873,2.856892,2.853918,2.854847,2.85946,2.859864,2.848322,2.859774,2.863423,2.855026,2.862116,2.855776,2.857197,2.84986,2.850521,2.852645,2.854993,2.853459,2.864015,2.864837,2.862599,2.860577,2.859197,2.854816,2.861794,2.866078,2.864773,2.869035,2.864237,2.861042,2.864939,2.875846,2.866223,2.868659,2.869545,2.864364,2.876018,2.871594,2.874841,2.870325,2.872941,2.865574,2.87692,2.87686,2.877716,2.879829,2.870309,2.873844,2.878612,2.876946,2.87545,2.880201,2.874395,2.884886,2.874403,2.871682,2.875911,2.877931,2.88282,2.876229,2.879581,2.887229,2.879701,2.88437,2.883658,2.87842,2.878434,2.882531,2.88442,2.886969,2.888796,2.879085]},{"name":"Heating 10 K/min after 10⁵ s at 177.73 K","kind":"heat","q":10,"mass":10,"ta":100000,"Ta":177.73,"truth":{"Tf0":189.15241613962834,"TfA":181.05757477348965},"T":[139.78,139.98,140.18,140.38,140.58,140.78,140.98,141.18,141.38,141.58,141.78,141.98,142.18,142.38,142.58,142.78,142.98,143.18,143.38,143.58,143.78,143.98,144.18,144.38,144.58,144.78,144.98,145.18,145.38,145.58,145.78,145.98,146.18,146.38,146.58,146.78,146.98,147.18,147.38,147.58,147.78,147.98,148.18,148.38,148.58,148.78,148.98,149.18,149.38,149.58,149.78,149.98,150.18,150.38,150.58,150.78,150.98,151.18,151.38,151.58,151.78,151.98,152.18,152.38,152.58,152.78,152.98,153.18,153.38,153.58,153.78,153.98,154.18,154.38,154.58,154.78,154.98,155.18,155.38,155.58,155.78,155.98,156.18,156.38,156.58,156.78,156.98,157.18,157.38,157.58,157.78,157.98,158.18,158.38,158.58,158.78,158.98,159.18,159.38,159.58,159.78,159.98,160.18,160.38,160.58,160.78,160.98,161.18,161.38,161.58,161.78,161.98,162.18,162.38,162.58,162.78,162.98,163.18,163.38,163.58,163.78,163.98,164.18,164.38,164.58,164.78,164.98,165.18,165.38,165.58,165.78,165.98,166.18,166.38,166.58,166.78,166.98,167.18,167.38,167.58,167.78,167.98,168.18,168.38,168.58,168.78,168.98,169.18,169.38,169.58,169.78,169.98,170.18,170.38,170.58,170.78,170.98,171.18,171.38,171.58,171.78,171.98,172.18,172.38,172.58,172.78,172.98,173.18,173.38,173.58,173.78,173.98,174.18,174.38,174.58,174.78,174.98,175.18,175.38,175.58,175.78,175.98,176.18,176.38,176.58,176.78,176.98,177.18,177.38,177.58,177.78,177.98,178.18,178.38,178.58,178.78,178.98,179.18,179.38,179.58,179.78,179.98,180.18,180.38,180.58,180.78,180.98,181.18,181.38,181.58,181.78,181.98,182.18,182.38,182.58,182.78,182.98,183.18,183.38,183.58,183.78,183.98,184.18,184.38,184.58,184.78,184.98,185.18,185.38,185.58,185.78,185.98,186.18,186.38,186.58,186.78,186.98,187.18,187.38,187.58,187.78,187.98,188.18,188.38,188.58,188.78,188.98,189.18,189.38,189.58,189.78,189.98,190.18,190.38,190.58,190.78,190.98,191.18,191.38,191.58,191.78,191.98,192.18,192.38,192.58,192.78,192.98,193.18,193.38,193.58,193.78,193.98,194.18,194.38,194.58,194.78,194.98,195.18,195.38,195.58,195.78,195.98,196.18,196.38,196.58,196.78,196.98,197.18,197.38,197.58,197.78,197.98,198.18,198.38,198.58,198.78,198.98,199.18,199.38,199.58,199.78,199.98,200.18,200.38,200.58,200.78,200.98,201.18,201.38,201.58,201.78,201.98,202.18,202.38,202.58,202.78,202.98,203.18,203.38,203.58,203.78,203.98,204.18,204.38,204.58,204.78,204.98,205.18,205.38,205.58,205.78,205.98,206.18,206.38,206.58,206.78,206.98,207.18,207.38,207.58,207.78,207.98,208.18,208.38,208.58,208.78,208.98,209.18,209.38,209.58,209.78,209.98,210.18,210.38,210.58,210.78,210.98,211.18,211.38,211.58,211.78,211.98,212.18,212.38,212.58,212.78,212.98,213.18,213.38,213.58,213.78,213.98,214.18,214.38,214.58,214.78,214.98,215.18,215.38,215.58,215.78,215.98,216.18,216.38,216.58,216.78,216.98,217.18,217.38,217.58,217.78,217.98,218.18,218.38,218.58,218.78,218.98,219.18,219.38,219.58,219.78,219.98,220.18,220.38,220.58,220.78,220.98,221.18,221.38,221.58,221.78,221.98,222.18,222.38,222.58,222.78,222.98,223.18,223.38,223.58,223.78,223.98,224.18,224.38,224.58,224.78,224.98,225.18,225.38,225.58,225.78,225.98,226.18,226.38,226.58,226.78,226.98,227.18,227.38,227.58,227.78,227.98,228.18,228.38,228.58,228.78,228.98,229.18,229.38,229.58],"HF":[1.108626,1.112487,1.107273,1.120006,1.110978,1.118926,1.118797,1.11944,1.119748,1.131373,1.11774,1.112157,1.12078,1.129396,1.126654,1.129596,1.132356,1.128773,1.134441,1.133479,1.131686,1.129882,1.137921,1.133309,1.145783,1.138568,1.135583,1.142261,1.139711,1.143163,1.146574,1.14958,1.151518,1.146516,1.149479,1.153179,1.149312,1.153761,1.148227,1.145053,1.155197,1.159136,1.159466,1.152241,1.157533,1.164319,1.15163,1.161291,1.163733,1.167764,1.163811,1.168026,1.164982,1.16728,1.166553,1.171547,1.169731,1.178362,1.172973,1.173368,1.174834,1.174998,1.175711,1.180832,1.186654,1.186719,1.185038,1.185016,1.179595,1.189015,1.194259,1.188776,1.187634,1.187906,1.190049,1.189719,1.204083,1.192889,1.1973,1.194991,1.198102,1.189461,1.200335,1.20395,1.20645,1.204542,1.203296,1.195235,1.202079,1.205054,1.213908,1.211625,1.216459,1.210177,1.206906,1.210859,1.218858,1.221166,1.215882,1.214961,1.216561,1.221651,1.224924,1.219356,1.222847,1.218038,1.227697,1.230488,1.222725,1.224094,1.228194,1.229166,1.235737,1.23625,1.234316,1.238785,1.243395,1.230924,1.229534,1.233715,1.238419,1.240152,1.249673,1.244307,1.242339,1.244824,1.244436,1.244217,1.250941,1.252974,1.25616,1.25553,1.257121,1.252104,1.25044,1.255858,1.255875,1.259988,1.255911,1.260533,1.256289,1.270685,1.263595,1.269345,1.257706,1.264472,1.272394,1.268971,1.26672,1.273555,1.265253,1.26943,1.267558,1.273721,1.281446,1.270163,1.276607,1.282712,1.279169,1.283681,1.279562,1.278438,1.295321,1.282688,1.283711,1.290394,1.289063,1.295807,1.293186,1.294162,1.294778,1.298093,1.292381,1.301645,1.301939,1.297125,1.298711,1.307142,1.302889,1.30154,1.310783,1.309451,1.310052,1.310752,1.309625,1.313968,1.323458,1.318769,1.323949,1.321858,1.324546,1.323965,1.32309,1.333782,1.340707,1.332107,1.340234,1.348317,1.335811,1.345706,1.345183,1.349816,1.351095,1.349804,1.356344,1.349903,1.366187,1.369995,1.367705,1.373305,1.378619,1.383802,1.379967,1.38329,1.393328,1.395896,1.407538,1.411952,1.412579,1.421476,1.421814,1.433089,1.434908,1.44825,1.450384,1.457166,1.469849,1.469444,1.4896,1.489145,1.506068,1.512713,1.517993,1.529101,1.544309,1.55659,1.567392,1.580076,1.596487,1.613542,1.62555,1.645355,1.669276,1.684201,1.706089,1.721436,1.743095,1.77066,1.798316,1.814212,1.853435,1.88504,1.916353,1.946982,1.989891,2.029744,2.072706,2.11942,2.167477,2.22718,2.291964,2.344735,2.423877,2.497625,2.572898,2.669123,2.758244,2.868711,2.985716,3.128438,3.256981,3.431036,3.598584,3.802055,4.022489,4.271452,4.542828,4.855001,5.190854,5.565514,5.975402,6.404141,6.837114,7.235048,7.554723,7.693829,7.614198,7.245973,6.610965,5.819401,5.01527,4.322845,3.807164,3.449836,3.214092,3.069798,2.974848,2.93408,2.901298,2.886349,2.863618,2.863463,2.857011,2.856369,2.851696,2.845897,2.836405,2.843308,2.837034,2.83985,2.8324,2.831514,2.838818,2.840367,2.834849,2.830319,2.818615,2.828607,2.826868,2.830571,2.827511,2.826602,2.831464,2.831886,2.821868,2.830126,2.827496,2.827464,2.832443,2.832927,2.825797,2.833339,2.83528,2.826078,2.831572,2.835352,2.836407,2.845062,2.837754,2.82941,2.83456,2.837764,2.838225,2.837942,2.831995,2.831675,2.835831,2.84118,2.841767,2.83905,2.838306,2.843536,2.842201,2.845011,2.842113,2.843333,2.839086,2.846032,2.846018,2.844385,2.84553,2.844141,2.847768,2.844652,2.852655,2.853766,2.853665,2.851293,2.848312,2.84699,2.848974,2.847187,2.847475,2.855537,2.854665,2.853213,2.849525,2.850719,2.850155,2.850088,2.854242,2.854403,2.84869,2.855467,2.853955,2.847305,2.857181,2.857049,2.856771,2.860627,2.857032,2.855127,2.865435,2.857941,2.87189,2.858861,2.859159,2.866868,2.857481,2.86618,2.870039,2.860418,2.859135,2.863826,2.869103,2.863877,2.864647,2.869814,2.867078,2.865923,2.870036,2.864621,2.872163,2.866785,2.866401,2.872563,2.871493,2.881067,2.872494,2.87479,2.872595,2.874856,2.872627,2.876974,2.879864,2.876492,2.873779,2.880625,2.879098,2.877468,2.874905,2.874397,2.872409,2.877114,2.880735,2.87918,2.878168,2.880447,2.878746,2.879258,2.877415,2.883336,2.881916,2.887276,2.882449,2.887341,2.884496,2.881039,2.894278,2.884905]}],"volume":[{"name":"Specific volume during annealing at 177.73 K (after cooling at 10 K/min)","Ta":177.73,"unit":"cm³/g","t":[1,1.17681,1.38489,1.62975,1.91791,2.25702,2.65609,3.12572,3.67838,4.32876,5.09414,5.99484,7.0548,8.30218,9.7701,11.4976,13.5305,15.9228,18.7382,22.0513,25.9502,30.5386,35.9381,42.2924,49.7702,58.5702,68.9261,81.1131,95.4548,112.332,132.194,155.568,183.074,215.443,253.536,298.365,351.119,413.201,486.26,572.237,673.415,792.483,932.603,1097.5,1291.55,1519.91,1788.65,2104.9,2477.08,2915.05,3430.47,4037.02,4750.81,5590.81,6579.33,7742.64,9111.63,10722.7,12618.6,14849.7,17475.3,20565.1,24201.3,28480.4,33516,39442.1,46415.9,54622.8,64280.7,75646.3,89021.5,104762,123285,145083,170735,200923,236449,278256,327455,385353,453488,533670,628029,739072,869749,1023530,1204500,1417470,1668100,1963040,2310130,2718590,3199270,3764940,4430620,5214010,6135910,7220810,8497530,10000000],"v":[0.7957157,0.795716,0.795714,0.7957128,0.7957118,0.7957087,0.7957067,0.7957059,0.7957036,0.7957042,0.7957009,0.7956971,0.7956913,0.7956909,0.7956865,0.7956806,0.7956758,0.7956706,0.7956654,0.7956589,0.7956514,0.795642,0.7956325,0.7956218,0.795612,0.7955955,0.7955816,0.7955656,0.7955465,0.7955259,0.7955035,0.7954795,0.7954545,0.7954302,0.7954007,0.7953666,0.7953319,0.7952921,0.7952518,0.7952138,0.7951682,0.795117,0.7950653,0.7950153,0.7949645,0.7949076,0.7948441,0.7947891,0.7947228,0.7946594,0.7945917,0.7945243,0.7944567,0.7943848,0.7943168,0.7942427,0.7941714,0.7940983,0.7940242,0.7939532,0.7938823,0.7938075,0.7937341,0.7936584,0.7935882,0.7935201,0.7934502,0.7933801,0.7933099,0.7932471,0.7931769,0.793114,0.7930463,0.7929837,0.7929248,0.7928654,0.7928065,0.7927489,0.7926987,0.7926432,0.7925975,0.7925459,0.7925062,0.7924608,0.7924199,0.7923824,0.7923439,0.79231,0.7922821,0.7922536,0.7922292,0.7922053,0.7921831,0.7921671,0.7921512,0.7921417,0.7921314,0.7921215,0.7921134,0.7921129]}]};
+</script>
+<script>
+/* ============================================================
+   Tf Studio · Data Analysis — user interface
+   Tab 1  Heat-flow scans: import raw DSC heat flow (heating or cooling), linear glass/liquid baselines,
+          normalized C_p^N, T_f(T) and T_f′ (area matching)
+   Tab 2  Enthalpy recovery: heating scans after annealing vs the unaged reference, aligned, ΔHF(T), ΔH(t_a),
+          φ(t_a) and a KWW fit
+   Tab 3  Property relaxation: volume (or density, length, refractive index…) during isothermal annealing,
+          V(t) = V∞ + ΔV exp[−(t/τ)^β]
+   ============================================================ */
+(function () {
+  "use strict";
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const nf = (v, p = 4) => (v === undefined || v === null || !isFinite(v)) ? "–" : (Math.abs(v) >= 1e5 || (Math.abs(v) < 1e-3 && v !== 0) ? (+v).toExponential(p - 1) : String(+(+v).toPrecision(p)));
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim() || "#888";
+  const COLS = ["--c1", "--c2", "--c3", "--c4", "--c6", "--c7", "--c5", "--c8"];
+  const col = i => css(COLS[i % COLS.length]);
+  const TIME = { s: 1, min: 60, h: 3600, d: 86400 };
+
+  const A = {
+    tab: 1, unit: "K", logt: true,
+    runs: [], sel: -1, ed: null,
+    rec: { ref: -1, mode: "liquid", int: null, Ta: "", dcp: "", off: {} },
+    vols: [], vsel: -1, ved: null,
+  };
+  const tU = v => v + (A.unit === "C" ? -273.15 : 0), tK = v => v + (A.unit === "C" ? 273.15 : 0), uL = () => (A.unit === "C" ? "°C" : "K");
+  const tIn = v => (isFinite(v) ? +tU(v).toPrecision(8) : "");
+
+  /* ---------- plotting helpers (plot() from ui_plot.js) ---------- */
+  function card(id, cls) { return `<div class="plotcard ${cls || ""}" id="${id}"><div class="plotbox"></div></div>`; }
+  function P(id, cfg) { const el = document.getElementById(id); if (!el || !cfg) return; const box = el.querySelector(".plotbox") || el; try { plot(box, { id, ...cfg }); } catch (e) { console.error(e); box.innerHTML = `<div class="banner err">Could not draw “${esc(cfg.title || id)}”: ${esc(e.message)}</div>`; } }
+  const empty = msg => `<div class="empty">${msg}</div>`;
+
+  /* ---------- units of a run ---------- */
+  // ΔH = ∫ΔHF dT / q  (q in K/s). mW → mJ (÷ mass in mg → J/g); W/g → J/g; anything else → HF·s
+  function hUnit(r) { return r.hfUnit === "W/g" || (r.hfUnit === "mW" && r.mass > 0) ? "J/g" : r.hfUnit === "mW" ? "mJ" : `${r.hfUnit || "a.u."}·s`; }
+  function hScale(r) { const s = 60 / r.q; return r.hfUnit === "mW" && r.mass > 0 ? s / r.mass : s; }
+  const cpUnit = r => (hUnit(r) === "J/g" ? "J/(g·K)" : hUnit(r) + "/K");
+
+  /* ---------- normalization cache ---------- */
+  function norm(r) { if (!r._N || r._Nkey !== JSON.stringify(r.rg)) { r._N = AN.normalize(r, r.rg); r._Nkey = JSON.stringify(r.rg); } return r._N; }
+  function kindLabel(r) { return r.kind === "cool" ? "cooling" : "heating"; }
+
+  /* ================= header / tabs ================= */
+  function renderTabs() {
+    $$(".step").forEach(b => b.setAttribute("aria-current", +b.dataset.tab === A.tab));
+    $("#st1").textContent = A.runs.length ? `${A.runs.length} run${A.runs.length > 1 ? "s" : ""}` : "upload DSC heat flow";
+    const aged = A.runs.filter(r => r.kind === "heat" && r.ta > 0).length;
+    $("#st2").textContent = aged ? `${aged} annealed scan${aged > 1 ? "s" : ""}` : "heating after annealing";
+    $("#st3").textContent = A.vols.length ? `${A.vols.length} dataset${A.vols.length > 1 ? "s" : ""}` : "volume, density, length…";
+  }
+  function render() { renderTabs(); [null, renderLeft1, renderLeft2, renderLeft3][A.tab](); renderRight(); }
+  function renderRight() { [null, renderRight1, renderRight2, renderRight3][A.tab](); }
+
+  /* ================= import editor (shared by tabs 1 and 3) ================= */
+  function editorHTML(ed, kind) {
+    const p = ed.parsed, opts = (sel) => p ? p.names.map((n, j) => `<option value="${j}" ${+sel === j ? "selected" : ""}>${esc(n)}</option>`).join("") : "";
+    const src = `<label class="f">File (.csv, .txt, instrument export)<input type="file" id="edFile" accept=".csv,.txt,.dat,.tsv,text/plain"></label>
+      <label class="f" style="margin-top:6px">…or paste columns<textarea id="edText" rows="5" placeholder="T  heat flow\n-80  1.20\n-79.5  1.21\n…">${esc(ed.text || "")}</textarea></label>
+      <p class="note">${p ? `<b>${p.n}</b> numeric rows, ${p.cols.length} columns detected.` : "Header lines and unit rows are skipped automatically."}</p>`;
+    if (kind === "hf") return `${src}${p ? `
+      <div class="grid2" style="margin-top:6px">
+        <label class="f">Temperature column<select id="edX">${opts(ed.xcol)}</select></label>
+        <label class="f">Heat-flow column<select id="edY">${opts(ed.ycol)}</select></label>
+        <label class="f">Temperature unit<select id="edXU"><option value="K" ${ed.xu === "K" ? "selected" : ""}>K</option><option value="C" ${ed.xu === "C" ? "selected" : ""}>°C</option></select></label>
+        <label class="f">Heat-flow unit<select id="edYU">${["mW", "W/g", "a.u."].map(u => `<option ${ed.yu === u ? "selected" : ""}>${u}</option>`).join("")}</select></label>
+        <label class="f">Sign convention<select id="edSign"><option value="up" ${ed.sign === "up" ? "selected" : ""}>endothermic up</option><option value="down" ${ed.sign === "down" ? "selected" : ""}>endothermic down (exo up)</option></select></label>
+        <label class="f">Scan<select id="edKind"><option value="auto" ${ed.kind === "auto" ? "selected" : ""}>auto (${autoKind(ed)})</option><option value="heat" ${ed.kind === "heat" ? "selected" : ""}>heating</option><option value="cool" ${ed.kind === "cool" ? "selected" : ""}>cooling</option></select></label>
+        <label class="f">Rate |q| (K/min)<input type="number" id="edQ" value="${ed.q}" step="any" min="0"></label>
+        <label class="f" ${ed.yu === "mW" ? "" : "hidden"}>Sample mass (mg)<input type="number" id="edM" value="${ed.m}" step="any" min="0"></label>
+        <label class="f" title="Leave empty for an unaged scan (e.g. the reference)">Annealing time t<sub>a</sub> (s)<input type="number" id="edTa" value="${ed.ta}" step="any" min="0" placeholder="none"></label>
+        <label class="f">Annealing T<sub>a</sub> (${uL()})<input type="number" id="edTaT" value="${ed.TaT}" step="any" placeholder="—"></label>
+        <label class="f full">Name<input type="text" id="edName" value="${esc(ed.name || "")}" placeholder="auto"></label>
+      </div>` : ""}
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="edAdd" ${p ? "" : "disabled"}>Add run</button><button class="btn" id="edCancel">Cancel</button><span class="note" id="edMsg" style="margin:0"></span></div>`;
+    return `${src}${p ? `
+      <div class="grid2" style="margin-top:6px">
+        <label class="f">Time column<select id="edX">${opts(ed.xcol)}</select></label>
+        <label class="f">Property column<select id="edY">${opts(ed.ycol)}</select></label>
+        <label class="f">Time unit<select id="edXU">${Object.keys(TIME).map(u => `<option ${ed.xu === u ? "selected" : ""}>${u}</option>`).join("")}</select></label>
+        <label class="f">Property (label, unit)<input type="text" id="edPU" value="${esc(ed.pu || "")}" placeholder="V (cm³/g)"></label>
+        <label class="f">Annealing T<sub>a</sub> (${uL()})<input type="number" id="edTaT" value="${ed.TaT}" step="any" placeholder="—"></label>
+        <label class="f">Name<input type="text" id="edName" value="${esc(ed.name || "")}" placeholder="auto"></label>
+      </div>` : ""}
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="edAdd" ${p ? "" : "disabled"}>Add dataset</button><button class="btn" id="edCancel">Cancel</button><span class="note" id="edMsg" style="margin:0"></span></div>`;
+  }
+  function autoKind(ed) { const p = ed.parsed; if (!p) return "–"; const x = p.cols[+ed.xcol] || []; const a = x.find(isFinite), b = [...x].reverse().find(isFinite); return b >= a ? "heating" : "cooling"; }
+  function guessCols(ed, kind) {
+    const nm = ed.parsed.names.map(s => s.toLowerCase());
+    const find = re => nm.findIndex(s => re.test(s));
+    if (kind === "hf") {
+      const t = find(/temp|^t\b|°c|\(k\)/), h = find(/heat|flow|hf|mw|w\/g/);
+      ed.xcol = t >= 0 ? t : 0; ed.ycol = h >= 0 ? h : Math.min(1, ed.parsed.cols.length - 1);
+      if (/°c|\(c\)|celsius/.test(nm[ed.xcol] || "")) ed.xu = "C";
+      if (/w\/g/.test(nm[ed.ycol] || "")) ed.yu = "W/g"; else if (/mw/.test(nm[ed.ycol] || "")) ed.yu = "mW";
+    } else {
+      const t = find(/time|^t\b/); ed.xcol = t >= 0 ? t : 0; ed.ycol = ed.xcol === 0 ? 1 : 0;
+      if (/min/.test(nm[ed.xcol] || "")) ed.xu = "min"; else if (/\(h\)|hour/.test(nm[ed.xcol] || "")) ed.xu = "h";
+    }
+  }
+  function setText(ed, text, kind) { ed.text = text; ed.parsed = AN.parseTable(text); if (ed.parsed.n < 2 || ed.parsed.cols.length < 2) ed.parsed = null; else guessCols(ed, kind); }
+
+  /* ================= TAB 1: heat-flow scans ================= */
+  function newHfEditor() { return { text: "", parsed: null, xcol: 0, ycol: 1, xu: A.unit, yu: "mW", sign: "up", kind: "auto", q: 10, m: 10, ta: "", TaT: "", name: "" }; }
+  function renderLeft1() {
+    const r = A.runs[A.sel];
+    const list = A.runs.map((x, i) => `<div class="dsitem ${i === A.sel ? "sel" : ""}" data-sel="${i}" style="--pc:${col(i)}">
+        <span class="pill" style="--pc:${col(i)}">${x.kind === "cool" ? "cool" : "heat"}</span><span class="nm" title="${esc(x.name)}">${esc(x.name)}</span><button class="btn icon danger" data-del="${i}" title="Remove">×</button>
+        <span class="meta">${kindLabel(x)} · ${nf(x.q, 3)} K/min · ${x.T.length} points · HF in ${esc(x.hfUnit)}${x.ta > 0 ? ` · annealed ${nf(x.ta, 3)} s${isFinite(x.Ta) ? " at " + nf(tU(x.Ta), 5) + " " + uL() : ""}` : ""}</span></div>`).join("");
+    let norms = "";
+    if (r) {
+      const N = norm(r), du = cpUnit(r);
+      norms = `<div class="card"><h2>Normalization <span class="sub">${esc(r.name)}</span></h2><div class="body">
+        <div class="grid2">
+          <label class="f">Glass range from (${uL()})<input type="number" data-rg="g0" value="${tIn(r.rg.g[0])}" step="any"></label><label class="f">to<input type="number" data-rg="g1" value="${tIn(r.rg.g[1])}" step="any"></label>
+          <label class="f">Liquid range from (${uL()})<input type="number" data-rg="l0" value="${tIn(r.rg.l[0])}" step="any"></label><label class="f">to<input type="number" data-rg="l1" value="${tIn(r.rg.l[1])}" step="any"></label>
+        </div>
+        <div class="row" style="margin-top:8px"><button class="btn small" id="rgAuto">Auto ranges</button><button class="btn small" id="rgAll" title="Use these glass and liquid ranges for every run">Apply to all runs</button></div>
+        <p class="note">Straight lines are fitted to the heat flow in the glass range (HF<sub>g</sub>) and the liquid range (HF<sub>l</sub>) and extrapolated: C<sub>p</sub><sup>N</sup> = (HF − HF<sub>g</sub>)/(HF<sub>l</sub> − HF<sub>g</sub>) = dT<sub>f</sub>/dT. T<sub>f</sub>(T) = T* − ∫<sub>T</sub><sup>T*</sup> C<sub>p</sub><sup>N</sup> dT′ with T* at the start of the liquid range (Moynihan's area matching).</p>
+        ${N.ok ? `<div class="summary"><div class="stat"><b>${nf(tU(N.TfPrime), 5)} ${uL()}</b><span>limiting fictive temperature T<sub>f</sub>′</span></div>
+          <div class="stat"><b>${nf(tU(N.Tmid), 5)} ${uL()}</b><span>midpoint (C<sub>p</sub><sup>N</sup> = 0.5)</span></div>
+          <div class="stat"><b>${nf(N.dHF(N.TfPrime) * hScale(r), 3)}</b><span>ΔC<sub>p</sub> at T<sub>f</sub>′, ${du}</span></div></div>` : `<div class="banner err" style="margin-top:8px">${esc(N.msg)}</div>`}
+      </div></div>`;
+    }
+    $("#left").innerHTML = `
+      <div class="card"><h2>Heat-flow runs <span class="sub">${A.runs.length}</span></h2><div class="body">
+        ${A.runs.length ? list : `<p class="note" style="margin-top:0">Upload the raw heat flow of a DSC scan (heating or cooling). For enthalpy recovery, add the unaged reference and the heating scans after annealing, with their annealing times.</p>`}
+        <div class="row" style="margin-top:6px"><button class="btn small" id="addRun">+ Add run</button><button class="btn small" id="exRuns">Load example data</button>${A.runs.length ? `<span class="spacer"></span><button class="btn small" id="csv1">Export normalized (.csv)</button>` : ""}</div>
+      </div></div>
+      ${A.ed ? `<div class="card"><h2>Add a heat-flow run</h2><div class="body">${editorHTML(A.ed, "hf")}</div></div>` : ""}
+      ${norms}`;
+  }
+  function renderRight1() {
+    const r = A.runs[A.sel];
+    if (!r) { $("#right").innerHTML = `<div class="rhead"><h3>Heat-flow scans</h3></div>${empty("Add a run or load the example data (synthetic scans of glycerol computed with the TL model).")}`; return; }
+    $("#right").innerHTML = `<div class="rhead"><h3>${esc(r.name)}</h3></div><div class="plots">${card("a1raw")}${card("a1cp")}${card("a1tf")}${card("a1all")}</div>`;
+    const N = norm(r), c = col(A.sel), X = N.T.map(tU);
+    const lo = N.T[0], hi = N.T[N.T.length - 1];
+    const bands = [{ x0: tU(Math.min(...r.rg.g)), x1: tU(Math.max(...r.rg.g)), color: css("--c1"), op: 0.12 }, { x0: tU(Math.min(...r.rg.l)), x1: tU(Math.max(...r.rg.l)), color: css("--c2"), op: 0.12 }];
+    const series = [{ name: "heat flow", x: X, y: N.HF, color: c, w: 1.8 }];
+    if (N.ok) series.push({ name: "glass line HF_g", x: [tU(lo), tU(hi)], y: [N.g(lo), N.g(hi)], color: css("--c1"), w: 1.3, dash: "6 4" }, { name: "liquid line HF_l", x: [tU(lo), tU(hi)], y: [N.l(lo), N.l(hi)], color: css("--c2"), w: 1.3, dash: "6 4" });
+    P("a1raw", { title: `Raw heat flow (${r.hfUnit}, endothermic up) with glass and liquid baselines`, xlabel: `Temperature (${uL()})`, ylabel: `HF (${r.hfUnit})`, series, bands, xshort: "T", yshort: "HF" });
+    if (!N.ok) return;
+    P("a1cp", { title: "Normalized heat capacity C_p^N = dT_f/dT", xlabel: `Temperature (${uL()})`, ylabel: "C_p^N", series: [{ name: "", x: X, y: N.cpN, color: c, w: 2 }, { name: "", x: [X[0], X[X.length - 1]], y: [0, 0], color: css("--eq"), w: 1, dash: "3 3" }, { name: "", x: [X[0], X[X.length - 1]], y: [1, 1], color: css("--eq"), w: 1, dash: "3 3" }], bands, xshort: "T", yshort: "Cp" });
+    P("a1tf", { title: `Fictive temperature T_f(T) · T_f′ = ${nf(tU(N.TfPrime), 5)} ${uL()}`, xlabel: `Temperature (${uL()})`, ylabel: `T_f (${uL()})`, series: [{ name: "T_f", x: X, y: N.Tf.map(tU), color: c, w: 2 }, { name: "T_f = T", x: [X[0], X[X.length - 1]], y: [X[0], X[X.length - 1]], color: css("--eq"), w: 1, dash: "4 3" }], xshort: "T", yshort: "T_f" });
+    const all = A.runs.map((x, i) => { const n = norm(x); return n.ok ? { name: x.name, x: n.T.map(tU), y: n.cpN, color: col(i), w: i === A.sel ? 2.4 : 1.3, dash: x.kind === "cool" ? "6 4" : null } : null; }).filter(Boolean);
+    P("a1all", { title: "All runs, C_p^N (dashed: cooling)", xlabel: `Temperature (${uL()})`, ylabel: "C_p^N", series: all, xshort: "T", yshort: "Cp" });
+  }
+  function addRunFromEditor() {
+    const ed = A.ed, p = ed.parsed, msg = $("#edMsg"); if (!p) return;
+    const xs = p.cols[+ed.xcol], ys = p.cols[+ed.ycol];
+    const T = [], HF = []; xs.forEach((x, i) => { const y = ys[i]; if (isFinite(x) && isFinite(y)) { T.push(ed.xu === "C" ? x + 273.15 : x); HF.push(ed.sign === "down" ? -y : y); } });
+    if (T.length < 10) { msg.textContent = "Fewer than 10 usable rows."; return; }
+    const kind = ed.kind === "auto" ? (T[T.length - 1] >= T[0] ? "heat" : "cool") : ed.kind;
+    const q = +ed.q; if (!(q > 0)) { msg.textContent = "Enter the scan rate."; return; }
+    const ta = ed.ta === "" ? 0 : +ed.ta, TaT = ed.TaT === "" ? NaN : tK(+ed.TaT);
+    const r = { name: ed.name || `${kind === "cool" ? "Cooling" : "Heating"} ${nf(q, 3)} K/min${ta > 0 ? ` after ${nf(ta, 3)} s` : ""}`, kind, q, mass: ed.yu === "mW" ? +ed.m : NaN, hfUnit: ed.yu, ta, Ta: TaT, T, HF };
+    r.rg = A.runs.length ? JSON.parse(JSON.stringify(A.runs[A.runs.length - 1].rg)) : AN.defaultRanges(T);
+    const lo = Math.min(...T), hi = Math.max(...T); if (!(r.rg.g[0] >= lo && r.rg.l[1] <= hi)) r.rg = AN.defaultRanges(T);
+    A.runs.push(r); A.sel = A.runs.length - 1; A.ed = null; render();
+  }
+  function loadExampleRuns() {
+    A.runs = EXAMPLES.runs.map(x => ({ name: x.name, kind: x.kind, q: x.q, mass: x.mass, hfUnit: "mW", ta: x.ta || 0, Ta: x.Ta == null ? NaN : x.Ta, T: x.T.slice(), HF: x.HF.slice(), rg: { g: [150, 170], l: [205, 225] } }));
+    A.sel = 1; A.ed = null; A.rec.ref = 1; A.rec.int = null; A.rec.Ta = ""; render();
+  }
+  function exportNorm() {
+    const rows = ["run,scan,rate_K_per_min,T_K,HF,Cp_norm,Tf_K"];
+    A.runs.forEach(r => { const N = norm(r); if (!N.ok) return; N.T.forEach((t, i) => rows.push([`"${r.name}"`, r.kind, r.q, t, N.HF[i], N.cpN[i], N.Tf[i]].join(","))); });
+    dl(new Blob([rows.join("\n")], { type: "text/csv" }), "normalized_Cp.csv");
+  }
+
+  /* ================= TAB 2: enthalpy recovery ================= */
+  function recState() {
+    const heats = A.runs.map((r, i) => i).filter(i => A.runs[i].kind === "heat");
+    let ref = A.rec.ref; if (!heats.includes(ref)) ref = heats.find(i => !(A.runs[i].ta > 0)); if (ref === undefined) ref = heats[0];
+    A.rec.ref = ref === undefined ? -1 : ref;
+    const R = A.runs[A.rec.ref], aged = heats.filter(i => i !== A.rec.ref && A.runs[i].ta > 0).sort((a, b) => A.runs[a].ta - A.runs[b].ta);
+    if (!R) return { heats, R: null, aged };
+    const NR = norm(R); if (!NR.ok) return { heats, R, NR, aged, bad: true };
+    const int = A.rec.int || [Math.min(...R.rg.g), Math.max(...R.rg.l)];
+    const Ta = A.rec.Ta !== "" ? tK(+A.rec.Ta) : (aged.map(i => A.runs[i].Ta).find(isFinite));
+    const dcpAuto = NR.dHF(NR.TfPrime) * hScale(R), dcp = A.rec.dcp !== "" ? +A.rec.dcp : dcpAuto;
+    const res = aged.map(i => {
+      const r = A.runs[i], N = norm(r); if (!N.ok) return { i, r, bad: true };
+      const rc = AN.recovery(NR, N, { g: R.rg.g, l: R.rg.l, mode: A.rec.mode, int });
+      const dH = rc.integral * hScale(R), dT = dH / dcp;
+      const TfH = NR.TfPrime - dT, dHinf = isFinite(Ta) ? dcp * (NR.TfPrime - Ta) : NaN;
+      return { i, r, N, rc, dH, dT, TfH, phi: isFinite(dHinf) ? 1 - dH / dHinf : NaN, dHinf };
+    });
+    const ok = res.filter(x => !x.bad && isFinite(x.phi));
+    const kww = ok.length >= 3 ? AN.kwwFit(ok.map(x => x.r.ta), ok.map(x => x.phi)) : null;
+    return { heats, R, NR, aged, int, Ta, dcp, dcpAuto, res, kww };
+  }
+  function renderLeft2() {
+    const S2 = recState();
+    if (!S2.heats.length) { $("#left").innerHTML = `<div class="card"><h2>Enthalpy recovery</h2><div class="body"><p class="note" style="margin-top:0">Add heating scans in tab 1: one unaged reference and scans measured after annealing (give each its annealing time t<sub>a</sub>). Or load the example data there.</p><button class="btn small" id="exRuns">Load example data</button></div></div>`; return; }
+    const R = S2.R, u = R ? hUnit(R) : "";
+    const refSel = `<select id="recRef">${S2.heats.map(i => `<option value="${i}" ${i === A.rec.ref ? "selected" : ""}>${esc(A.runs[i].name)}</option>`).join("")}</select>`;
+    const agedRows = A.runs.map((r, i) => (r.kind === "heat" && i !== A.rec.ref) ? `<tr><td><span class="pill" style="--pc:${col(i)}">&nbsp;</span></td><td class="nm" title="${esc(r.name)}" style="max-width:190px;overflow:hidden;text-overflow:ellipsis">${esc(r.name)}</td><td><input type="number" data-ta="${i}" value="${r.ta > 0 ? r.ta : ""}" step="any" min="0" placeholder="—" style="width:90px"></td></tr>` : "").join("");
+    const res = (S2.res || []).filter(x => !x.bad).map(x => `<tr><td class="num">${nf(x.r.ta, 3)}</td><td class="num">${nf(x.dH, 4)}</td><td class="num">${nf(x.dT, 4)}</td><td class="num">${nf(tU(x.TfH), 5)}</td><td class="num">${nf(tU(x.N.TfPrime), 5)}</td><td class="num">${nf(x.phi, 3)}</td></tr>`).join("");
+    $("#left").innerHTML = `
+      <div class="card"><h2>Scans</h2><div class="body">
+        <label class="f">Unaged reference (heating)${refSel}</label>
+        <table class="pt" style="margin-top:8px"><tr><th></th><th>heating scan</th><th>t<sub>a</sub> (s)</th></tr>${agedRows}</table>
+        <p class="note">Scans with an annealing time are compared with the reference. All scans should use the same heating rate.</p>
+      </div></div>
+      <div class="card"><h2>Alignment and integration</h2><div class="body">
+        <div class="grid2">
+          <label class="f full">Align each annealed scan to the reference by<select id="recMode"><option value="liquid" ${A.rec.mode === "liquid" ? "selected" : ""}>a constant shift in the liquid range</option><option value="linear" ${A.rec.mode === "linear" ? "selected" : ""}>a straight line through the glass and liquid ranges</option></select></label>
+          <label class="f">Integrate from (${uL()})<input type="number" id="int0" value="${S2.int ? tIn(S2.int[0]) : ""}" step="any"></label><label class="f">to<input type="number" id="int1" value="${S2.int ? tIn(S2.int[1]) : ""}" step="any"></label>
+          <label class="f">Annealing T<sub>a</sub> (${uL()})<input type="number" id="recTa" value="${A.rec.Ta !== "" ? A.rec.Ta : (isFinite(S2.Ta) ? tIn(S2.Ta) : "")}" step="any" placeholder="needed for φ"></label>
+          <label class="f">ΔC<sub>p</sub> (${R ? cpUnit(R) : ""})<input type="number" id="recDcp" value="${A.rec.dcp}" step="any" placeholder="${nf(S2.dcpAuto, 4)} (reference)"></label>
+        </div>
+        <p class="note">Glass and liquid ranges are the reference run's (tab 1). ΔH = ∫ ΔHF dT / q is the enthalpy lost during annealing and recovered on heating. T<sub>f</sub> = T<sub>f</sub>′(reference) − ΔH/ΔC<sub>p</sub>; φ = 1 − ΔH/ΔH<sub>∞</sub> with ΔH<sub>∞</sub> = ΔC<sub>p</sub>(T<sub>f</sub>′ − T<sub>a</sub>).</p>
+      </div></div>
+      ${S2.res && S2.res.length ? `<div class="card"><h2>Results <span class="sub">reference T<sub>f</sub>′ = ${nf(tU(S2.NR.TfPrime), 5)} ${uL()}</span></h2><div class="body" style="overflow-x:auto">
+        <table class="metrics"><tr><th>t<sub>a</sub> (s)</th><th>ΔH (${u})</th><th>ΔH/ΔC<sub>p</sub> (K)</th><th>T<sub>f</sub> from ΔH</th><th>T<sub>f</sub>′ (area)</th><th>φ</th></tr>${res}</table>
+        ${isFinite(S2.res[0] && S2.res[0].dHinf) ? `<p class="note">ΔH<sub>∞</sub> = ${nf(S2.res[0].dHinf, 4)} ${u}${S2.kww ? ` · KWW fit of φ(t<sub>a</sub>): τ = <b>${nf(S2.kww.tau, 4)} s</b>, β = <b>${nf(S2.kww.beta, 3)}</b>, ⟨τ⟩ = ${nf(S2.kww.meanTau, 4)} s` : " · a KWW fit needs at least three annealing times"}</p>` : `<p class="note">Enter T<sub>a</sub> to get φ(t<sub>a</sub>) and a KWW fit.</p>`}
+        <div class="row" style="margin-top:6px"><button class="btn small" id="csv2">Export results (.csv)</button><button class="btn small" id="csv2c">Export ΔHF curves (.csv)</button></div>
+      </div></div>` : `<div class="card"><h2>Results</h2><div class="body"><p class="note" style="margin-top:0">Enter the annealing time t<sub>a</sub> of at least one heating scan above.</p></div></div>`}`;
+  }
+  function renderRight2() {
+    const S2 = recState();
+    if (!S2.R || !S2.res || !S2.res.length) { $("#right").innerHTML = `<div class="rhead"><h3>Enthalpy recovery</h3></div>${empty("Choose the unaged reference and give the annealing times of the other heating scans.")}`; return; }
+    $("#right").innerHTML = `<div class="rhead"><h3>Enthalpy recovery</h3></div><div class="plots">${card("a2hf")}${card("a2d")}${card("a2h")}${card("a2phi")}</div>`;
+    const R = S2.R, u = hUnit(R), X = x => x.map(tU);
+    const ok = S2.res.filter(x => !x.bad);
+    const hf = [{ name: `reference: ${R.name}`, x: X(S2.NR.T), y: S2.NR.HF, color: css("--ink"), w: 2 }];
+    ok.forEach(x => hf.push({ name: `t_a = ${nf(x.r.ta, 3)} s`, x: X(x.rc.x), y: x.rc.aged, color: col(x.i), w: 1.5 }));
+    const bands = [{ x0: tU(S2.int[0]), x1: tU(S2.int[1]), color: css("--eq"), op: 0.08 }];
+    P("a2hf", { title: `Heating scans aligned to the reference (${R.hfUnit})`, xlabel: `Temperature (${uL()})`, ylabel: `HF (${R.hfUnit})`, series: hf, bands, xshort: "T", yshort: "HF" });
+    P("a2d", { title: "ΔHF = HF(annealed) − HF(reference); shaded: integration range", xlabel: `Temperature (${uL()})`, ylabel: `ΔHF (${R.hfUnit})`, bands,
+      series: [{ name: "", x: X([S2.int[0], S2.int[1]]), y: [0, 0], color: css("--eq"), w: 1, dash: "3 3" }].concat(ok.map(x => ({ name: `t_a = ${nf(x.r.ta, 3)} s: ΔH = ${nf(x.dH, 3)} ${u}`, x: X(x.rc.x), y: x.rc.dHF, color: col(x.i), w: 1.8 }))), xshort: "T", yshort: "ΔHF" });
+    const ts = ok.map(x => x.r.ta), dHinf = ok[0].dHinf;
+    const hs = [{ name: "ΔH(t_a)", x: ts, y: ok.map(x => x.dH), color: css("--c1"), pts: true, r: 4 }];
+    if (isFinite(dHinf)) hs.push({ name: "ΔH∞ = ΔC_p (T_f′ − T_a)", x: [Math.min(...ts) / 3, Math.max(...ts) * 3], y: [dHinf, dHinf], color: css("--eq"), w: 1.2, dash: "5 4" });
+    if (S2.kww && isFinite(dHinf)) { const tt = logspace(Math.min(...ts) / 3, Math.max(...ts) * 3, 120); hs.push({ name: "KWW fit", x: tt, y: tt.map(t => dHinf * (1 - Math.exp(-Math.pow(t / S2.kww.tau, S2.kww.beta)))), color: css("--c2"), w: 1.6 }); }
+    P("a2h", { title: `Recovered enthalpy ΔH (${u}) vs annealing time`, xlabel: "annealing time t_a (s)", ylabel: `ΔH (${u})`, xlog: A.logt, series: hs, xdom: A.logt ? null : [0, Math.max(...ts) * 1.05], xshort: "t_a", yshort: "ΔH" });
+    if (isFinite(dHinf)) {
+      const ps = [{ name: "φ = 1 − ΔH/ΔH∞", x: ts, y: ok.map(x => x.phi), color: css("--c1"), pts: true, r: 4 }];
+      if (S2.kww) { const tt = logspace(Math.min(...ts) / 3, Math.max(...ts) * 3, 120); ps.push({ name: `KWW τ = ${nf(S2.kww.tau, 3)} s, β = ${nf(S2.kww.beta, 3)}`, x: tt, y: tt.map(t => Math.exp(-Math.pow(t / S2.kww.tau, S2.kww.beta))), color: css("--c2"), w: 1.6 }); }
+      P("a2phi", { title: `Relaxation function at T_a = ${nf(tU(S2.Ta), 5)} ${uL()}`, xlabel: "annealing time t_a (s)", ylabel: "φ", xlog: A.logt, ydom: [0, 1.05], series: ps, xdom: A.logt ? null : [0, Math.max(...ts) * 1.05], xshort: "t_a", yshort: "φ" });
+    } else document.getElementById("a2phi").querySelector(".plotbox").innerHTML = empty("Enter the annealing temperature T<sub>a</sub> to compute φ(t<sub>a</sub>).");
+  }
+  const logspace = (a, b, n) => Array.from({ length: n }, (_, k) => a * Math.pow(b / a, k / (n - 1)));
+  function exportRec(curves) {
+    const S2 = recState(); if (!S2.res) return; const u = hUnit(S2.R);
+    if (!curves) { const rows = [`t_a_s,dH_${u.replace(/\W+/g, "_")},dH_over_dCp_K,Tf_from_dH_K,Tf_area_K,phi`];
+      S2.res.filter(x => !x.bad).forEach(x => rows.push([x.r.ta, x.dH, x.dT, x.TfH, x.N.TfPrime, x.phi].join(",")));
+      dl(new Blob([rows.join("\n")], { type: "text/csv" }), "enthalpy_recovery.csv"); return; }
+    const rows = ["t_a_s,T_K,HF_reference,HF_annealed_aligned,dHF"];
+    S2.res.filter(x => !x.bad).forEach(x => x.rc.x.forEach((t, k) => rows.push([x.r.ta, t, x.rc.ref[k], x.rc.aged[k], x.rc.dHF[k]].join(","))));
+    dl(new Blob([rows.join("\n")], { type: "text/csv" }), "dHF_curves.csv");
+  }
+
+  /* ================= TAB 3: property relaxation ================= */
+  function newVolEditor() { return { text: "", parsed: null, xcol: 0, ycol: 1, xu: "s", pu: "V (cm³/g)", TaT: "", name: "" }; }
+  function vfit(v) { const key = `${v.vinfMode}|${v.vinf}`; if (!v._F || v._Fkey !== key) { v._F = AN.relaxFit(v.t, v.v, v.vinfMode === "fixed" ? +v.vinf : NaN); v._Fkey = key; } return v._F; }
+  function renderLeft3() {
+    const v = A.vols[A.vsel];
+    const list = A.vols.map((x, i) => `<div class="dsitem ${i === A.vsel ? "sel" : ""}" data-vsel="${i}" style="--pc:${col(i)}"><span class="pill" style="--pc:${col(i)}">${x.t.length}</span><span class="nm" title="${esc(x.name)}">${esc(x.name)}</span><button class="btn icon danger" data-vdel="${i}" title="Remove">×</button><span class="meta">${esc(x.pu)}${isFinite(x.Ta) ? ` · T_a = ${nf(tU(x.Ta), 5)} ${uL()}` : ""}</span></div>`).join("");
+    let fitCard = "";
+    if (v) {
+      const F = vfit(v);
+      fitCard = `<div class="card"><h2>Stretched-exponential fit <span class="sub">${esc(v.name)}</span></h2><div class="body">
+        <div class="eqn">${esc(v.pu.split(" (")[0] || "V")}(t) = V∞ + (V₀ − V∞)·exp[−(t/τ)^β]</div>
+        <div class="grid2" style="margin-top:8px"><label class="f">Equilibrium value V∞<select id="vinfMode"><option value="free" ${v.vinfMode !== "fixed" ? "selected" : ""}>fitted</option><option value="fixed" ${v.vinfMode === "fixed" ? "selected" : ""}>fixed at</option></select></label>
+          <label class="f">V∞ value<input type="number" id="vinfVal" value="${v.vinf}" step="any" ${v.vinfMode === "fixed" ? "" : "disabled"}></label></div>
+        ${F ? `<table class="metrics" style="margin-top:8px"><tr><th>parameter</th><th>value</th></tr>
+          <tr><td>τ (KWW)</td><td class="num">${nf(F.tau, 4)} s</td></tr><tr><td>β</td><td class="num">${nf(F.beta, 3)}</td></tr><tr><td>⟨τ⟩ = (τ/β) Γ(1/β)</td><td class="num">${nf(F.meanTau, 4)} s</td></tr>
+          <tr><td>V₀ (t = 0)</td><td class="num">${nf(F.v0, 7)}</td></tr><tr><td>V∞</td><td class="num">${nf(F.vinf, 7)}</td></tr><tr><td>V₀ − V∞ (relative)</td><td class="num">${nf(F.dv, 4)} (${nf(F.dv / F.vinf * 100, 3)} %)</td></tr>
+          <tr><td>R²</td><td class="num">${nf(F.R2, 6)}</td></tr></table>` : `<div class="banner err" style="margin-top:8px">The fit needs at least four points.</div>`}
+        <p class="note">φ(t) = (V − V∞)/(V₀ − V∞) is the relaxation function, directly comparable with φ(t<sub>a</sub>) from enthalpy recovery (tab 2) and with the Fitter's "annealing" data.</p>
+        <div class="row" style="margin-top:6px"><button class="btn small" id="csv3">Export data, φ and fit (.csv)</button></div>
+      </div></div>`;
+    }
+    $("#left").innerHTML = `
+      <div class="card"><h2>Relaxation datasets <span class="sub">${A.vols.length}</span></h2><div class="body">
+        ${A.vols.length ? list : `<p class="note" style="margin-top:0">Upload a property measured during isothermal annealing: volume, density, length, refractive index… against time.</p>`}
+        <div class="row" style="margin-top:6px"><button class="btn small" id="addVol">+ Add dataset</button><button class="btn small" id="exVol">Load example data</button></div>
+      </div></div>
+      ${A.ved ? `<div class="card"><h2>Add a relaxation dataset</h2><div class="body">${editorHTML(A.ved, "vol")}</div></div>` : ""}
+      ${fitCard}`;
+  }
+  function renderRight3() {
+    const v = A.vols[A.vsel];
+    if (!v) { $("#right").innerHTML = `<div class="rhead"><h3>Property relaxation</h3></div>${empty("Add a dataset or load the example (specific volume of glycerol during annealing, computed with the TL model).")}`; return; }
+    $("#right").innerHTML = `<div class="rhead"><h3>${esc(v.name)}</h3></div><div class="plots">${card("a3v")}${card("a3phi")}${card("a3r")}</div>`;
+    const F = vfit(v), c = col(A.vsel), tmax = Math.max(...v.t), tmin = Math.min(...v.t.filter(t => t > 0));
+    const tt = A.logt ? logspace(tmin, tmax, 200) : Array.from({ length: 200 }, (_, k) => tmax * k / 199);
+    const s1 = [{ name: "data", x: v.t, y: v.v, color: c, pts: true, r: 2.6 }];
+    if (F) s1.push({ name: `fit: τ = ${nf(F.tau, 3)} s, β = ${nf(F.beta, 3)}`, x: tt, y: tt.map(t => F.vinf + F.dv * Math.exp(-Math.pow(t / F.tau, F.beta))), color: css("--ink"), w: 1.6 }, { name: "V∞", x: [tt[0], tt[tt.length - 1]], y: [F.vinf, F.vinf], color: css("--eq"), w: 1, dash: "4 3" });
+    P("a3v", { title: `${v.pu} during annealing${isFinite(v.Ta) ? ` at ${nf(tU(v.Ta), 5)} ${uL()}` : ""}`, xlabel: "time (s)", ylabel: v.pu, xlog: A.logt, series: s1, xshort: "t", yshort: "V" });
+    const s2 = [];
+    A.vols.forEach((w, i) => { const G = vfit(w); if (!G) return; s2.push({ name: w.name, x: w.t, y: w.v.map(y => (y - G.vinf) / G.dv), color: col(i), pts: true, r: i === A.vsel ? 2.8 : 2 });
+      const ts = A.logt ? logspace(Math.min(...w.t.filter(t => t > 0)), Math.max(...w.t), 150) : Array.from({ length: 150 }, (_, k) => Math.max(...w.t) * k / 149);
+      s2.push({ name: "", x: ts, y: ts.map(t => Math.exp(-Math.pow(t / G.tau, G.beta))), color: col(i), w: 1.4 }); });
+    P("a3phi", { title: "Relaxation function φ(t) = (V − V∞)/(V₀ − V∞), all datasets", xlabel: "time (s)", ylabel: "φ", xlog: A.logt, series: s2, xshort: "t", yshort: "φ" });
+    if (F) P("a3r", { title: "Residuals of the fit", xlabel: "time (s)", ylabel: "residual", xlog: A.logt, series: [{ name: "", x: [tt[0] || tmin, tmax], y: [0, 0], color: css("--eq"), w: 1, dash: "3 3" }, { name: "", x: v.t, y: v.v.map((y, k) => y - (F.vinf + F.dv * Math.exp(-Math.pow(v.t[k] / F.tau, F.beta)))), color: c, pts: true, r: 2.2 }], xshort: "t", yshort: "res" });
+  }
+  function addVolFromEditor() {
+    const ed = A.ved, p = ed.parsed, msg = $("#edMsg"); if (!p) return;
+    const t = [], v = []; p.cols[+ed.xcol].forEach((x, i) => { const y = p.cols[+ed.ycol][i]; if (isFinite(x) && isFinite(y)) { t.push(x * TIME[ed.xu]); v.push(y); } });
+    if (t.length < 4) { msg.textContent = "Fewer than four usable rows."; return; }
+    const o = t.map((_, i) => i).sort((a, b) => t[a] - t[b]);
+    A.vols.push({ name: ed.name || `${ed.pu || "Property"} relaxation`, pu: ed.pu || "V", Ta: ed.TaT === "" ? NaN : tK(+ed.TaT), t: o.map(i => t[i]), v: o.map(i => v[i]), vinfMode: "free", vinf: "" });
+    A.vsel = A.vols.length - 1; A.ved = null; render();
+  }
+  function exportVol() {
+    const v = A.vols[A.vsel]; if (!v) return; const F = vfit(v); const rows = ["t_s,value,phi,fit"];
+    v.t.forEach((t, k) => rows.push([t, v.v[k], F ? (v.v[k] - F.vinf) / F.dv : "", F ? F.vinf + F.dv * Math.exp(-Math.pow(t / F.tau, F.beta)) : ""].join(",")));
+    dl(new Blob([rows.join("\n")], { type: "text/csv" }), "relaxation_fit.csv");
+  }
+
+  /* ================= events ================= */
+  document.addEventListener("click", e => {
+    const t = e.target.closest("button,[data-sel],[data-vsel]"); if (!t) return;
+    if (t.dataset.tab) { A.tab = +t.dataset.tab; render(); return; }
+    if (t.id === "themeBtn") { const r = document.documentElement; r.dataset.theme = (r.dataset.theme || "light") === "dark" ? "light" : "dark"; renderRight(); return; }
+    // tab 1
+    if (t.id === "addRun") { A.ed = newHfEditor(); renderLeft1(); return; }
+    if (t.id === "exRuns") { loadExampleRuns(); if (A.tab !== 1) render(); return; }
+    if (t.id === "edCancel") { A.ed = null; A.ved = null; render(); return; }
+    if (t.id === "edAdd") { if (A.tab === 3) addVolFromEditor(); else addRunFromEditor(); return; }
+    if (t.dataset.del !== undefined) { e.stopPropagation(); A.runs.splice(+t.dataset.del, 1); A.sel = Math.min(A.sel, A.runs.length - 1); render(); return; }
+    if (t.dataset.sel !== undefined) { A.sel = +t.dataset.sel; render(); return; }
+    if (t.id === "rgAuto") { const r = A.runs[A.sel]; r.rg = AN.defaultRanges(r.T); render(); return; }
+    if (t.id === "rgAll") { const r = A.runs[A.sel]; A.runs.forEach(x => { x.rg = JSON.parse(JSON.stringify(r.rg)); }); render(); return; }
+    if (t.id === "csv1") { exportNorm(); return; }
+    // tab 2
+    if (t.id === "csv2") { exportRec(false); return; } if (t.id === "csv2c") { exportRec(true); return; }
+    // tab 3
+    if (t.id === "addVol") { A.ved = newVolEditor(); renderLeft3(); return; }
+    if (t.id === "exVol") { EXAMPLES.volume.forEach(x => A.vols.push({ name: x.name, pu: `v (${x.unit})`, Ta: x.Ta, t: x.t.slice(), v: x.v.slice(), vinfMode: "free", vinf: "" })); A.vsel = A.vols.length - 1; render(); return; }
+    if (t.dataset.vdel !== undefined) { e.stopPropagation(); A.vols.splice(+t.dataset.vdel, 1); A.vsel = Math.min(A.vsel, A.vols.length - 1); render(); return; }
+    if (t.dataset.vsel !== undefined) { A.vsel = +t.dataset.vsel; render(); return; }
+    if (t.id === "csv3") { exportVol(); return; }
+  });
+  document.addEventListener("change", e => {
+    const t = e.target;
+    if (t.id === "unit") { A.unit = t.value; render(); return; }
+    if (t.id === "tscale") { A.logt = t.value === "log"; renderRight(); return; }
+    if (t.id === "edFile") { const f = t.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { const ed = A.tab === 3 ? A.ved : A.ed; setText(ed, rd.result, A.tab === 3 ? "vol" : "hf"); if (!ed.name) ed.name = f.name.replace(/\.[^.]+$/, ""); A.tab === 3 ? renderLeft3() : renderLeft1(); }; rd.readAsText(f); return; }
+    const ed = A.tab === 3 ? A.ved : A.ed;
+    if (ed) {
+      const map = { edX: "xcol", edY: "ycol", edXU: "xu", edYU: "yu", edSign: "sign", edKind: "kind" };
+      if (map[t.id]) { ed[map[t.id]] = t.value; A.tab === 3 ? renderLeft3() : renderLeft1(); return; }
+    }
+    if (t.id === "recRef") { A.rec.ref = +t.value; A.rec.int = null; render(); return; }
+    if (t.id === "recMode") { A.rec.mode = t.value; render(); return; }
+    if (t.id === "vinfMode") { const v = A.vols[A.vsel]; v.vinfMode = t.value; if (t.value === "fixed" && v.vinf === "") { const F = vfit(v); v.vinf = F ? +F.vinf.toPrecision(7) : ""; } render(); return; }
+  });
+  document.addEventListener("input", e => {
+    const t = e.target, ed = A.tab === 3 ? A.ved : A.ed;
+    if (t.id === "edText" && ed) { setText(ed, t.value, A.tab === 3 ? "vol" : "hf"); const box = t.closest(".body"); const keep = t.selectionStart; (A.tab === 3 ? renderLeft3 : renderLeft1)(); const nt = $("#edText"); if (nt) { nt.focus(); nt.selectionStart = nt.selectionEnd = keep; } return; }
+    if (ed) { const map = { edQ: "q", edM: "m", edTa: "ta", edTaT: "TaT", edName: "name", edPU: "pu" }; if (map[t.id]) { ed[map[t.id]] = t.value; return; } }
+    if (t.dataset.rg) { const v = parseFloat(t.value); if (!isFinite(v)) return; const r = A.runs[A.sel], k = t.dataset.rg; r.rg[k[0]][+k[1]] = tK(v); r._N = null; renderRight1(); refreshStats1(); return; }
+    if (t.dataset.ta) { const v = parseFloat(t.value); A.runs[+t.dataset.ta].ta = isFinite(v) && v > 0 ? v : 0; renderTabs(); debounce(() => { renderLeft2Keep(); renderRight2(); }); return; }
+    if (t.id === "int0" || t.id === "int1") { const S2 = recState(), v = parseFloat(t.value); if (!isFinite(v) || !S2.int) return; const a = S2.int.slice(); a[t.id === "int0" ? 0 : 1] = tK(v); A.rec.int = a; debounce(() => { renderLeft2Keep(); renderRight2(); }); return; }
+    if (t.id === "recTa") { A.rec.Ta = t.value; debounce(() => { renderLeft2Keep(); renderRight2(); }); return; }
+    if (t.id === "recDcp") { A.rec.dcp = t.value; debounce(() => { renderLeft2Keep(); renderRight2(); }); return; }
+    if (t.id === "vinfVal") { const v = A.vols[A.vsel]; v.vinf = t.value; debounce(() => { renderLeft3Keep(); renderRight3(); }); return; }
+  });
+  let tmr = null; const debounce = f => { clearTimeout(tmr); tmr = setTimeout(f, 250); };
+  // re-render the left panel without losing the focused input
+  function keepFocus(fn) { const a = document.activeElement, id = a && a.id, ds = a && Object.entries(a.dataset || {})[0], pos = a && a.selectionStart; fn(); let el = id ? document.getElementById(id) : ds ? document.querySelector(`[data-${ds[0]}="${ds[1]}"]`) : null; if (el) { el.focus(); try { el.selectionStart = el.selectionEnd = pos; } catch (e) {} } }
+  const renderLeft2Keep = () => keepFocus(renderLeft2), renderLeft3Keep = () => keepFocus(renderLeft3);
+  function refreshStats1() { keepFocus(renderLeft1); }
+
+  if (window.desktop) document.querySelectorAll("[data-tool]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); window.desktop.openTool(a.dataset.tool); }));
+  render();
+})();
+
+</script>
+</body>
+</html>
