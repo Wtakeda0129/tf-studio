@@ -1,7 +1,7 @@
 <p align="center"><img src="site/icon256.png" width="128" alt="GARASU icon"></p>
 
 <h1 align="center">GARASU <sup>beta</sup></h1>
-<p align="center"><b>ガラス</b> (glass) · <b>G</b>lass <b>A</b>ging, <b>R</b>elaxation <b>A</b>nd <b>S</b>imulation <b>U</b>tility: compute and fit glass relaxation dynamics with structural relaxation models.</p>
+<p align="center"><b>G</b>lass <b>A</b>ging, <b>R</b>elaxation <b>A</b>nd <b>S</b>imulation <b>U</b>tility: compute and fit glass relaxation dynamics with structural relaxation models.</p>
 <p align="center"><a href="https://wtakeda0129.github.io/tf-studio/"><b>Open in your browser</b></a> · <a href="https://github.com/Wtakeda0129/tf-studio/releases/latest">Download for macOS / Windows</a></p>
 
 Every glass carries a thermal fingerprint of how it was made, written in its fictive temperature *T*<sub>f</sub>. GARASU simulates that history and fits it to measurements. It uses the heterogeneous **Takeda–Lucas (TL)** model, alongside the **Tool–Narayanaswamy–Moynihan (TNM)** model and **RelaxPy** (MAP viscosity).
