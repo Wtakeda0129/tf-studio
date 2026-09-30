@@ -13,6 +13,7 @@ jobs:
   build:
     strategy:
       fail-fast: false
+      max-parallel: 1   # one platform at a time, so both upload into the same GitHub Release without racing to create it
       matrix:
         include:
           - os: macos-latest
