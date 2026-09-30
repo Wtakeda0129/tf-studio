@@ -7,9 +7,9 @@ let autoUpdater = null;
 try { autoUpdater = require("electron-updater").autoUpdater; } catch (e) { autoUpdater = null; }
 
 const TOOLS = {
-  learn: { file: "learn.html", title: "Tf Studio · Learn" },
-  explorer: { file: "explorer.html", title: "Tf Studio · Lab" },
-  fitter: { file: "fitter.html", title: "Tf Studio · Fitter" },
+  learn: { file: "learn.html", title: "Tf Studio Beta · Learn" },
+  explorer: { file: "explorer.html", title: "Tf Studio Beta · Lab" },
+  fitter: { file: "fitter.html", title: "Tf Studio Beta · Fitter" },
 };
 // a link to another tool's page opens (or focuses) that tool's own window
 function toolForUrl(url) { for (const [k, t] of Object.entries(TOOLS)) if (new RegExp("/" + t.file.replace(".", "\\.") + "(#.*)?$").test(url)) return k; return null; }
@@ -18,7 +18,7 @@ const toolWindows = {};
 
 function openLauncher() {
   if (launcher && !launcher.isDestroyed()) { launcher.focus(); return; }
-  launcher = new BrowserWindow({ width: 980, height: 720, minWidth: 700, minHeight: 500, title: "Tf Studio",
+  launcher = new BrowserWindow({ width: 980, height: 720, minWidth: 700, minHeight: 500, title: "Tf Studio Beta",
     webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true } });
   launcher.loadFile(path.join(__dirname, "app", "index.html"));
   launcher.webContents.on("will-navigate", (e, url) => { if (/^https?:/.test(url)) { e.preventDefault(); shell.openExternal(url); } });

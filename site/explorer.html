@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tf Studio · Lab</title>
+<title>Tf Studio Beta · Lab</title>
 <style>
 :root{
   --bg:#f5f6f8; --panel:#ffffff; --ink:#1b2430; --muted:#5d6b7c; --line:#dfe3e9; --grid:#e9ecf1;
@@ -162,11 +162,13 @@ details.msec>.inner{padding:0 10px 10px}
 .dgroup dl{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;margin:0;font-size:12px;font-variant-numeric:tabular-nums}
 .dgroup dt{color:var(--muted)} .dgroup dd{margin:0;text-align:right}
 @media (min-width:1900px){#tab-dyn.plots,#tab-dist .plots{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.brand{flex-shrink:0}.brand h1{white-space:nowrap}
+.beta-badge{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:1px 7px;border-radius:999px;border:1.5px solid var(--accent);color:var(--accent);margin-left:6px;vertical-align:middle;line-height:1.5;align-self:center}
 </style>
 </head>
 <body>
 <header>
-  <a class="brand" href="index.html" title="Tf Studio home"><h1>Tf Studio</h1><span>Lab</span></a><a href="learn.html" style="font-size:12.5px;margin-left:10px;font-weight:600;text-decoration:none;align-self:center">← Learn</a>
+  <a class="brand" href="index.html" title="Tf Studio home"><h1>Tf Studio</h1><b class="beta-badge" title="Beta: still in development">Beta</b><span>Lab</span></a><a href="learn.html" style="font-size:12.5px;margin-left:10px;font-weight:600;text-decoration:none;align-self:center">← Learn</a>
   <span class="sub">Takeda–Lucas (JCP 160, 174504, 2024) · TNM · RelaxPy (MAP)</span>
   <span class="sp"></span>
   <label class="chk">T axis

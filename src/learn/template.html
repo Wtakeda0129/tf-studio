@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tf Studio · Learn</title>
+<title>Tf Studio Beta · Learn</title>
 <meta name="description" content="How the TNM, MAP (RelaxPy) and Takeda–Lucas models describe glass relaxation: the mathematics of each model, and what separates a mean-field fictive temperature from a distribution of local fictive temperatures.">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
@@ -104,11 +104,13 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 0 30px;colo
 @media (max-width:760px){#hdrsw{display:none}header.top nav{margin-left:auto}}
 @media (max-width:600px){header.top nav{gap:10px;font-size:13px}h2{font-size:22px}.parth{font-size:24px!important}}
 .brand h1{white-space:nowrap}
+.brand{flex-shrink:0}.brand h1{white-space:nowrap}
+.beta-badge{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:1px 7px;border-radius:999px;border:1.5px solid var(--accent);color:var(--accent);margin-left:6px;vertical-align:middle;line-height:1.5;align-self:center}
 </style>
 </head>
 <body>
 <header class="top"><div class="in">
-  <a class="brand" href="index.html" title="Tf Studio home"><h1>Tf Studio</h1><span>Learn</span></a>
+  <a class="brand" href="index.html" title="Tf Studio home"><h1>Tf Studio</h1><b class="beta-badge" title="Beta: still in development">Beta</b><span>Learn</span></a>
   <div class="modelsw" id="hdrsw" title="Model used for the Part I simulations"><button type="button" data-m="TL" class="on" style="--mc:var(--mTL)">TL</button><button type="button" data-m="TNM" style="--mc:var(--mTNM)">TNM</button><button type="button" data-m="MAP" style="--mc:var(--mMAP)">MAP</button></div>
   <nav><a href="#experiments">Experiments</a><a href="#models">Models</a><a href="explorer.html" data-tool="explorer">Lab</a><a href="fitter.html" data-tool="fitter">Fitter</a></nav>
 </div></header>
