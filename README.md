@@ -42,6 +42,8 @@ The TL implementation is a line-by-line port of the reference Python code (`TL_m
 **MAP nonequilibrium viscosity / RelaxPy**
 - J. C. Mauro, D. C. Allan and M. Potuzak, "Nonequilibrium viscosity of glass," *Phys. Rev. B* **80**, 094204 (2009). https://doi.org/10.1103/PhysRevB.80.094204
 - X. Guo, J. C. Mauro, D. C. Allan and M. M. Smedskjaer, *J. Am. Ceram. Soc.* **101**, 1169–1179 (2018). https://doi.org/10.1111/jace.15272
+- J. C. Mauro and Y. Z. Mauro, "On the Prony series representation of stretched exponential relaxation," *Physica A* **506**, 75–87 (2018). https://doi.org/10.1016/j.physa.2018.04.047
+- J. C. Mauro, R. J. Loucks and P. K. Gupta, "Fictive temperature and the glassy state," *J. Am. Ceram. Soc.* **92**, 75–86 (2009). https://doi.org/10.1111/j.1551-2916.2008.02851.x
 - C. J. Wilkinson, Y. Z. Mauro and J. C. Mauro, "RelaxPy: Python code for modeling of glass relaxation behavior," *SoftwareX* **7**, 255–258 (2018). https://doi.org/10.1016/j.softx.2018.07.008
 
 ---
