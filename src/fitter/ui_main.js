@@ -720,7 +720,7 @@ document.addEventListener("click", e => {
     go(k === "default" ? 1 : 2); return; }
   if (t.id === "pNew") { if (confirm("Start a new project? Unsaved changes are lost.")) { S.P = freshParams(); S.model = "TL"; defaultHistory(189.73); S.datasets = []; S.selDs = -1; S.fitRes = null; S.compRes = null; S.fitUndo = null; recompile(); simulateNow(); go(1); } return; }
   if (t.id === "pSave") { saveProject(); return; }
-  if (t.id === "themeBtn") { const r = document.documentElement, cur = r.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); r.dataset.theme = cur === "dark" ? "light" : "dark"; renderRight(); return; }
+  if (t.id === "themeBtn") { const r = document.documentElement, cur = r.dataset.theme || "light"; r.dataset.theme = cur === "dark" ? "light" : "dark"; renderRight(); return; }
   if (t.id === "csvSim") { exportSimCSV(); return; }
   // step 1
   if (t.dataset.add) { const last = S.hist ? S.hist.T[S.hist.T.length - 1] : S.T0, Tg = S.P[S.model].v.Tg;

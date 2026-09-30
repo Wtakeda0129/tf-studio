@@ -182,7 +182,7 @@ $("#f").addEventListener("input",()=>{$("#fr").value=$("#f").value;schedule();})
 $("#runBtn").addEventListener("click",run);
 $("#unit").addEventListener("change",()=>{if(state.runs)renderAll();});
 $("#logt").addEventListener("change",()=>{if(state.runs){renderHist();renderDyn();}});
-$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement,cur=r.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");r.dataset.theme=cur==="dark"?"light":"dark";if(state.runs)renderAll();});
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement,cur=r.dataset.theme||"light";r.dataset.theme=cur==="dark"?"light":"dark";if(state.runs)renderAll();});
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===b));
   ["cal","dyn","dist","hist","par"].forEach(k=>$("#tab-"+k).hidden=(k!==b.dataset.tab)); if(b.dataset.tab!=="dist")stopPlay(); else if(state.runs)renderDist();
