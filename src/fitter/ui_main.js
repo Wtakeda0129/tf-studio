@@ -22,7 +22,7 @@ const S = {
   step: 1, T0: 229.73, segs: [], datasets: [], model: "TL", P: freshParams(),
   opts: { method: "local", maxEval: 1500, perPoint: false, seed: 1 },
   hist: null, histErr: null, sim: null, simErr: null, simMs: 0, evalRes: null, fitRes: null, fitUndo: null,
-  selSeg: 0, selDs: -1, unit: "K", logt: true, live: true, editor: null, job: null, dirtySim: true, mode4: "compute", compRes: null, autoComp: true,
+  selSeg: 0, selDs: -1, tlBeta: false, unit: "K", logt: true, live: true, editor: null, job: null, dirtySim: true, mode4: "compute", compRes: null, autoComp: true,
 };
 function defaultHistory(Tg) {
   S.T0 = +(Tg + 40).toFixed(2);
@@ -125,7 +125,7 @@ function simOverviewHTML(prefix) {
   const h = S.hist; if (!h) return "";
   const hasRamp = S.segs.some(s => s.type === "ramp"), hasHold = S.segs.some(s => s.type === "hold"), hasM = S.segs.some(s => s.type === "mdsc");
   const tl = S.model === "TL" && S.sim && S.sim.raw;
-  const tlCards = tl ? `${card(prefix + "beta")}${card(prefix + "sig")}${S.sim.raw.TfiAll ? `<div class="plotcard wide" id="${prefix}map"><div class="plotbox"></div><div class="cbar" id="${prefix}cbar"></div></div>` : ""}` : "";
+  const tlCards = tl ? `${S.tlBeta ? card(prefix + "beta") : ""}${card(prefix + "sig")}${S.sim.raw.TfiAll ? `<div class="plotcard wide" id="${prefix}map"><div class="plotbox"></div><div class="cbar" id="${prefix}cbar"></div></div>` : ""}` : "";
   return `<div class="plots">${card(prefix + "Tt")}${hasRamp ? card(prefix + "cp") : ""}${hasHold ? card(prefix + "phi") : ""}${hasM ? card(prefix + "md") : ""}${card(prefix + "tau")}${tlCards}</div>`;
 }
 function simOverviewPlot(prefix) {
@@ -151,16 +151,18 @@ function simStatus() {
 /* ---------------- TL only: β_KWW, δT_f and the T_f,i map ---------------- */
 // β_KWW at sampled steps (instantaneous, from the X_i weights at T and ⟨T_f⟩; equilibrium: ⟨T_f⟩ = T), cached on the result
 function tlDerived() {
-  const sim = S.sim, raw = sim.raw, h = S.hist; if (sim._tl) return sim._tl;
-  const n = h.T.length, pick = new Set();
-  S.segs.forEach((s, si) => { const inf = h.info[si]; if (!inf || inf.n < 1) return; const a = Math.max(1, inf.i0), b = inf.i1, m = s.type === "hold" ? 40 : 70;
-    for (let k = 0; k <= m; k++) pick.add(Math.min(b, Math.round(a + (b - a) * k / m))); });
-  pick.add(0);
-  const idx = [...pick].filter(i => i >= 0 && i < n).sort((x, y) => x - y);
-  const beta = new Map(), betaEq = new Map();
-  if (raw.TfiAll) idx.forEach(i => { const sn = TL.snapshot(raw, i); beta.set(i, sn.ne.beta); betaEq.set(i, sn.eq.beta); });
-  const sig = Float64Array.from(raw.sigTf, v => Math.sqrt(Math.max(0, v)));
-  return (sim._tl = { idx, beta, betaEq, sig });
+  const sim = S.sim, raw = sim.raw, h = S.hist;
+  if (!sim._tl) sim._tl = { idx: null, beta: new Map(), betaEq: new Map(), betaDone: false, sig: Float64Array.from(raw.sigTf, v => Math.sqrt(Math.max(0, v))) };
+  const D = sim._tl;
+  if (S.tlBeta && !D.betaDone && raw.TfiAll) {   // only when "instantaneous β_KWW" is ticked: one KWW fit per sampled step
+    const n = h.T.length, pick = new Set([0]);
+    S.segs.forEach((s, si) => { const inf = h.info[si]; if (!inf || inf.n < 1) return; const a = Math.max(1, inf.i0), b = inf.i1, m = s.type === "hold" ? 40 : 70;
+      for (let k = 0; k <= m; k++) pick.add(Math.min(b, Math.round(a + (b - a) * k / m))); });
+    D.idx = [...pick].filter(i => i >= 0 && i < n).sort((x, y) => x - y);
+    D.idx.forEach(i => { const sn = TL.snapshot(raw, i); D.beta.set(i, sn.ne.beta); D.betaEq.set(i, sn.eq.beta); });
+    D.betaDone = true;
+  }
+  return D;
 }
 const VIRIDIS = [[68, 1, 84], [72, 40, 120], [62, 74, 137], [49, 104, 142], [38, 130, 142], [31, 158, 137], [53, 183, 121], [109, 205, 89], [180, 222, 44], [253, 231, 37]];
 function viridis(u) { u = Math.min(1, Math.max(0, u)) * (VIRIDIS.length - 1); const k = Math.min(VIRIDIS.length - 2, Math.floor(u)), f = u - k, a = VIRIDIS[k], b = VIRIDIS[k + 1]; return [0, 1, 2].map(j => Math.round(a[j] + (b[j] - a[j]) * f)); }
@@ -188,17 +190,17 @@ function tlPlots(prefix) {
   const bS = [], sS = [];
   S.segs.forEach((s, si) => { const inf = h.info[si]; if (!inf || inf.n < 1 || s.type === "hold") return; const a = Math.max(1, inf.i0) - 1, b = inf.i1;
     const col = css(DS_COLORS[si % DS_COLORS.length]), cool = inf.Tend < inf.Tstart, dash = cool ? "6 4" : null;
-    const ib = D.idx.filter(i => i >= a && i <= b && D.beta.has(i));
+    const ib = D.betaDone ? D.idx.filter(i => i >= a && i <= b && D.beta.has(i)) : [];
     if (ib.length) bS.push({ name: segLabel(si), x: ib.map(i => tU(h.T[i])), y: ib.map(i => D.beta.get(i)), color: col, w: 2, dash });
     const xs = [], ys = []; for (let i = a; i <= b; i++) { xs.push(tU(h.T[i])); ys.push(D.sig[i]); } sS.push({ name: segLabel(si), x: xs, y: ys, color: col, w: 2, dash });
   });
   // equilibrium references (⟨T_f⟩ = T): β_KWW from the eq weights, δT_f = T·σ(T_v)/⟨T_v⟩
-  const eqI = D.idx.filter(i => D.betaEq.has(i)).sort((a, b) => h.T[a] - h.T[b]);
+  const eqI = D.betaDone ? D.idx.filter(i => D.betaEq.has(i)).sort((a, b) => h.T[a] - h.T[b]) : [];
   if (eqI.length) bS.push({ name: "equilibrium (⟨T_f⟩ = T)", x: eqI.map(i => tU(h.T[i])), y: eqI.map(i => D.betaEq.get(i)), color: css("--eq"), w: 1.4, dash: "3 3" });
   const d = raw.dist; let mu = 0, v2 = 0; for (let k = 0; k < d.N; k++) mu += d.Yi[k] * d.Tvi[k]; for (let k = 0; k < d.N; k++) v2 += d.Yi[k] * (d.Tvi[k] - mu) ** 2; const rel = Math.sqrt(v2) / mu;
   let Tmin = Infinity, Tmax = -Infinity; for (const T of h.T) { if (T < Tmin) Tmin = T; if (T > Tmax) Tmax = T; }
   sS.push({ name: "equilibrium T·σ(T_v)/⟨T_v⟩", x: [tU(Tmin), tU(Tmax)], y: [Tmin * rel, Tmax * rel], color: css("--eq"), w: 1.4, dash: "3 3" });
-  P(prefix + "beta", raw.TfiAll ? { title: "Nonexponentiality β_KWW (TL)", xlabel: `Temperature (${uL()})`, ylabel: "β_KWW", series: bS, xshort: "T", yshort: "β" }
+  if (S.tlBeta) P(prefix + "beta", raw.TfiAll ? { title: "Nonexponentiality β_KWW (TL)", xlabel: `Temperature (${uL()})`, ylabel: "β_KWW", series: bS, xshort: "T", yshort: "β" }
     : { title: "β_KWW (TL): history too long to keep all T_f,i", xlabel: "", ylabel: "", series: [] });
   P(prefix + "sig", { title: "Fictive-temperature fluctuation δT_f (TL)", xlabel: `Temperature (${uL()})`, ylabel: `δT_f (${uL() === "°C" ? "K" : "K"})`, series: sS, xshort: "T", yshort: "δT_f" });
   if (raw.TfiAll) tlMap(prefix);
@@ -505,6 +507,7 @@ function renderLeft4() {
       ${m === "TL" ? `<div class="grid2" style="margin-top:8px"><label class="f">N (T_v,i domains)<input type="number" id="cN" value="${Pm.opt.N}" min="20" max="400" step="10"></label></div>` : ""}
       ${m === "TNM" ? `<div class="grid2" style="margin-top:8px"><label class="f">Kernel<select id="tnmK"><option value="exact" ${Pm.opt.simKernel === "exact" ? "selected" : ""}>exact KWW summation</option><option value="prony" ${Pm.opt.simKernel === "prony" ? "selected" : ""}>Prony series</option></select></label></div>` : ""}
       ${m === "RP" ? `<div style="margin-top:8px"><label class="chk"><input type="checkbox" id="rpA" ${Pm.opt.Aauto ? "checked" : ""}> A from continuity at T_g</label><br><label class="chk"><input type="checkbox" id="rpP" ${Pm.opt.pauto ? "checked" : ""}> p = 0.3082·m</label></div>` : ""}
+      ${S.model === "TL" ? `<label class="chk" style="margin-top:8px" title="One KWW fit of the X_i-weighted relaxation per sampled step (adds about a second)"><input type="checkbox" id="tlBeta" ${S.tlBeta ? "checked" : ""}> also compute the instantaneous β_KWW(T) (slower)</label>` : ""}
       <div class="row" style="margin-top:10px"><button class="btn primary" id="cGo">Compute</button><span class="spacer"></span><button class="btn small" id="csvSim" ${S.sim ? "" : "disabled"}>Simulation (.csv)</button></div>
       <p class="note" id="cStat">${S.compRes ? esc(S.compRes.msg) : ""}</p>
       <p class="note">These are the same values as in step 3 (and are updated by a fit). ${activeDatasets().length ? "Active datasets are compared with the result below." : "No active datasets — the result is the simulation only."}</p>
@@ -524,6 +527,7 @@ function renderLeft4() {
       <label class="f full">Weighting<select id="fW"><option value="ds" ${!S.opts.perPoint ? "selected" : ""}>each dataset counts equally (residuals / σ_y / √N)</option><option value="pt" ${S.opts.perPoint ? "selected" : ""}>each point counts equally (residuals / σ_y)</option></select></label>
     </div>
     <p class="note">Free: ${fr.length ? fr.map(q => `${E.MODELDEFS[S.model].params.find(p => p.k === q.k).label} ∈ [${nf(pShow(q.k, q.lo))}, ${nf(pShow(q.k, q.hi))}]${ABS_T.has(q.k) ? " " + uL() : ""}`).join(", ") : "none"}. Linear scale/baseline coefficients of each dataset are solved exactly at every step.</p>
+    ${S.model === "TL" ? `<label class="chk" style="margin-top:8px" title="One KWW fit of the X_i-weighted relaxation per sampled step (adds about a second)"><input type="checkbox" id="tlBeta" ${S.tlBeta ? "checked" : ""}> also compute the instantaneous β_KWW(T) (slower)</label>` : ""}
     <div class="row" style="margin-top:8px"><button class="btn primary" id="fGo" ${canFit && !job ? "" : "disabled"}>Run fit</button><button class="btn" id="fStop" ${job ? "" : "disabled"}>Stop</button><button class="btn" id="fUndo" ${S.fitUndo && !job ? "" : "disabled"}>Undo fit</button></div>
     ${why ? `<p class="note">${why}</p>` : ""}
     <div class="progress" ${job ? "" : "hidden"}><div id="fBar"></div></div><p class="note" id="fStat">${job ? "" : (R ? esc(R.msg) : "")}</p>
@@ -774,6 +778,7 @@ document.addEventListener("change", e => {
   if (t.id === "tpl" && t.value) { const Tg = S.P[S.model].v.Tg; S.segs = TEMPLATES[t.value].f(Tg).map(s => { const o = { ...s }; if (o.T !== undefined) o.T = +o.T.toFixed(2); return o; }); S.T0 = +(t.value === "tjump" || t.value === "qiso" ? Tg + 5 : Tg + 40).toFixed(2); if (t.value === "qiso") S.T0 = +(Tg + 5).toFixed(2); S.selSeg = 0; S.datasets.forEach(d => { if (d.seg >= S.segs.length) d.seg = -1; }); recompile(); S.fitRes = null; S.compRes = null; simulateNow(); render(); return; }
   if (t.id === "logt") { S.logt = t.checked; renderRight(); return; }
   if (t.id === "unit") { S.unit = t.value; render(); return; }
+  if (t.id === "tlBeta") { S.tlBeta = t.checked; if (S.step === 4 && S.sim) { const w = $("#right"), y = w.scrollTop; renderRight4(); w.scrollTop = y; } return; }
   if (t.id === "tscale") { S.logt = t.value === "log"; renderRight(); return; }
   if (t.id === "pOpen") { const f = t.files[0]; if (!f) return; f.text().then(txt => { try { openProject(JSON.parse(txt)); go(1); } catch (err) { alert("Could not open project: " + err.message); } }); t.value = ""; return; }
   // datasets
