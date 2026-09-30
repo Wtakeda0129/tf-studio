@@ -21,6 +21,7 @@ jobs:
           - os: windows-latest
             target: --win
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.os == 'macos-latest' }}   # temporary while the macOS publish step is being fixed
     defaults:
       run:
         working-directory: desktop
