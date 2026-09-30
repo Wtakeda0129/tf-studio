@@ -37,5 +37,5 @@ module.exports = {
     artifactName: "Tf-Studio-Setup-${version}.exe",
   },
   // Where installed copies look for updates. GitHub Releases by default; see DESKTOP_README.md for alternatives.
-  publish: [{ provider: "github", owner: PUBLISH_OWNER, repo: PUBLISH_REPO }],
+  publish: [{ provider: "github", owner: PUBLISH_OWNER, repo: PUBLISH_REPO, releaseType: "release" }],
 };

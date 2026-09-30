@@ -51,10 +51,13 @@ These builds have only an ad-hoc signature, not a Developer ID. So on first laun
 
 ### Publishing an update
 
+The release workflow runs whenever `desktop/package.json` changes on `main`. You can also run it by hand: **Actions → Release desktop app → Run workflow**. It creates GitHub Release `v<version>`.
+
+
 ```bash
 cd desktop
-npm version patch                 # 1.0.0 → 1.0.1 (updates package.json and creates tag v1.0.1)
-git push && git push --tags       # the workflow builds, signs, notarizes and publishes the release
+npm version patch --no-git-tag-version   # 1.0.0 → 1.0.1 in package.json
+git commit -am "Release 1.0.1" && git push   # a version change on main triggers the release workflow
 ```
 
 The workflow uploads the DMGs, the update ZIPs and `latest-mac.yml` to a GitHub Release. Every installed copy then does the following on its own:

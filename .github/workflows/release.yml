@@ -1,9 +1,11 @@
-# Builds the desktop app for macOS and Windows and publishes it to GitHub Releases when a tag like v1.0.1 is pushed.
+# Builds the desktop app for macOS and Windows and publishes GitHub Release v<version> whenever the version in
+# desktop/package.json changes on main (or when run by hand from the Actions tab).
 # Installed copies update themselves from these releases (macOS needs a Developer ID-signed build; see desktop/README.md).
 name: Release desktop app
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
+    paths: ["desktop/package.json"]
   workflow_dispatch:
 permissions:
   contents: write
