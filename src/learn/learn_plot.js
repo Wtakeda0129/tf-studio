@@ -35,8 +35,8 @@ const PLOT = (function () {
     (cfg.dots || []).forEach(p => { g += `<circle cx="${sx(p.x).toFixed(1)}" cy="${sy(p.y).toFixed(1)}" r="${p.r || 3}" fill="${p.color}" ${p.op != null ? `fill-opacity="${p.op}"` : ""}/>`; });
     g += `</g>`;
     (cfg.notes || []).forEach(n => { g += `<text class="al" x="${n.x}" y="${n.y}" text-anchor="${n.anchor || "start"}">${n.text}</text>`; });
-    g += `<text class="al" x="${(m.l + W - m.r) / 2}" y="${H - 4}" text-anchor="middle">${cfg.xlabel || ""}</text>`;
-    g += `<text class="al" transform="translate(11 ${(m.t + H - m.b) / 2}) rotate(-90)" text-anchor="middle">${cfg.ylabel || ""}</text></svg>`;
+    g += `<text class="al" x="${(m.l + W - m.r) / 2}" y="${H - 4}" text-anchor="middle">${window.GLabel ? GLabel.svg(cfg.xlabel || "") : (cfg.xlabel || "")}</text>`;
+    g += `<text class="al" transform="translate(11 ${(m.t + H - m.b) / 2}) rotate(-90)" text-anchor="middle">${window.GLabel ? GLabel.svg(cfg.ylabel || "") : (cfg.ylabel || "")}</text></svg>`;
     return g;
   }
 

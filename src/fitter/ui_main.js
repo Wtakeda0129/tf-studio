@@ -369,7 +369,8 @@ function editorHTML() {
       <label class="f full">Data type<select id="edKind">${Object.entries(E.KINDS).map(([k, v]) => `<option value="${k}" ${k === ed.kind ? "selected" : ""}>${esc(v.label)}</option>`).join("")}</select></label>
       <label class="f full">Linked history segment<select id="edSeg">${segOpts}</select></label>
     </div>
-    ${isNew ? `<div class="tabs2"><button data-src="paste" aria-selected="${ed.src === "paste"}">Paste / file</button><button data-src="synth" aria-selected="${ed.src === "synth"}">Synthesize from model</button></div>` : ""}
+    ${isNew ? `<div class="tabs2"><button data-src="paste" aria-selected="${ed.src === "paste"}">Paste / file</button><button data-src="synth" aria-selected="${ed.src === "synth"}">Synthesize from model</button><button data-src="project" aria-selected="${ed.src === "project"}">From project</button></div>` : ""}
+    ${isNew && ed.src === "project" ? projectSourceHTML(ed) : ""}
     ${isNew && ed.src === "paste" ? `
       <label class="f">Paste two or more columns (header optional), or load a file<textarea id="edText" rows="5" placeholder="T, Cp&#10;300, 0.01&#10;...">${esc(ed.text)}</textarea></label>
       <div class="row" style="margin-top:5px"><label class="btn small" style="cursor:pointer">Load file…<input type="file" id="edFile" accept=".csv,.txt,.dat,.tsv" hidden></label><span class="note" style="margin:0">${ed.parsed ? `${ed.parsed.n} rows × ${ed.parsed.cols.length} columns detected` : ""}</span></div>
@@ -437,7 +438,14 @@ function commitEditor() {
     const ds = S.datasets[ed.idx]; Object.assign(ds, { kind: ed.kind, seg: +ed.seg, xmin, xmax, weight: +ed.weight || 1, scale: !!ed.scale, name: ed.name || ds.name }); dsFilter(ds);
   } else {
     let xAll, yAll;
-    if (ed.src === "paste") {
+    let source = null;
+    if (ed.src === "project") {
+      const it = projItems().find(x => x.id === ed.item); if (!it) { msg.textContent = "Choose a normalized run from the project."; return; }
+      const d = it.data; xAll = d.T.slice(); yAll = d.cpN.slice();
+      source = { project: S.proj && S.proj.name, item: it.id, name: it.name, kind: d.kind, q: d.q, ta: d.ta, Ta: d.Ta, TfPrime: d.TfPrime, dCp: d.dCp, cpUnit: d.cpUnit, baseline: d.baseline };
+      if (ed.matchRate) { if (!S.datasets.length) ed.seg = buildHistoryFor(d); else matchHistory(+ed.seg, d); }
+      if (!ed.name) ed.name = it.name;
+    } else if (ed.src === "paste") {
       if (!ed.parsed || ed.parsed.n < 2) { msg.textContent = "Paste or load at least two numeric rows."; return; }
       const cx = ed.parsed.cols[ed.xcol], cy = ed.parsed.cols[ed.ycol];
       const conv = K.axis === "T" ? (ed.xunit === "C" ? v => v + 273.15 : v => v) : v => v * TIME_UNITS[ed.xunit];
@@ -456,6 +464,7 @@ function commitEditor() {
         return y + (+ed.syn.noise || 0) * gauss(); });
     }
     const ds = { name: ed.name || `${E.KINDS[ed.kind].label.split(" —")[0].split(" (")[0]} · seg ${+ed.seg + 1}${ed.src === "synth" ? " (synthetic)" : ""}`, kind: ed.kind, seg: +ed.seg, xAll, yAll, xmin, xmax, weight: +ed.weight || 1, scale: !!ed.scale, enabled: true };
+    if (source) ds.source = source;
     dsFilter(ds); if (ds.x.length < 2) { msg.textContent = "Fewer than two usable points (check columns, units and limits)."; return; }
     S.datasets.push(ds); S.selDs = S.datasets.length - 1;
   }
@@ -546,7 +555,7 @@ function resultsHTML(R) {
     const atB = fr && (Math.abs(v - fr.lo) < 1e-3 * (fr.hi - fr.lo) || Math.abs(v - fr.hi) < 1e-3 * (fr.hi - fr.lo));
     return `<tr><td class="nm">${q.label}${ABS_T.has(q.k) ? ` <span class="note">(${uL()})</span>` : ""}</td><td class="num">${nf(pShow(q.k, v), 6)}</td><td class="num">${fr ? (isFinite(se) ? "± " + nf(se, 2) : (q.discrete ? "grid" : "–")) : "fixed"}</td><td class="num">${fr ? `[${nf(pShow(q.k, fr.lo))}, ${nf(pShow(q.k, fr.hi))}]` : ""}</td><td>${atB ? '<span class="flag">at bound</span>' : ""}${fr && isFinite(se) && Math.abs(se) > Math.abs(v) && v !== 0 ? '<span class="flag">poorly determined</span>' : ""}</td></tr>`; }).join("");
   const dsRows = R.perDs.map(d => `<tr><td>${esc(d.name)}</td><td class="num">${d.nValid}/${d.n}</td><td class="num">${d.R2.toFixed(4)}</td><td class="num">${nf(d.rmse, 3)}</td><td style="font-size:11px">${d.lin ? d.lin.names.map((n, k) => d.lin.b[k] ? `${n}=${nf(d.lin.b[k], 3)}` : "").filter(Boolean).join(", ") : ""}</td></tr>`).join("");
-  const exportRow = `<div class="row" style="margin-top:8px"><button class="btn small" id="expRep">Export report (.json)</button>${R.perDs.length ? `<button class="btn small" id="expCurves">Model vs data (.csv)</button>` : ""}<button class="btn small" id="csvSim">Simulation (.csv)</button></div>`;
+  const exportRow = `<div class="row" style="margin-top:8px">${window.GP ? `<button class="btn small primary" id="saveFit" title="Saves the model against the data, all parameters, quality, the baselines of the data and this session">Save to project</button>` : ""}<button class="btn small" id="expRep">Export report (.json)</button>${R.perDs.length ? `<button class="btn small" id="expCurves">Model vs data (.csv)</button>` : ""}<button class="btn small" id="csvSim">Simulation (.csv)</button></div>`;
   if (!isFit && !R.perDs.length) return `<div class="card"><h2>Result</h2><div class="body"><p class="note" style="margin:0">Simulation computed. Add data in step 2 to see R², RMSE and residuals.</p>${exportRow}</div></div>`;
   const qualityCard = `<div class="card"><h2>${isFit ? "Quality of fit" : "Agreement with data"}</h2><div class="body" style="overflow-x:auto">
     <table class="metrics"><tr><th>dataset</th><th>N</th><th>R²</th><th>RMSE</th><th>linear coefficients</th></tr>${dsRows}</table>
@@ -653,11 +662,11 @@ function exportReport() {
     datasets: R.perDs.map(d => ({ name: d.name, n: d.n, n_valid: d.nValid, R2: d.R2, rmse: d.rmse, linear: d.lin ? Object.fromEntries(d.lin.names.map((n, k) => [n, d.lin.b[k]])) : null })), history: { T0: S.T0, segments: S.segs }, fit_options: S.opts };
   dl(new Blob([JSON.stringify(rep, null, 2)], { type: "application/json" }), `${R.kind === "fit" ? "fit" : "compute"}_report_${R.model}.json`);
 }
-function saveProject() {
-  const proj = { app: "Relaxation Fitter", version: 1, T0: S.T0, segs: S.segs, model: S.model, P: S.P, opts: S.opts,
-    datasets: S.datasets.map(d => ({ name: d.name, kind: d.kind, seg: d.seg, xAll: d.xAll, yAll: d.yAll, xmin: isFinite(d.xmin) ? d.xmin : null, xmax: isFinite(d.xmax) ? d.xmax : null, weight: d.weight, scale: d.scale, enabled: d.enabled })) };
-  dl(new Blob([JSON.stringify(proj)], { type: "application/json" }), "relaxation_project.json");
+function sessionObj() {
+  return { app: "Relaxation Fitter", version: 1, T0: S.T0, segs: S.segs, model: S.model, P: S.P, opts: S.opts,
+    datasets: S.datasets.map(d => ({ name: d.name, kind: d.kind, seg: d.seg, xAll: d.xAll, yAll: d.yAll, xmin: isFinite(d.xmin) ? d.xmin : null, xmax: isFinite(d.xmax) ? d.xmax : null, weight: d.weight, scale: d.scale, enabled: d.enabled, source: d.source || null })) };
 }
+function saveProject() { dl(new Blob([JSON.stringify(sessionObj())], { type: "application/json" }), "fitter_session.json"); }
 function openProject(obj) {
   if (!obj || !Array.isArray(obj.segs)) throw new Error("not a Relaxation Fitter project");
   S.T0 = obj.T0; S.segs = obj.segs; S.model = obj.model || "TL"; const fresh = freshParams();
@@ -665,6 +674,76 @@ function openProject(obj) {
   S.P = fresh; S.opts = { ...S.opts, ...(obj.opts || {}) };
   S.datasets = (obj.datasets || []).map(d => { const ds = { ...d, xmin: d.xmin === null ? NaN : d.xmin, xmax: d.xmax === null ? NaN : d.xmax }; dsFilter(ds); return ds; });
   S.selDs = S.datasets.length ? 0 : -1; S.selSeg = 0; S.fitRes = null; S.compRes = null; S.fitUndo = null; S.editor = null; recompile(); simulateNow();
+}
+
+
+/* ================= projects (shared/project.js) ================= */
+S.proj = null;
+const projItems = () => (S.proj && S.proj.items ? S.proj.items.filter(x => x.type === "cp-normalized") : []);
+document.addEventListener("garasu-project", e => { S.proj = e.detail || null; if (S.editor && S.editor.src === "project" && S.step === 2) renderLeft2(); });
+function projectSourceHTML(ed) {
+  if (!window.GP) return "";
+  if (!S.proj) return `<p class="note">No project is open. Open or create one with the <b>Project</b> button in the header, then save normalized runs to it from Data Analysis.</p>`;
+  const its = projItems();
+  if (!its.length) return `<p class="note">“${esc(S.proj.name)}” has no normalized heat-capacity data yet. In <a href="analysis.html" data-tool="analysis">Data Analysis</a>, normalize your scans and click <b>Save to project</b>.</p>`;
+  const it = its.find(x => x.id === ed.item) || null, d = it && it.data;
+  return `<label class="f">Normalized run from “${esc(S.proj.name)}”<select id="edItem"><option value="">choose…</option>${its.map(x => `<option value="${x.id}" ${x.id === ed.item ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></label>
+    ${d ? `<p class="note">${window.GLabel ? GLabel.html(esc(it.summary || "")) : esc(it.summary || "")}<br>Glass line HF<sub>g</sub> = ${nf(d.baseline.glass.a, 5)} ${d.baseline.glass.b < 0 ? "−" : "+"} ${nf(Math.abs(d.baseline.glass.b), 4)}·T over ${nf(d.baseline.glass.range[0], 5)}–${nf(d.baseline.glass.range[1], 5)} K; liquid line HF<sub>l</sub> = ${nf(d.baseline.liquid.a, 5)} ${d.baseline.liquid.b < 0 ? "−" : "+"} ${nf(Math.abs(d.baseline.liquid.b), 4)}·T over ${nf(d.baseline.liquid.range[0], 5)}–${nf(d.baseline.liquid.range[1], 5)} K. These travel with the dataset into the saved fit.</p>
+      <label class="chk"><input type="checkbox" id="edMatch" ${ed.matchRate ? "checked" : ""}> ${S.datasets.length ? `match the linked ramp to this scan (${nf(d.q, 3)} K/min over ${nf(Math.min(...d.T), 4)}–${nf(Math.max(...d.T), 4)} K)` : `build the thermal history of this scan: ${d.kind === "cool" ? "cool" : `${d.ta > 0 && d.Ta != null ? `cool to ${nf(d.Ta, 5)} K, hold ${nf(d.ta, 3)} s, ` : ""}cool to ${nf(Math.min(...d.T), 4)} K, heat to ${nf(Math.max(...d.T), 4)} K`} at ${nf(d.q, 3)} K/min (replaces the current history)`}</label>` : ""}`;
+}
+// the whole history of a measured scan: (cool to T_a, hold t_a,) cool to the scan's start, heat over the scan; returns the scan's segment
+function buildHistoryFor(d) {
+  const lo = Math.floor(Math.min(...d.T)), hi = Math.ceil(Math.max(...d.T)), q = d.q > 0 ? d.q : 10;
+  if (d.kind === "cool") { S.T0 = hi; S.segs = [{ type: "ramp", T: lo, rate: q, dT: 0.5 }]; recompile(); return 0; }
+  const segs = [];
+  if (d.ta > 0 && isFinite(d.Ta)) segs.push({ type: "ramp", T: +(+d.Ta).toFixed(2), rate: q, dT: 0.5 }, { type: "hold", dur: d.ta, n: 100, t1: 0.1 });
+  segs.push({ type: "ramp", T: lo, rate: q, dT: 0.5 }, { type: "ramp", T: hi, rate: q, dT: 0.5 });
+  S.T0 = hi; S.segs = segs; recompile(); return segs.length - 1;
+}
+// make the linked ramp (and the cooling ramp before a heating scan) cover the scan's temperature range at its rate
+function matchHistory(i, d) {
+  const sg = S.segs[i]; if (!sg || sg.type !== "ramp" || !(d.q > 0)) return;
+  const lo = Math.floor(Math.min(...d.T)), hi = Math.ceil(Math.max(...d.T));
+  sg.rate = d.q;
+  if (d.kind === "cool") { sg.T = lo; if (S.T0 < hi) S.T0 = hi; }
+  else { sg.T = hi; const pv = S.segs[i - 1]; if (pv && pv.type === "ramp") { pv.T = lo; pv.rate = d.q; } else if (i === 0) S.T0 = lo; if (S.T0 < hi) S.T0 = hi; }
+  recompile();
+}
+async function saveFitToProject() {
+  const R = curRes(); if (!R || !window.GP) return;
+  let p = await GP.current();
+  if (!p) { const n = await GP.ask("Save to a new project", "Project name", "", "Create and save"); if (!n) return; p = await GP.create(n); }
+  const act = activeDatasets(), def = E.MODELDEFS[R.model];
+  const dsNames = R.perDs.map(d => d.name).join(", ");
+  const name = await GP.ask("Save to project", "Name of this result", `${MODEL_NAMES[R.model]} ${R.kind === "fit" ? "fit" : "model"}${dsNames ? " · " + dsNames : ""}`, "Save");
+  if (!name) return;
+  const se = k => R.unc && R.unc.names && R.unc.se ? (R.unc.se[R.unc.names.indexOf(k)] ?? null) : null;
+  const parameters = Object.fromEntries(def.params.map(q => { const fr = R.free.find(f => f.k === q.k); return [q.k, { label: q.label, unit: q.unit || "", value: R.best[q.k], free: !!fr, se: fr ? se(q.k) : null, ...(fr && q.discrete ? { grid_step: q.discrete } : {}), lo: fr ? fr.lo : null, hi: fr ? fr.hi : null }]; }));
+  const datasets = act.map((d, j) => { const ev = evalFor(d) || (R.perDs[j] && { pr: R.perDs[j].pr, R2: R.perDs[j].R2, rmse: R.perDs[j].rmse }); const pr = ev && ev.pr;
+    return { name: d.name, kind: d.kind, kindLabel: E.KINDS[d.kind].label, segment: d.seg + 1, segmentLabel: segLabel(d.seg), x: d.x, y: d.y,
+      yModel: pr ? Array.from(pr.yhat, v => isFinite(v) ? v : null) : [], curve: pr && pr.curve ? { x: pr.curve.x, y: pr.curve.y } : null,
+      linear: pr && pr.lin ? Object.fromEntries(pr.lin.names.map((n, k) => [n, pr.lin.b[k]])) : null, R2: ev ? ev.R2 : null, rmse: ev ? ev.rmse : null,
+      source: d.source || null }; });
+  await GP.addItem({ type: "fit-result", key: name, name,
+    summary: `${MODEL_NAMES[R.model]} · ${R.kind === "fit" ? "fitted" : "chosen parameters"} · R² = ${isFinite(R.R2tot) ? R.R2tot.toFixed(4) : "–"} · ${act.length} dataset${act.length === 1 ? "" : "s"}`,
+    data: { model: R.model, modelName: MODEL_NAMES[R.model], mode: R.kind, parameters,
+      correlation: R.unc && R.unc.corr ? { names: R.unc.names, matrix: R.unc.corr } : null,
+      quality: { R2_weighted: R.R2tot, chi2_reduced: R.chi2red, AIC: R.aic, BIC: R.bic, model_runs: R.nev, fitted_parameters: R.k },
+      history: { T0: S.T0, segments: S.segs.map((s, i) => ({ ...s, label: segLabel(i) })) }, datasets, fit_options: S.opts, session: sessionObj() } });
+  GP.toast(`Saved “${name}” to “${p.name}”`);
+}
+function openFitResult(it) {
+  try { openProject(it.data.session); } catch (e) { GP.toast("Could not open: " + e.message); return; }
+  go(4); GP.toast(`Opened “${it.name}”. Click Compute or Run fit to recompute.`);
+}
+function useProjectRun(it) {
+  if (!S.hist) recompile();
+  S.editor = newEditor("cp_norm"); S.editor.src = "project"; S.editor.item = it.id; S.editor.matchRate = true; S.editor.name = it.name;
+  go(2);
+}
+if (window.GP) {
+  GP.register("fit-result", [{ label: "Open here", run: openFitResult }]);
+  GP.register("cp-normalized", [{ label: "Add as dataset", run: useProjectRun }]);
 }
 
 /* ================= examples ================= */
@@ -725,6 +804,7 @@ document.addEventListener("click", e => {
     go(k === "default" ? 1 : 2); return; }
   if (t.id === "pNew") { if (confirm("Start a new project? Unsaved changes are lost.")) { S.P = freshParams(); S.model = "TL"; defaultHistory(308.13); S.datasets = []; S.selDs = -1; S.fitRes = null; S.compRes = null; S.fitUndo = null; recompile(); simulateNow(); go(1); } return; }
   if (t.id === "pSave") { saveProject(); return; }
+  if (t.id === "saveFit") { saveFitToProject(); return; }
   if (t.id === "themeBtn") { const r = document.documentElement, cur = r.dataset.theme || "light"; r.dataset.theme = cur === "dark" ? "light" : "dark"; renderRight(); return; }
   if (t.id === "csvSim") { exportSimCSV(); return; }
   // step 1
@@ -738,7 +818,7 @@ document.addEventListener("click", e => {
   // step 2
   if (t.id === "dsAdd") { S.editor = newEditor(); renderLeft2(); return; }
   if (t.id === "edClose") { S.editor = null; renderLeft2(); return; }
-  if (t.dataset.src) { S.editor.src = t.dataset.src; renderLeft2(); return; }
+  if (t.dataset.src) { S.editor.src = t.dataset.src; if (t.dataset.src === "project") { S.editor.kind = "cp_norm"; if (S.editor.matchRate === undefined) S.editor.matchRate = true; } renderLeft2(); return; }
   if (t.id === "edOk") { commitEditor(); return; }
   if (t.dataset.edit !== undefined) { e.stopPropagation(); const i = +t.dataset.edit, d = S.datasets[i]; S.editor = { ...newEditor(d.kind), mode: "edit", idx: i, seg: d.seg, xmin: isFinite(d.xmin) ? (E.KINDS[d.kind].axis === "T" ? tIn(d.xmin) : d.xmin) : "", xmax: isFinite(d.xmax) ? (E.KINDS[d.kind].axis === "T" ? tIn(d.xmax) : d.xmax) : "", weight: d.weight, scale: d.scale, name: d.name }; S.selDs = i; render(); return; }
   if (t.dataset.deld !== undefined) { e.stopPropagation(); S.datasets.splice(+t.dataset.deld, 1); S.selDs = Math.min(S.selDs, S.datasets.length - 1); S.fitRes = null; S.compRes = null; S.editor = null; simulateNow(); render(); return; }
@@ -784,6 +864,8 @@ document.addEventListener("change", e => {
   if (t.id === "unit") { S.unit = t.value; render(); return; }
   if (t.id === "tlBeta") { S.tlBeta = t.checked; if (S.step === 4 && S.sim) { const w = $("#right"), y = w.scrollTop; renderRight4(); w.scrollTop = y; } return; }
   if (t.id === "tscale") { S.tmode = t.value; renderRight(); return; }
+  if (t.id === "edItem" && S.editor) { S.editor.item = t.value; const it = projItems().find(x => x.id === t.value); if (it) { S.editor.name = it.name; S.editor.kind = "cp_norm"; } renderLeft2(); return; }
+  if (t.id === "edMatch" && S.editor) { S.editor.matchRate = t.checked; return; }
   if (t.id === "pOpen") { const f = t.files[0]; if (!f) return; f.text().then(txt => { try { openProject(JSON.parse(txt)); go(1); } catch (err) { alert("Could not open project: " + err.message); } }); t.value = ""; return; }
   // datasets
   if (t.dataset.en !== undefined) { S.datasets[+t.dataset.en].enabled = t.checked; S.fitRes = null; S.compRes = null; simulateNow(); renderStepper(); renderRight2(); return; }
@@ -810,4 +892,5 @@ document.addEventListener("change", e => {
 
 /* ================= init ================= */
 buildExampleMenu(); recompile(); simulateNow(); render();
+if (window.GP) GP.ready();
 })();

@@ -65,3 +65,8 @@ th { background: var(--soft); font-weight: 700; }
 .cover img.icon { width: 64pt; height: 64pt; }
 .pill { display: inline-block; font-size: 8pt; font-weight: 700; padding: 0 5pt; border-radius: 99pt; background: var(--soft); border: 0.6pt solid var(--line); }
 .kbd { font-family: inherit; font-size: 9pt; border: 0.8pt solid #aab3c0; border-bottom-width: 1.6pt; border-radius: 3pt; padding: 0 3pt; background: #fff; }
+/* text beside a tall screenshot */
+.side { display: grid; grid-template-columns: 1fr 38%; gap: 16pt; align-items: start; break-inside: avoid; }
+.side figure { margin: 2pt 0 0; }
+.side figure img { max-width: 100%; }
+.side > div > :first-child { margin-top: 0; }

@@ -137,10 +137,10 @@ details summary{cursor:pointer;color:var(--muted);font-size:12px}
   </nav>
   <span class="sp"></span>
   <div class="menu" id="exMenu"><button class="btn small" data-menu>Examples ▾</button><div id="exList"></div></div>
-  <div class="menu" id="projMenu"><button class="btn small" data-menu>Project ▾</button><div>
-    <button class="item" id="pNew">New project</button>
-    <button class="item" id="pSave">Save project (.json)</button>
-    <label class="item" style="display:block;padding:6px 8px;cursor:pointer;border-radius:6px">Open project…<input type="file" id="pOpen" accept=".json" hidden></label>
+  <div class="menu" id="projMenu"><button class="btn small" data-menu title="The Fitter's own state: history, data, model and settings">Session ▾</button><div>
+    <button class="item" id="pNew">New session</button>
+    <button class="item" id="pSave">Save session file (.json)</button>
+    <label class="item" style="display:block;padding:6px 8px;cursor:pointer;border-radius:6px">Open session file…<input type="file" id="pOpen" accept=".json" hidden></label>
   </div></div>
   <label class="chk" title="Unit for every temperature: plots, thermal history, T_g and the other parameters">Temperature <select id="unit"><option value="K">K</option><option value="C">°C</option></select></label>
   <label class="chk" title="Auto: real (linear) time whenever the temperature changes with time (ramps, MDSC); log time for isothermal-only histories and for relaxation during holds">Time axis <select id="tscale"><option value="auto">auto</option><option value="lin">linear</option><option value="log">log</option></select></label>

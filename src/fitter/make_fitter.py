@@ -16,7 +16,7 @@ for key, val in {"CORE": nomod(rd("tl_core.js")), "MODELS": nomod(rd("models_ext
     assert f"/*%%{key}%%*/" in html, key
     html = html.replace(f"/*%%{key}%%*/", val)
 import sys as _sys; _sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "shared")); from theme import apply
-html = apply(html, "fitter")
+html = apply(html, "fitter", projects=True)
 out = pathlib.Path(os.environ.get("OUT", here.parent.parent / "site" / "fitter.html"))
 out.write_text(html)
 print("wrote", out, f"({len(html)/1024:.0f} kB)")

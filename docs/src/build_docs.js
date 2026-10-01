@@ -7,7 +7,7 @@ const footer = title => `<div style="width:100%;font-size:8px;color:#8a96a6;padd
 (async () => {
   const b = await chromium.launch();
   fs.mkdirSync(site, { recursive: true });
-  for (const [src, dst, title, first] of [["user_guide.html", "GARASU_User_Guide.pdf", "GARASU (Beta) · User Guide · v1.4", false], ["quick_start.html", "GARASU_Quick_Start.pdf", "GARASU (Beta) · Quick Start · v1.4", true]]) {
+  for (const [src, dst, title, first] of [["user_guide.html", "GARASU_User_Guide.pdf", "GARASU (Beta) · User Guide · v1.5", false], ["quick_start.html", "GARASU_Quick_Start.pdf", "GARASU (Beta) · Quick Start · v1.5", true]]) {
     const p = await b.newPage();
     await p.goto("file://" + path.join(here, src), { waitUntil: "networkidle" });
     await p.pdf({ path: path.join(out, dst), format: "Letter", printBackground: true, preferCSSPageSize: true, displayHeaderFooter: true, headerTemplate: "<span></span>", footerTemplate: footer(title) });

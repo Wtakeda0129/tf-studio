@@ -12,6 +12,6 @@ for key, val in {"STYLE": style, "PLOT": rd(fit / "ui_plot.js"), "CORE": rd(here
     assert f"/*%%{key}%%*/" in html, key
     html = html.replace(f"/*%%{key}%%*/", val)
 import sys as _sys; _sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "shared")); from theme import apply
-html = apply(html, "analysis")
+html = apply(html, "analysis", projects=True)
 out = pathlib.Path(os.environ.get("OUT", here.parent.parent / "site" / "analysis.html"))
 out.write_text(html); print("wrote", out, f"({len(html)/1024:.0f} kB)")

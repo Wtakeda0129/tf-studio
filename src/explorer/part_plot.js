@@ -1,3 +1,4 @@
+function plbl(s,svg){return window.GLabel?(svg?GLabel.svg(s):GLabel.html(s)):s;}
 // ---------- plotting ----------
 const NS="http://www.w3.org/2000/svg";
 function niceTicks(lo,hi,target){
@@ -48,13 +49,13 @@ function plot(el,cfg){
     }
     g+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.w||2}" ${s.dash?`stroke-dasharray="${s.dash}"`:""} stroke-linejoin="round" stroke-linecap="round" ${s.op?`opacity="${s.op}"`:""}/>`;
   });
-  g+=`</g><text class="axlabel" x="${(m.l+W-m.r)/2}" y="${H-6}" text-anchor="middle">${cfg.xlabel}</text>`;
-  g+=`<text class="axlabel" transform="translate(13 ${(m.t+H-m.b)/2}) rotate(-90)" text-anchor="middle">${cfg.ylabel}</text>`;
+  g+=`</g><text class="axlabel" x="${(m.l+W-m.r)/2}" y="${H-6}" text-anchor="middle">${plbl(cfg.xlabel,1)}</text>`;
+  g+=`<text class="axlabel" transform="translate(13 ${(m.t+H-m.b)/2}) rotate(-90)" text-anchor="middle">${plbl(cfg.ylabel,1)}</text>`;
   g+=`<g class="hov" style="display:none"><line class="vl" y1="${m.t}" y2="${H-m.b}" stroke="var(--muted)" stroke-dasharray="3 3"/><circle r="4" fill="none" stroke="var(--ink)" stroke-width="1.6"/></g>`;
   g+=`<rect class="cap" x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}" fill="transparent"/></svg>`;
-  const legend=S.filter(s=>s.name).map(s=>`<span style="color:${s.color}"><i class="${s.pts?"dot":s.dash?"dash":""}" style="border-color:${s.color}"></i><span style="color:var(--muted)">${s.name}</span></span>`).join("");
+  const legend=S.filter(s=>s.name).map(s=>`<span style="color:${s.color}"><i class="${s.pts?"dot":s.dash?"dash":""}" style="border-color:${s.color}"></i><span style="color:var(--muted)">${plbl(s.name)}</span></span>`).join("");
   el.classList.remove("isempty");
-  el.innerHTML=`<h3><span>${cfg.title}</span><span class="tools"><button class="btn small" data-svg>SVG</button></span></h3>${g}<div class="legend">${legend}</div><div class="tip"></div>`;
+  el.innerHTML=`<h3><span>${plbl(cfg.title)}</span><span class="tools"><button class="btn small" data-exp title="Save this panel as an image (PNG, JPEG, SVG) or its data (CSV)">Export ▾</button></span></h3>${g}<div class="legend">${legend}</div><div class="tip"></div>`;
   const svg=el.querySelector("svg"),tip=el.querySelector(".tip"),hov=svg.querySelector(".hov"),cap=svg.querySelector(".cap");
   cap.addEventListener("mousemove",ev=>{
     const sp=svg.createSVGPoint(); sp.x=ev.clientX; sp.y=ev.clientY; const q=sp.matrixTransform(svg.getScreenCTM().inverse()), px=q.x, py=q.y;
@@ -62,11 +63,11 @@ function plot(el,cfg){
     if(!best||bd>1600){hov.style.display="none";tip.style.display="none";return;}
     const s=S[best[2]],i=best[3]; hov.style.display="";hov.querySelector("circle").setAttribute("cx",best[0]);hov.querySelector("circle").setAttribute("cy",best[1]);
     hov.querySelector(".vl").setAttribute("x1",best[0]);hov.querySelector(".vl").setAttribute("x2",best[0]);
-    tip.style.display="block"; tip.innerHTML=`${s.name?`<b style="color:${s.color}">${s.name}</b><br>`:""}${cfg.xshort||"x"} = ${fmt(s.x[i])}<br>${cfg.yshort||"y"} = ${fmt(s.y[i])}`;
+    tip.style.display="block"; tip.innerHTML=`${s.name?`<b style="color:${s.color}">${plbl(s.name)}</b><br>`:""}${cfg.xshort||"x"} = ${fmt(s.x[i])}<br>${cfg.yshort||"y"} = ${fmt(s.y[i])}`;
     const cr=el.getBoundingClientRect(); tip.style.left=Math.min(ev.clientX-cr.left+12,cr.width-150)+"px"; tip.style.top=(ev.clientY-cr.top-8)+"px";
   });
   cap.addEventListener("mouseleave",()=>{hov.style.display="none";tip.style.display="none";});
-  el.querySelector("[data-svg]").addEventListener("click",()=>exportSVG(svg,cfg.id));
+  el.querySelector("[data-exp]").addEventListener("click",ev=>{ if(window.PanelExport) PanelExport.menu(ev.currentTarget,svg,cfg,S); else exportSVG(svg,cfg.id); });
 }
 function range(a,b){const o=[];if(!isFinite(a)||!isFinite(b))return o;const st=Math.max(1,Math.ceil((b-a)/12));for(let i=a;i<=b;i+=st)o.push(i);return o;}
 function exportSVG(svg,name){

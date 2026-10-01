@@ -126,6 +126,7 @@
       <div class="card"><h2>Heat-flow runs <span class="sub">${A.runs.length}</span></h2><div class="body">
         ${A.runs.length ? list : `<p class="note" style="margin-top:0">Upload the raw heat flow of a DSC scan (heating or cooling). For enthalpy recovery, add the unaged reference and the heating scans after annealing, with their annealing times.</p>`}
         <div class="row" style="margin-top:6px"><button class="btn small" id="addRun">+ Add run</button><button class="btn small" id="exRuns">Load example data</button>${A.runs.length ? `<span class="spacer"></span><button class="btn small" id="csv1">Export normalized (.csv)</button>` : ""}</div>
+        ${A.runs.length ? `<div class="row" style="margin-top:6px"><button class="btn small primary" id="save1" title="Saves each run's normalized C_p^N and T_f with its glass and liquid lines, and this session">Save to project</button><span class="note" style="margin:0">normalized runs, baselines and this session</span></div>` : ""}
       </div></div>
       ${A.ed ? `<div class="card"><h2>Add a heat-flow run</h2><div class="body">${editorHTML(A.ed, "hf")}</div></div>` : ""}
       ${norms}`;
@@ -216,7 +217,7 @@
       ${S2.res && S2.res.length ? `<div class="card"><h2>Results <span class="sub">reference T<sub>f</sub>′ = ${nf(tU(S2.NR.TfPrime), 5)} ${uL()}</span></h2><div class="body" style="overflow-x:auto">
         <table class="metrics"><tr><th>t<sub>a</sub> (s)</th><th>ΔH (${u})</th><th>ΔH/ΔC<sub>p</sub> (K)</th><th>T<sub>f</sub> from ΔH</th><th>T<sub>f</sub>′ (area)</th><th>φ</th></tr>${res}</table>
         ${isFinite(S2.res[0] && S2.res[0].dHinf) ? `<p class="note">ΔH<sub>∞</sub> = ${nf(S2.res[0].dHinf, 4)} ${u}${S2.kww ? ` · KWW fit of φ(t<sub>a</sub>): τ = <b>${nf(S2.kww.tau, 4)} s</b>, β = <b>${nf(S2.kww.beta, 3)}</b>, ⟨τ⟩ = ${nf(S2.kww.meanTau, 4)} s` : " · a KWW fit needs at least three annealing times"}</p>` : `<p class="note">Enter T<sub>a</sub> to get φ(t<sub>a</sub>) and a KWW fit.</p>`}
-        <div class="row" style="margin-top:6px"><button class="btn small" id="csv2">Export results (.csv)</button><button class="btn small" id="csv2c">Export ΔHF curves (.csv)</button></div>
+        <div class="row" style="margin-top:6px"><button class="btn small primary" id="save2">Save to project</button><button class="btn small" id="csv2">Export results (.csv)</button><button class="btn small" id="csv2c">Export ΔHF curves (.csv)</button></div>
       </div></div>` : `<div class="card"><h2>Results</h2><div class="body"><p class="note" style="margin-top:0">Enter the annealing time t<sub>a</sub> of at least one heating scan above.</p></div></div>`}`;
   }
   function renderRight2() {
@@ -271,7 +272,7 @@
           <tr><td>V₀ (t = 0)</td><td class="num">${nf(F.v0, 7)}</td></tr><tr><td>V∞</td><td class="num">${nf(F.vinf, 7)}</td></tr><tr><td>V₀ − V∞ (relative)</td><td class="num">${nf(F.dv, 4)} (${nf(F.dv / F.vinf * 100, 3)} %)</td></tr>
           <tr><td>R²</td><td class="num">${nf(F.R2, 6)}</td></tr></table>` : `<div class="banner err" style="margin-top:8px">The fit needs at least four points.</div>`}
         <p class="note">φ(t) = (V − V∞)/(V₀ − V∞) is the relaxation function, directly comparable with φ(t<sub>a</sub>) from enthalpy recovery (tab 2) and with the Fitter's "annealing" data.</p>
-        <div class="row" style="margin-top:6px"><button class="btn small" id="csv3">Export data, φ and fit (.csv)</button></div>
+        <div class="row" style="margin-top:6px"><button class="btn small primary" id="save3">Save to project</button><button class="btn small" id="csv3">Export data, φ and fit (.csv)</button></div>
       </div></div>`;
     }
     $("#left").innerHTML = `
@@ -312,6 +313,61 @@
     dl(new Blob([rows.join("\n")], { type: "text/csv" }), "relaxation_fit.csv");
   }
 
+
+  /* ================= projects (shared/project.js) ================= */
+  async function needProject() {
+    if (!window.GP) return null;
+    let p = await GP.current(); if (p) return p;
+    const n = await GP.ask("Save to a new project", "Project name (for example: GeAsSe DSC glass transition study)", "", "Create and save");
+    return n ? GP.create(n) : null;
+  }
+  const rawRun = r => ({ name: r.name, kind: r.kind, q: r.q, mass: r.mass, hfUnit: r.hfUnit, ta: r.ta, Ta: r.Ta, T: r.T, HF: r.HF, rg: r.rg });
+  async function saveSession(p) {
+    await GP.addItem({ type: "an-session", key: "session", name: "Data Analysis session", summary: `${A.runs.length} heat-flow run(s), ${A.vols.length} relaxation dataset(s)`,
+      data: { runs: A.runs.map(rawRun), rec: A.rec, vols: A.vols.map(v => ({ name: v.name, pu: v.pu, Ta: v.Ta, t: v.t, v: v.v, vinfMode: v.vinfMode, vinf: v.vinf })), sel: A.sel, vsel: A.vsel, unit: A.unit } });
+  }
+  async function saveRuns() {
+    const p = await needProject(); if (!p) return; let n = 0;
+    for (const r of A.runs) {
+      const N = norm(r); if (!N.ok) continue;
+      await GP.addItem({ type: "cp-normalized", key: r.name, name: r.name,
+        summary: `${kindLabel(r)} · ${nf(r.q, 3)} K/min · T_f′ = ${nf(N.TfPrime, 5)} K${r.ta > 0 ? ` · annealed ${nf(r.ta, 3)} s` : ""}`,
+        data: { name: r.name, kind: r.kind, q: r.q, mass: r.mass, hfUnit: r.hfUnit, ta: r.ta, Ta: isFinite(r.Ta) ? r.Ta : null,
+          T: N.T, HF: N.HF, cpN: N.cpN, Tf: N.Tf, TfPrime: N.TfPrime, Tmid: isFinite(N.Tmid) ? N.Tmid : null, dCp: N.dHF(N.TfPrime) * hScale(r), cpUnit: cpUnit(r),
+          baseline: { glass: { range: r.rg.g.slice(), a: N.fg.a, b: N.fg.b }, liquid: { range: r.rg.l.slice(), a: N.fl.a, b: N.fl.b }, form: "HF = a + b·T (T in K)" } } });
+      n++;
+    }
+    await saveSession(p);
+    GP.toast(`Saved ${n} normalized run${n === 1 ? "" : "s"} and the session to “${p.name}”`);
+  }
+  async function saveRecovery() {
+    const S2 = recState(); if (!S2.res || !S2.R) return; const p = await needProject(); if (!p) return;
+    const ok = S2.res.filter(x => !x.bad);
+    await GP.addItem({ type: "recovery", key: S2.R.name, name: `Enthalpy recovery vs ${S2.R.name}`,
+      summary: `${ok.length} annealing times${isFinite(S2.Ta) ? ` at ${nf(S2.Ta, 5)} K` : ""}${S2.kww ? ` · KWW τ = ${nf(S2.kww.tau, 3)} s, β = ${nf(S2.kww.beta, 3)}` : ""}`,
+      data: { reference: S2.R.name, TfRef: S2.NR.TfPrime, dCp: S2.dcp, hUnit: hUnit(S2.R), Ta: isFinite(S2.Ta) ? S2.Ta : null, mode: A.rec.mode, int: S2.int, kww: S2.kww || null,
+        rows: ok.map(x => ({ ta: x.r.ta, dH: x.dH, dT: x.dT, TfH: x.TfH, TfArea: x.N.TfPrime, phi: isFinite(x.phi) ? x.phi : null, run: x.r.name })) } });
+    await saveSession(p); GP.toast(`Saved the recovery results to “${p.name}”`);
+  }
+  async function saveRelax() {
+    const v = A.vols[A.vsel]; if (!v) return; const F = vfit(v); const p = await needProject(); if (!p) return;
+    await GP.addItem({ type: "relax-fit", key: v.name, name: v.name, summary: F ? `τ = ${nf(F.tau, 3)} s, β = ${nf(F.beta, 3)}, R² = ${nf(F.R2, 4)}` : "no fit",
+      data: { name: v.name, pu: v.pu, Ta: isFinite(v.Ta) ? v.Ta : null, t: v.t, v: v.v, fit: F ? { tau: F.tau, beta: F.beta, meanTau: F.meanTau, v0: F.v0, vinf: F.vinf, dv: F.dv, R2: F.R2, vinfMode: v.vinfMode } : null,
+        phi: F ? v.v.map(y => (y - F.vinf) / F.dv) : null, yfit: F ? v.t.map(t => F.vinf + F.dv * Math.exp(-Math.pow(t / F.tau, F.beta))) : null } });
+    await saveSession(p); GP.toast(`Saved the relaxation fit to “${p.name}”`);
+  }
+  function openSession(it) {
+    const d = it.data || {};
+    A.runs = (d.runs || []).map(r => ({ ...r, Ta: r.Ta == null ? NaN : r.Ta }));
+    A.vols = (d.vols || []).map(v => ({ ...v, Ta: v.Ta == null ? NaN : v.Ta }));
+    A.rec = { ...A.rec, ...(d.rec || {}) }; A.sel = Math.min(d.sel ?? 0, A.runs.length - 1); A.vsel = Math.min(d.vsel ?? 0, A.vols.length - 1);
+    A.ed = null; A.ved = null; A.tab = 1; render(); GP.toast(`Opened “${it.name}”`);
+  }
+  if (window.GP) {
+    GP.register("an-session", [{ label: "Open here", run: openSession }]);
+    GP.register("cp-normalized", [{ label: "Fit in the Fitter", run: it => { location.href = `fitter.html#open=${it.id}`; } }]);
+  }
+
   /* ================= events ================= */
   document.addEventListener("click", e => {
     const t = e.target.closest("button,[data-sel],[data-vsel]"); if (!t) return;
@@ -327,6 +383,7 @@
     if (t.id === "rgAuto") { const r = A.runs[A.sel]; r.rg = AN.defaultRanges(r.T); render(); return; }
     if (t.id === "rgAll") { const r = A.runs[A.sel]; A.runs.forEach(x => { x.rg = JSON.parse(JSON.stringify(r.rg)); }); render(); return; }
     if (t.id === "csv1") { exportNorm(); return; }
+    if (t.id === "save1") { saveRuns(); return; } if (t.id === "save2") { saveRecovery(); return; } if (t.id === "save3") { saveRelax(); return; }
     // tab 2
     if (t.id === "csv2") { exportRec(false); return; } if (t.id === "csv2c") { exportRec(true); return; }
     // tab 3
@@ -369,4 +426,5 @@
 
   if (window.desktop) document.querySelectorAll("[data-tool]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); window.desktop.openTool(a.dataset.tool); }));
   render();
+  if (window.GP) GP.ready();
 })();
