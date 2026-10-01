@@ -69,7 +69,7 @@ If GARASU contributes to your work, please cite the software and the Takeda–Lu
 
 > W. Takeda, “GARASU: Glass Aging, Relaxation And Simulation Utility,” software, version 1.5.1, Zenodo (2026). https://doi.org/10.5281/zenodo.23091595
 
-GitHub's **Cite this repository** button gives the entries from [`CITATION.cff`](CITATION.cff)).
+GitHub's **Cite this repository** button gives the entries from [`CITATION.cff`](CITATION.cff).
 
 ## License
 
