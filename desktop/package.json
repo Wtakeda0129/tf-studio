@@ -4,7 +4,7 @@
   "version": "1.5.0",
   "description": "GARASU (Glass Aging, Relaxation And Simulation Utility): compute and fit glass relaxation dynamics with structural relaxation models",
   "author": "Wataru Takeda (University of Arizona, Lucas group)",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
