@@ -2,6 +2,7 @@
 
 <h1 align="center">GARASU <sup>beta</sup></h1>
 <p align="center"><b>G</b>lass <b>A</b>ging, <b>R</b>elaxation <b>A</b>nd <b>S</b>imulation <b>U</b>tility: compute and fit glass relaxation dynamics with structural relaxation models.</p>
+<p align="center"><a href="https://doi.org/10.5281/zenodo.23091595"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.23091595.svg" alt="DOI"></a> <img src="https://img.shields.io/badge/license-MIT-7A2632" alt="MIT license"></p>
 <p align="center"><a href="https://wtakeda-research.github.io/GARASU/"><b>Open in your browser</b></a> · <a href="https://github.com/wtakeda-research/GARASU/releases/latest">Download for macOS / Windows</a></p>
 
 Every glass carries a thermal fingerprint of how it was made, written in its fictive temperature *T*<sub>f</sub>. GARASU simulates that history and fits it to measurements. It uses the heterogeneous **Takeda–Lucas (TL)** model, alongside the **Tool–Narayanaswamy–Moynihan (TNM)** model and **RelaxPy** (MAP viscosity).
@@ -64,7 +65,11 @@ Lucas group · Department of Materials Science and Engineering · University of 
 
 ## How to cite
 
-If GARASU contributes to your work, please cite the Takeda–Lucas papers above (GitHub's **Cite this repository** button gives the entries from [`CITATION.cff`](CITATION.cff)).
+If GARASU contributes to your work, please cite the software and the Takeda–Lucas papers above:
+
+> W. Takeda, “GARASU: Glass Aging, Relaxation And Simulation Utility,” software, version 1.5.1, Zenodo (2026). https://doi.org/10.5281/zenodo.23091595
+
+GitHub's **Cite this repository** button gives the entries from [`CITATION.cff`](CITATION.cff)).
 
 ## License
 
