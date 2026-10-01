@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "If GARASU contributes to your work, please cite the software and the Takeda–Lucas model paper below."
+title: "GARASU: Glass Aging, Relaxation And Simulation Utility"
+type: software
+authors:
+  - family-names: Takeda
+    given-names: Wataru
+    affiliation: "Department of Materials Science and Engineering, University of Arizona"
+version: 1.5.0
+date-released: 2026-10-01
+license: MIT
+repository-code: "https://github.com/wtakeda-research/GARASU"
+url: "https://wtakeda-research.github.io/GARASU/"
+keywords:
+  - glass transition
+  - structural relaxation
+  - fictive temperature
+  - differential scanning calorimetry
+  - Takeda-Lucas model
+  - TNM model
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Takeda
+      given-names: Wataru
+    - family-names: Lucas
+      given-names: Pierre
+  title: "A model of heterogeneous undercooled liquid and glass accounting for temperature-dependent nonexponentiality and enthalpy fluctuation"
+  journal: "The Journal of Chemical Physics"
+  volume: 160
+  start: 174504
+  year: 2024
+  doi: "10.1063/5.0196812"
+references:
+  - type: article
+    authors:
+      - family-names: Takeda
+        given-names: Wataru
+      - family-names: Lucas
+        given-names: Pierre
+    title: "Relationship between enthalpy fluctuation and nonexponential relaxation in glass-forming liquids"
+    journal: "Materials Advances"
+    volume: 7
+    start: 5729
+    year: 2026
+    doi: "10.1039/d6ma00442c"

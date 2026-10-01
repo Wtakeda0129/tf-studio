@@ -61,3 +61,12 @@ The TL implementation is a line-by-line port of the reference Python code (`TL_m
 
 ---
 Lucas group · Department of Materials Science and Engineering · University of Arizona
+
+## How to cite
+
+If GARASU contributes to your work, please cite the Takeda–Lucas papers above (GitHub's **Cite this repository** button gives the entries from [`CITATION.cff`](CITATION.cff)).
+
+## License
+
+GARASU is released under the [MIT License](LICENSE). Copyright © 2026 Arizona Board of Regents on behalf of the University of Arizona. Bundled KaTeX is MIT-licensed; the Source Sans 3 and Source Serif 4 fonts are under the SIL Open Font License 1.1.
+
