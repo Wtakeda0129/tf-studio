@@ -33,9 +33,9 @@ function plot(el,cfg){
   let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${cfg.title}"><g class="axis">`;
   const xt=cfg.xlog?range(Math.ceil(X0),Math.floor(X1)).map(e=>Math.pow(10,e)):niceTicks(X0,X1,6);
   const yt=cfg.ylog?range(Math.ceil(Y0),Math.floor(Y1)).map(e=>Math.pow(10,e)):niceTicks(Y0,Y1,6);
-  xt.forEach(v=>{const x=sx(v); if(x<m.l-1||x>W-m.r+1)return; g+=`<line x1="${x}" x2="${x}" y1="${m.t}" y2="${H-m.b}" stroke="var(--grid)"/><text x="${x}" y="${H-m.b+15}" text-anchor="middle">${cfg.xlog?"1e"+Math.round(Math.log10(v)):fmt(v)}</text>`;});
-  yt.forEach(v=>{const y=sy(v); if(y<m.t-1||y>H-m.b+1)return; g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="var(--grid)"/><text x="${m.l-6}" y="${y+3.5}" text-anchor="end">${cfg.ylog?"1e"+Math.round(Math.log10(v)):fmt(v)}</text>`;});
-  g+=`<rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}" fill="none" stroke="var(--line)"/></g>`;
+  xt.forEach(v=>{const x=sx(v); if(x<m.l-1||x>W-m.r+1)return; g+=`<line x1="${x}" x2="${x}" y1="${H-m.b}" y2="${H-m.b-5}" stroke="var(--frame)"/><line x1="${x}" x2="${x}" y1="${m.t}" y2="${m.t+5}" stroke="var(--frame)"/><text x="${x}" y="${H-m.b+15}" text-anchor="middle">${cfg.xlog?"1e"+Math.round(Math.log10(v)):fmt(v)}</text>`;});
+  yt.forEach(v=>{const y=sy(v); if(y<m.t-1||y>H-m.b+1)return; g+=`<line x1="${m.l}" x2="${m.l+5}" y1="${y}" y2="${y}" stroke="var(--frame)"/><line x1="${W-m.r}" x2="${W-m.r-5}" y1="${y}" y2="${y}" stroke="var(--frame)"/><text x="${m.l-6}" y="${y+3.5}" text-anchor="end">${cfg.ylog?"1e"+Math.round(Math.log10(v)):fmt(v)}</text>`;});
+  g+=`<rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}" fill="none" stroke="var(--frame)"/></g>`;
   g+=`<clipPath id="c-${cfg.id}"><rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}"/></clipPath><g clip-path="url(#c-${cfg.id})">`;
   const flat=[];
   S.forEach((s,si)=>{

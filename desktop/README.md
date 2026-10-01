@@ -1,13 +1,13 @@
 # GARASU: desktop app (macOS and Windows)
 
-A desktop wrapper (Electron) around the website in `../site`: the launcher page (`index.html`), **Learn** (`learn.html`), the **Lab** (`explorer.html`) and the **Fitter** (`fitter.html`).
+A desktop wrapper (Electron) around the website in `../site`: the home page (`index.html`), **Learn** (`learn.html`), the **Lab** (`explorer.html`) and the **Fitter** (`fitter.html`).
 
-The app opens the launcher. Each tool opens in its own window (⌘1 Learn, ⌘2 Lab, ⌘3 Fitter). The app checks for updates on launch and every 6 hours, and has **Check for Updates…** in the app menu.
+The app opens one window on the home page. The tool bar on the left switches between Learn, Lab, Fitter and Data Analysis inside that window (⌘1–⌘4, ⌘0 home); each tool is kept loaded, so its state survives switching. The app checks for updates on launch and every 6 hours, and has **Check for Updates…** in the app menu.
 
 ```
 desktop/
-├── main.js                      launcher, windows, menus, auto-update (electron-updater)
-├── preload.js                   bridge for the launcher buttons
+├── main.js                      one window with a view per page, menus, auto-update (electron-updater)
+├── preload.js                   bridge for the home page (version, update check)
 ├── app/                         copied from ../site by sync_apps.sh (not committed)
 ├── build/icon.png               app icon (1024 px)
 ├── build/adhoc-sign.js          afterPack hook: ad-hoc signature when no Developer ID certificate is configured

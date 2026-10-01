@@ -15,6 +15,8 @@ for key, val in {"CORE": nomod(rd(ex / "tl_core.js")), "MODELS": nomod(rd(ex / "
                  "APP": rd(here / "learn_app.js"), "EXPUI": rd(here / "learn_expui.js")}.items():
     assert f"/*%%{key}%%*/" in html, key
     html = html.replace(f"/*%%{key}%%*/", val)
+import sys as _sys; _sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "shared")); from theme import apply
+html = apply(html, "learn")
 out = pathlib.Path(os.environ.get("OUT", here.parent.parent / "site" / "learn.html"))
 out.write_text(html)
 print("wrote", out, f"({len(html)/1024:.0f} kB)")

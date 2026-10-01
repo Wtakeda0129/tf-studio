@@ -1,46 +1,63 @@
 // GARASU (Glass Aging, Relaxation And Simulation Utility) — Electron shell
-// Opens a launcher window; each tool (Learn, Lab, Fitter, Data Analysis) is a self-contained HTML page in ./app.
+// One window. The home page and each tool (Learn, Lab, Fitter, Data Analysis) is a self-contained HTML page in ./app,
+// loaded once into its own view and kept alive, so switching tools with the rail never loses work.
 // Updates: electron-updater checks the "publish" feed configured in package.json (GitHub Releases by default).
-const { app, BrowserWindow, Menu, dialog, shell, ipcMain } = require("electron");
+const { app, BaseWindow, WebContentsView, Menu, dialog, shell, ipcMain } = require("electron");
 const path = require("path");
 let autoUpdater = null;
 try { autoUpdater = require("electron-updater").autoUpdater; } catch (e) { autoUpdater = null; }
 
-const TOOLS = {
+const PAGES = {
+  home: { file: "index.html", title: "GARASU Beta" },
   learn: { file: "learn.html", title: "GARASU Beta · Learn" },
   explorer: { file: "explorer.html", title: "GARASU Beta · Lab" },
   fitter: { file: "fitter.html", title: "GARASU Beta · Fitter" },
   analysis: { file: "analysis.html", title: "GARASU Beta · Data Analysis" },
 };
-// a link to another tool's page opens (or focuses) that tool's own window
-function toolForUrl(url) { for (const [k, t] of Object.entries(TOOLS)) if (new RegExp("/" + t.file.replace(".", "\\.") + "(#.*)?$").test(url)) return k; return null; }
-let launcher = null;
-const toolWindows = {};
+function pageForUrl(url) {
+  if (!/^file:/.test(url)) return null;
+  const m = /\/([a-z]+\.html)(#.*)?$/.exec(url.split("?")[0]); if (!m) return null;
+  for (const [k, p] of Object.entries(PAGES)) if (p.file === m[1]) return { key: k, hash: m[2] || "" };
+  return null;
+}
+let win = null, current = null;
+const views = {};
 
-function openLauncher() {
-  if (launcher && !launcher.isDestroyed()) { launcher.focus(); return; }
-  launcher = new BrowserWindow({ width: 980, height: 720, minWidth: 700, minHeight: 500, title: "GARASU Beta",
-    webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true } });
-  launcher.loadFile(path.join(__dirname, "app", "index.html"));
-  launcher.webContents.on("will-navigate", (e, url) => { if (/^https?:/.test(url)) { e.preventDefault(); shell.openExternal(url); } });
-  launcher.on("closed", () => { launcher = null; });
+function fit() {
+  if (!win) return; const b = win.getContentBounds();
+  for (const v of Object.values(views)) v.setBounds({ x: 0, y: 0, width: b.width, height: b.height });
 }
-function openTool(key) {
-  const t = TOOLS[key]; if (!t) return;
-  const w0 = toolWindows[key]; if (w0 && !w0.isDestroyed()) { w0.focus(); return; }
-  const w = new BrowserWindow({ width: 1500, height: 950, minWidth: 900, minHeight: 600, title: t.title, webPreferences: { contextIsolation: true } });
-  w.loadFile(path.join(__dirname, "app", t.file));
-  // external links open in the default browser
-  w.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url)) shell.openExternal(url); return { action: "deny" }; });
-  w.on("page-title-updated", e => e.preventDefault());   // keep the tool name in the title bar
-  // the "GARASU" logo in each tool links to index.html: bring up the launcher instead of navigating away
-  w.webContents.on("will-navigate", (e, url) => {
-    if (/index\.html(#.*)?$/.test(url)) { e.preventDefault(); openLauncher(); return; }
+function makeView(key) {
+  const v = new WebContentsView({ webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true } });
+  const wc = v.webContents;
+  wc.loadFile(path.join(__dirname, "app", PAGES[key].file));
+  wc.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url)) shell.openExternal(url); return { action: "deny" }; });
+  wc.on("will-navigate", (e, url) => {
     if (/^https?:/.test(url)) { e.preventDefault(); shell.openExternal(url); return; }
-    const k = toolForUrl(url); if (k && k !== key) { e.preventDefault(); openTool(k); }
+    const t = pageForUrl(url);
+    if (t && t.key === key) return;                      // an anchor on this page
+    e.preventDefault(); if (t) show(t.key, t.hash);      // a link to another page: switch to its view
   });
-  toolWindows[key] = w; w.on("closed", () => { delete toolWindows[key]; });
+  win.contentView.addChildView(v); views[key] = v; fit();
+  return v;
 }
+function show(key, hash) {
+  if (!PAGES[key]) return;
+  if (!win || win.isDestroyed()) createWindow();
+  const v = views[key] || makeView(key);
+  for (const [k, o] of Object.entries(views)) o.setVisible(k === key);
+  current = key; win.setTitle(PAGES[key].title); v.webContents.focus();
+  if (hash) v.webContents.executeJavaScript(`location.hash=${JSON.stringify(hash)}`).catch(() => {});
+  if (win.isMinimized()) win.restore(); win.focus();
+}
+function createWindow() {
+  win = new BaseWindow({ width: 1500, height: 950, minWidth: 900, minHeight: 600, title: PAGES.home.title, backgroundColor: "#F3F1EC" });
+  win.on("resize", fit);
+  win.on("closed", () => { win = null; current = null; for (const k of Object.keys(views)) delete views[k]; });
+}
+const openLauncher = () => show("home");
+const openTool = key => show(key);
+const cur = () => current && views[current] ? views[current].webContents : null;
 
 /* ---------------- updates ---------------- */
 let manualCheck = false;
@@ -93,14 +110,21 @@ function buildMenu() {
   const template = [
     ...(isMac ? [{ label: app.name, submenu: [{ role: "about" }, { label: "Check for Updates…", click: checkForUpdatesManually }, { type: "separator" }, { role: "hide" }, { role: "hideOthers" }, { role: "unhide" }, { type: "separator" }, { role: "quit" }] }] : []),
     { label: "File", submenu: [
-      { label: "Launcher", accelerator: "CmdOrCtrl+0", click: openLauncher },
+      { label: "Home", accelerator: "CmdOrCtrl+0", click: openLauncher },
       { label: "Learn", accelerator: "CmdOrCtrl+1", click: () => openTool("learn") },
       { label: "Lab", accelerator: "CmdOrCtrl+2", click: () => openTool("explorer") },
       { label: "Fitter", accelerator: "CmdOrCtrl+3", click: () => openTool("fitter") },
       { label: "Data Analysis", accelerator: "CmdOrCtrl+4", click: () => openTool("analysis") },
       { type: "separator" }, isMac ? { role: "close" } : { role: "quit" } ] },
     { role: "editMenu" },
-    { label: "View", submenu: [{ role: "reload" }, { role: "toggleDevTools" }, { type: "separator" }, { role: "resetZoom" }, { role: "zoomIn" }, { role: "zoomOut" }, { type: "separator" }, { role: "togglefullscreen" }] },
+    { label: "View", submenu: [
+      { label: "Reload", accelerator: "CmdOrCtrl+R", click: () => cur() && cur().reload() },
+      { label: "Toggle Developer Tools", accelerator: isMac ? "Alt+Cmd+I" : "Ctrl+Shift+I", click: () => cur() && cur().toggleDevTools() },
+      { type: "separator" },
+      { label: "Actual Size", accelerator: "CmdOrCtrl+Shift+0", click: () => cur() && cur().setZoomLevel(0) },
+      { label: "Zoom In", accelerator: "CmdOrCtrl+=", click: () => cur() && cur().setZoomLevel(cur().getZoomLevel() + 0.5) },
+      { label: "Zoom Out", accelerator: "CmdOrCtrl+-", click: () => cur() && cur().setZoomLevel(cur().getZoomLevel() - 0.5) },
+      { type: "separator" }, { label: "Toggle Full Screen", accelerator: isMac ? "Ctrl+Cmd+F" : "F11", click: () => win && win.setFullScreen(!win.isFullScreen()) }] },
     { role: "windowMenu" },
     { role: "help", submenu: [...(isMac ? [] : [{ label: "Check for Updates…", click: checkForUpdatesManually }])] },
   ];
@@ -112,5 +136,5 @@ ipcMain.handle("app-version", () => app.getVersion());
 ipcMain.handle("check-updates", () => checkForUpdatesManually());
 
 app.whenReady().then(() => { buildMenu(); openLauncher(); setupUpdater(); });
-app.on("activate", () => { if (BrowserWindow.getAllWindows().length === 0) openLauncher(); });
+app.on("activate", () => { if (!win) openLauncher(); });
 app.on("window-all-closed", () => { if (process.platform !== "darwin") app.quit(); });

@@ -28,6 +28,8 @@ for key, val in {"CORE": nomod(rd("tl_core.js")), "MODELS": nomod(rd("models_ext
                  "LIB": rd("beta_library.json"), "PRONYFIT": rd("prony_fit.json"), "PRONYRP": rd("relaxpy_prony.json"), "GEASSE": rd("geasse_data.json") if INCLUDE else json.dumps({"comps": {}, "rate_Kmin": 10})}.items():
     assert f"/*%%{key}%%*/" in html, key
     html = html.replace(f"/*%%{key}%%*/", val)
+import sys as _sys; _sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "shared")); from theme import apply
+html = apply(html, "explorer")
 out_path = pathlib.Path(os.environ.get("OUT", here.parent.parent / "site" / "explorer.html"))
 out_path.write_text(html)
 print("wrote", out_path, f"({len(html)/1024:.0f} kB)")

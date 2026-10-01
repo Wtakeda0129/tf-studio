@@ -18,10 +18,10 @@ const PLOT = (function () {
     let g = `<svg viewBox="0 0 ${W} ${H}">`;
     const xt = cfg.xticks || niceTicks(x0, x1, 5).map(v => [v, fmt(v)]);
     const yt = cfg.yticks || niceTicks(y0, y1, 5).map(v => [v, fmt(v)]);
-    xt.forEach(([v, lab]) => { const x = sx(v); if (x < m.l - 1 || x > W - m.r + 1) return; g += `<line x1="${x}" x2="${x}" y1="${m.t}" y2="${H - m.b}" stroke="var(--grid)"/><text x="${x}" y="${H - m.b + 14}" text-anchor="middle">${lab}</text>`; });
-    yt.forEach(([v, lab]) => { const y = sy(v); if (y < m.t - 1 || y > H - m.b + 1) return; g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y}" y2="${y}" stroke="var(--grid)"/><text x="${m.l - 5}" y="${y + 3.5}" text-anchor="end">${lab}</text>`; });
+    xt.forEach(([v, lab]) => { const x = sx(v); if (x < m.l - 1 || x > W - m.r + 1) return; g += `<line x1="${x}" x2="${x}" y1="${H-m.b}" y2="${H-m.b-5}" stroke="var(--frame)"/><line x1="${x}" x2="${x}" y1="${m.t}" y2="${m.t+5}" stroke="var(--frame)"/><text x="${x}" y="${H - m.b + 14}" text-anchor="middle">${lab}</text>`; });
+    yt.forEach(([v, lab]) => { const y = sy(v); if (y < m.t - 1 || y > H - m.b + 1) return; g += `<line x1="${m.l}" x2="${m.l+5}" y1="${y}" y2="${y}" stroke="var(--frame)"/><line x1="${W-m.r}" x2="${W-m.r-5}" y1="${y}" y2="${y}" stroke="var(--frame)"/><text x="${m.l - 5}" y="${y + 3.5}" text-anchor="end">${lab}</text>`; });
     (cfg.shade || []).forEach(s => { g += `<rect x="${sx(s[0])}" y="${m.t}" width="${sx(s[1]) - sx(s[0])}" height="${H - m.t - m.b}" fill="var(--soft)"/>`; });
-    g += `<rect x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="none" stroke="var(--line)"/>`;
+    g += `<rect x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="none" stroke="var(--frame)"/>`;
     const id = "c" + Math.random().toString(36).slice(2, 8);
     g += `<clipPath id="${id}"><rect x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}"/></clipPath><g clip-path="url(#${id})">`;
     (cfg.bars || []).forEach(b => { const ya = sy(Math.max(b.y, y0)); g += `<rect x="${sx(b.x0).toFixed(1)}" y="${ya.toFixed(1)}" width="${Math.max(0.5, sx(b.x1) - sx(b.x0) - 0.6).toFixed(1)}" height="${(sy(y0) - ya).toFixed(1)}" fill="${b.color}" fill-opacity="${b.op || 0.55}"/>`; });
