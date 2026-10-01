@@ -122,6 +122,7 @@ details.card:not([open])>summary.h2::before{content:"▸"}
 details.card:not([open])>summary.h2{border-bottom:none}
 details.card>summary.h2 .sub2{text-transform:none;letter-spacing:0;margin-left:auto;white-space:nowrap}
 @media (max-width:700px){header .sub{display:none}}
+header label,header .chk{white-space:nowrap}
 .card .body{padding:10px 12px}
 .grid2{gap:7px 10px}
 label.f{font-size:11.5px}
@@ -169,7 +170,7 @@ details.msec>.inner{padding:0 10px 10px}
 <body>
 <header>
   <a class="brand" href="index.html" title="GARASU home"><h1>GARASU</h1><b class="beta-badge" title="Beta: still in development">Beta</b><span>Lab</span></a>
-  <span class="sub">Takeda–Lucas (JCP 160, 174504, 2024) · TNM · RelaxPy (MAP)</span>
+  <span class="sub">Differential scanning calorimetry (DSC) scans, anneals and T-jumps with the Takeda–Lucas (TL), Tool–Narayanaswamy–Moynihan (TNM) and Mauro–Allan–Potuzak (MAP, as in RelaxPy) models</span>
   <span class="sp"></span>
   <label class="chk">T axis
     <select id="unit" class="btn small"><option value="K">K</option><option value="C">°C</option></select></label>
@@ -215,13 +216,13 @@ details.msec>.inner{padding:0 10px 10px}
         <label class="mtog" style="--mc:var(--mRP)"><input type="checkbox" id="use-RP"><span class="sw"></span>RelaxPy</label>
       </div>
       <div class="grid2">
-        <label class="f full">Material preset <span class="u">(Table I, JCP 2024 · T<sub>g</sub>, m shared by all models unless unlinked)</span>
+        <label class="f full">Material preset <span class="u">(Table I of Takeda &amp; Lucas, <i>J. Chem. Phys.</i> 2024 · T<sub>g</sub>, m shared by all models unless unlinked)</span>
           <select id="preset"></select></label>
         <label class="f">T<sub>g</sub> <span class="u">(K, τ = 100 s)</span><input id="Tg" type="number" step="any"></label>
         <label class="f">Fragility m<input id="m" type="number" step="any"></label>
       </div>
 
-      <details class="msec" id="sec-TL" style="--mc:var(--mTL)" open><summary>Takeda–Lucas (TL) <span class="sub2">heterogeneous AG</span></summary><div class="inner">
+      <details class="msec" id="sec-TL" style="--mc:var(--mTL)" open><summary>Takeda–Lucas (TL) <span class="sub2">heterogeneous Adam–Gibbs</span></summary><div class="inner">
       <div class="grid2">
         <label class="f">log<sub>10</sub> τ<sub>0</sub> <span class="u">(s)</span><input id="l10" type="number" step="any"></label>
         <label class="f">β<sub>0</sub> <span class="u">(local, 0–1)</span><input id="b0" type="number" step="0.01" min="0.05" max="1"></label>
@@ -238,7 +239,7 @@ details.msec>.inner{padding:0 10px 10px}
         <label class="f">T<sub>g</sub> <span class="u">(K)</span><input id="tnm-Tg" type="number" step="any"></label>
         <label class="f">m <span class="u">(Δh/R = m ln10 T<sub>g</sub>)</span><input id="tnm-m" type="number" step="any"></label>
         <label class="f">Nonlinearity x <span class="u">(0–1)</span><input id="tnm-x" type="number" step="0.01" min="0" max="1" value="0.5"></label>
-        <label class="f">β <span class="u">(KWW)</span><input id="tnm-b" type="number" step="0.01" min="0.1" max="1" value="0.55"></label>
+        <label class="f">β <span class="u">(Kohlrausch–Williams–Watts, KWW)</span><input id="tnm-b" type="number" step="0.01" min="0.1" max="1" value="0.55"></label>
         <label class="f full">Relaxation kernel
           <select id="tnm-k"><option value="exact">Exact KWW (Moynihan summation, O(n²))</option><option value="prony">Prony series (fast)</option></select></label>
       </div>

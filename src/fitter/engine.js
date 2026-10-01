@@ -85,7 +85,7 @@ const ENGINE = (function () {
         { k: 'Tg', label: 'T_g', unit: 'K', v: 308.13, lo: 250, hi: 370, free: true, tip: 'τ(T_g) = 100 s' },
         { k: 'm', label: 'm', unit: '', v: 64.14, lo: 15, hi: 150, free: true, tip: 'Δh/R = m ln10 T_g' },
         { k: 'x', label: 'x', unit: '', v: 0.5, lo: 0.05, hi: 1, free: true, tip: 'nonlinearity' },
-        { k: 'beta', label: 'β', unit: '', v: 0.55, lo: 0.15, hi: 1, free: true, tip: 'KWW stretching' },
+        { k: 'beta', label: 'β', unit: '', v: 0.55, lo: 0.15, hi: 1, free: true, tip: 'Kohlrausch–Williams–Watts (KWW) stretching exponent' },
       ],
       fixed: { kernel: 'prony' },
     },
@@ -131,7 +131,7 @@ const ENGINE = (function () {
   /* ---------------- data kinds ---------------- */
   const KINDS = {
     cp_norm: { label: 'DSC — normalized C_p (dT_f/dT) vs T', axis: 'T', segs: ['ramp'], ylab: 'C_p,norm', scaleOpt: true },
-    cp_raw:  { label: 'DSC — C_p or heat flow vs T (glass/liquid baselines fitted)', axis: 'T', segs: ['ramp'], ylab: 'C_p or HF' },
+    cp_raw:  { label: 'DSC — C_p or heat flow vs T (glass/liquid baselines fitted)', axis: 'T', segs: ['ramp'], ylab: 'C_p or heat flow' },
     H_T:     { label: 'Enthalpy vs T (H = a + b·T + ΔC_p·T_f fitted)', axis: 'T', segs: ['ramp', 'mdsc'], ylab: 'H' },
     V_T:     { label: 'Volume / density / length vs T (dilatometry)', axis: 'T', segs: ['ramp', 'mdsc'], ylab: 'V' },
     tf_T:    { label: 'Fictive temperature T_f vs T', axis: 'T', segs: ['ramp', 'mdsc'], ylab: 'T_f (K)' },

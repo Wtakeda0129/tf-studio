@@ -11,7 +11,7 @@ authors:
     given-names: Pierre
     orcid: "https://orcid.org/0000-0003-1011-0855"
     affiliation: "Department of Materials Science and Engineering, University of Arizona"
-version: 1.5.1
+version: 1.5.2
 doi: 10.5281/zenodo.23091595
 date-released: 2026-10-01
 license: MIT

@@ -5,8 +5,8 @@ const PRESETS = [
   {name:"Selenium",       Tg:308.13, m:64.14,  l10:-23.41, f:0.59, b0:1},
   {name:"Glycerol",       Tg:189.73, m:52.25,  l10:-25.40, f:0.64, b0:0.82},
   {name:"B₂O₃",           Tg:559.66, m:36.28,  l10:-15.39, f:0.60, b0:1},
-  {name:"OTP",            Tg:246.15, m:106.16, l10:-25.48, f:0.59, b0:1},
-  {name:"PVAc",           Tg:313.06, m:92.36,  l10:-37.87, f:0.52, b0:0.85},
+  {name:"o-Terphenyl (OTP)",            Tg:246.15, m:106.16, l10:-25.48, f:0.59, b0:1},
+  {name:"Poly(vinyl acetate) (PVAc)",           Tg:313.06, m:92.36,  l10:-37.87, f:0.52, b0:0.85},
   {name:"D-sorbitol",     Tg:265.7,  m:88.76,  l10:-35.61, f:0.57, b0:1},
   {name:"Custom",         Tg:200,    m:60,     l10:-24,    f:0.60, b0:1},
 ];

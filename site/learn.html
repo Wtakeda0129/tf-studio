@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GARASU Beta · Learn</title>
-<meta name="description" content="How the TNM, MAP (RelaxPy) and Takeda–Lucas models describe glass relaxation: the mathematics of each model, and what separates a mean-field fictive temperature from a distribution of local fictive temperatures.">
+<meta name="description" content="How the Tool–Narayanaswamy–Moynihan (TNM), Mauro–Allan–Potuzak (MAP, as in RelaxPy) and Takeda–Lucas models describe glass relaxation: the mathematics of each model, and what separates a mean-field fictive temperature from a distribution of local fictive temperatures.">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
 <style>
@@ -331,7 +331,7 @@ body>header:has(.gp-bar) .stepper .step small{max-width:none}
 </script>
 <header class="top"><div class="in">
   <a class="brand" href="index.html" title="GARASU home"><h1>GARASU</h1><b class="beta-badge" title="Beta: still in development">Beta</b><span>Learn</span></a>
-  <div class="modelsw" id="hdrsw" title="Model used for the Part I simulations"><button type="button" data-m="TL" class="on" style="--mc:var(--mTL)">TL</button><button type="button" data-m="TNM" style="--mc:var(--mTNM)">TNM</button><button type="button" data-m="MAP" style="--mc:var(--mMAP)">MAP</button></div>
+  <div class="modelsw" id="hdrsw" title="Model used for the Part I simulations"><button type="button" data-m="TL" class="on" style="--mc:var(--mTL)" title="Takeda–Lucas model">TL</button><button type="button" data-m="TNM" style="--mc:var(--mTNM)" title="Tool–Narayanaswamy–Moynihan model">TNM</button><button type="button" data-m="MAP" style="--mc:var(--mMAP)" title="Mauro–Allan–Potuzak model (RelaxPy)">MAP</button></div>
   <nav><a href="#experiments">Experiments</a><a href="#models">Models</a></nav>
 </div></header>
 
@@ -342,12 +342,12 @@ body>header:has(.gp-bar) .stepper .step small{max-width:none}
   <span class="tp">Part I · Experiments</span>
   <a href="#annealing">2 · Isothermal annealing</a>
   <a href="#kovacs">3 · Kovacs: asymmetry, memory</a>
-  <a href="#dsc">4 · DSC cooling and heating</a>
+  <a href="#dsc">4 · <abbr title="differential scanning calorimetry">DSC</abbr> cooling and heating</a>
   <a href="#recovery">5 · Enthalpy recovery</a>
-  <a href="#mdsc">6 · MDSC and C<sub>p</sub>*</a>
+  <a href="#mdsc">6 · <abbr title="modulated differential scanning calorimetry">MDSC</abbr> and C<sub>p</sub>*</a>
   <span class="tp">Part II · Models</span>
-  <a href="#tnm">7 · TNM</a>
-  <a href="#map">8 · MAP / RelaxPy</a>
+  <a href="#tnm">7 · <abbr title="Tool–Narayanaswamy–Moynihan">TNM</abbr></a>
+  <a href="#map">8 · <abbr title="Mauro–Allan–Potuzak">MAP</abbr> / RelaxPy</a>
   <a href="#tl">9 · Takeda–Lucas</a>
   <a href="#compare">10 · See the difference</a>
   <a href="#summary">11 · Side by side</a>
@@ -357,7 +357,7 @@ body>header:has(.gp-bar) .stepper .step small{max-width:none}
 <main>
 <div class="prose">
   <h2 style="margin-top:8px">Learn: glass relaxation, from experiment to model</h2>
-  <p class="lede">Part I covers the experiments used to study structural relaxation: annealing, Kovacs jumps, DSC, enthalpy recovery and modulated DSC. Each one comes with a live simulation. Part II explains the mathematics of the three models and where they differ. TNM gives the whole sample one fictive temperature. MAP splits the relaxation into Prony components, and all of them return to the same temperature in equilibrium. The Takeda–Lucas model gives every domain its own fictive temperature, so the fictive temperatures stay spread out even in the equilibrium liquid.</p>
+  <p class="lede">Part I covers the experiments used to study structural relaxation: annealing, Kovacs jumps, differential scanning calorimetry (DSC), enthalpy recovery and modulated DSC (MDSC). Each one comes with a live simulation. Part II explains the mathematics of the three models and where they differ. The Tool–Narayanaswamy–Moynihan (TNM) model gives the whole sample one fictive temperature. The Mauro–Allan–Potuzak (MAP) model, as implemented in RelaxPy, splits the relaxation into Prony components, and all of them return to the same temperature in equilibrium. The Takeda–Lucas (TL) model gives every domain its own fictive temperature, so the fictive temperatures stay spread out even in the equilibrium liquid.</p>
 </div>
 
 <!-- 1 -->
@@ -370,7 +370,7 @@ body>header:has(.gp-bar) .stepper .step small{max-width:none}
   <ul>
     <li><b>Nonexponential.</b> After a small temperature step, the response follows a stretched exponential (Kohlrausch–Williams–Watts, KWW), \(\Psi(t)=\exp[-(t/\tau)^{\beta}]\) with \(0<\beta\le 1\).</li>
     <li><b>Nonlinear.</b> \(\tau\) depends on the structure (\(T_f\)) as well as on \(T\). A glass therefore relaxes faster when it approaches equilibrium from above than from below (Kovacs asymmetry).</li>
-    <li><b>Non-Arrhenius.</b> In equilibrium, \(\tau(T)\) follows a VFT, Adam–Gibbs or MYEGA form, and its steepness at \(T_g\) is the fragility \(m = d\log_{10}\tau/d(T_g/T)\big|_{T_g}\).</li>
+    <li><b>Non-Arrhenius.</b> In equilibrium, \(\tau(T)\) follows a Vogel–Fulcher–Tammann (VFT), Adam–Gibbs or Mauro–Yue–Ellison–Gupta–Allan (MYEGA) form, and its steepness at \(T_g\) is the fragility \(m = d\log_{10}\tau/d(T_g/T)\big|_{T_g}\).</li>
   </ul>
   <p>All three models describe a thermal history as a sequence of small temperature steps \(\Delta T_j\) and add up each step's delayed response. They differ in <b>what relaxes</b> (one \(T_f\) or many \(T_{f,i}\)) and in <b>where each part relaxes to</b>.</p>
 </section>
@@ -379,7 +379,7 @@ body>header:has(.gp-bar) .stepper .step small{max-width:none}
 <div class="part" id="experiments">
   <span class="partlabel">Part I</span>
   <h2 class="parth">Experiments: how relaxation is measured</h2>
-  <p class="lede">Each experiment below comes with a live simulation of the same example glass, selenium (T<sub>g</sub> = 308.13 K, m = 64.14; TL parameters from Takeda &amp; Lucas, JCP 2024). The switch picks the model that runs it. The models themselves are explained in Part II.</p>
+  <p class="lede">Each experiment below comes with a live simulation of the same example glass, selenium (T<sub>g</sub> = 308.13 K, m = 64.14; TL parameters from Takeda &amp; Lucas, <i>J. Chem. Phys.</i> 2024). The switch picks the model that runs it. The models themselves are explained in Part II.</p>
   <div class="modelsw" role="radiogroup" aria-label="Model used for the simulations">
     <span>Simulate with</span>
     <button type="button" data-m="TL" class="on" style="--mc:var(--mTL)">Takeda–Lucas</button>
@@ -561,7 +561,7 @@ body>header:has(.gp-bar) .stepper .step small{max-width:none}
 <section id="compare">
   <div class="prose">
     <h2><span class="num">10</span>See the difference: where do the fictive temperatures sit?</h2>
-    <p>All three models run the same history on one example glass, selenium (\(T_g\) = 308.13 K, \(m\) = 64.14, \(\log_{10}\tau_0\) = −23.41, \(f\) = 0.59 from the TL fit in JCP 2024). For MAP the glassy viscosity is Arrhenius with \(B = x\,m\,T_g\) (\(x\) = 0.5, as in TNM) and \(C\) = 0. The glass is equilibrated at \(T_g\)+40 K, cooled to the annealing temperature \(T_a\), and held there. The TNM and MAP \(\beta\) is set to the TL model's \(\beta_{\mathrm{KWW}}(T_g)\), so all three share the same nonexponentiality at \(T_g\). Drag the slider, or press play, and watch how the fictive temperatures spread and come back together.</p>
+    <p>All three models run the same history on one example glass, selenium (\(T_g\) = 308.13 K, \(m\) = 64.14, \(\log_{10}\tau_0\) = −23.41, \(f\) = 0.59 from the TL fit in <i>J. Chem. Phys.</i> 2024). For MAP the glassy viscosity is Arrhenius with \(B = x\,m\,T_g\) (\(x\) = 0.5, as in TNM) and \(C\) = 0. The glass is equilibrated at \(T_g\)+40 K, cooled to the annealing temperature \(T_a\), and held there. The TNM and MAP \(\beta\) is set to the TL model's \(\beta_{\mathrm{KWW}}(T_g)\), so all three share the same nonexponentiality at \(T_g\). Drag the slider, or press play, and watch how the fictive temperatures spread and come back together.</p>
   </div>
   <div class="lab" id="lab">
     <div class="ctrl">
@@ -998,7 +998,7 @@ const ENGINE = (function () {
         { k: 'Tg', label: 'T_g', unit: 'K', v: 308.13, lo: 250, hi: 370, free: true, tip: 'τ(T_g) = 100 s' },
         { k: 'm', label: 'm', unit: '', v: 64.14, lo: 15, hi: 150, free: true, tip: 'Δh/R = m ln10 T_g' },
         { k: 'x', label: 'x', unit: '', v: 0.5, lo: 0.05, hi: 1, free: true, tip: 'nonlinearity' },
-        { k: 'beta', label: 'β', unit: '', v: 0.55, lo: 0.15, hi: 1, free: true, tip: 'KWW stretching' },
+        { k: 'beta', label: 'β', unit: '', v: 0.55, lo: 0.15, hi: 1, free: true, tip: 'Kohlrausch–Williams–Watts (KWW) stretching exponent' },
       ],
       fixed: { kernel: 'prony' },
     },
@@ -1044,7 +1044,7 @@ const ENGINE = (function () {
   /* ---------------- data kinds ---------------- */
   const KINDS = {
     cp_norm: { label: 'DSC — normalized C_p (dT_f/dT) vs T', axis: 'T', segs: ['ramp'], ylab: 'C_p,norm', scaleOpt: true },
-    cp_raw:  { label: 'DSC — C_p or heat flow vs T (glass/liquid baselines fitted)', axis: 'T', segs: ['ramp'], ylab: 'C_p or HF' },
+    cp_raw:  { label: 'DSC — C_p or heat flow vs T (glass/liquid baselines fitted)', axis: 'T', segs: ['ramp'], ylab: 'C_p or heat flow' },
     H_T:     { label: 'Enthalpy vs T (H = a + b·T + ΔC_p·T_f fitted)', axis: 'T', segs: ['ramp', 'mdsc'], ylab: 'H' },
     V_T:     { label: 'Volume / density / length vs T (dilatometry)', axis: 'T', segs: ['ramp', 'mdsc'], ylab: 'V' },
     tf_T:    { label: 'Fictive temperature T_f vs T', axis: 'T', segs: ['ramp', 'mdsc'], ylab: 'T_f (K)' },

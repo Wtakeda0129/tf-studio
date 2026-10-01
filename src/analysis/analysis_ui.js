@@ -44,7 +44,7 @@
   /* ================= header / tabs ================= */
   function renderTabs() {
     $$(".step").forEach(b => b.setAttribute("aria-current", +b.dataset.tab === A.tab));
-    $("#st1").textContent = A.runs.length ? `${A.runs.length} run${A.runs.length > 1 ? "s" : ""}` : "upload DSC heat flow";
+    $("#st1").innerHTML = A.runs.length ? `${A.runs.length} run${A.runs.length > 1 ? "s" : ""}` : 'upload <abbr title="differential scanning calorimetry">DSC</abbr> heat flow';
     const aged = A.runs.filter(r => r.kind === "heat" && r.ta > 0).length;
     $("#st2").textContent = aged ? `${aged} annealed scan${aged > 1 ? "s" : ""}` : "heating after annealing";
     $("#st3").textContent = A.vols.length ? `${A.vols.length} dataset${A.vols.length > 1 ? "s" : ""}` : "volume, density, length…";
@@ -106,7 +106,7 @@
     const r = A.runs[A.sel];
     const list = A.runs.map((x, i) => `<div class="dsitem ${i === A.sel ? "sel" : ""}" data-sel="${i}" style="--pc:${col(i)}">
         <span class="pill" style="--pc:${col(i)}">${x.kind === "cool" ? "cool" : "heat"}</span><span class="nm" title="${esc(x.name)}">${esc(x.name)}</span><button class="btn icon danger" data-del="${i}" title="Remove">×</button>
-        <span class="meta">${kindLabel(x)} · ${nf(x.q, 3)} K/min · ${x.T.length} points · HF in ${esc(x.hfUnit)}${x.ta > 0 ? ` · annealed ${nf(x.ta, 3)} s${isFinite(x.Ta) ? " at " + nf(tU(x.Ta), 5) + " " + uL() : ""}` : ""}</span></div>`).join("");
+        <span class="meta">${kindLabel(x)} · ${nf(x.q, 3)} K/min · ${x.T.length} points · heat flow in ${esc(x.hfUnit)}${x.ta > 0 ? ` · annealed ${nf(x.ta, 3)} s${isFinite(x.Ta) ? " at " + nf(tU(x.Ta), 5) + " " + uL() : ""}` : ""}</span></div>`).join("");
     let norms = "";
     if (r) {
       const N = norm(r), du = cpUnit(r);
@@ -124,7 +124,7 @@
     }
     $("#left").innerHTML = `
       <div class="card"><h2>Heat-flow runs <span class="sub">${A.runs.length}</span></h2><div class="body">
-        ${A.runs.length ? list : `<p class="note" style="margin-top:0">Upload the raw heat flow of a DSC scan (heating or cooling). For enthalpy recovery, add the unaged reference and the heating scans after annealing, with their annealing times.</p>`}
+        ${A.runs.length ? list : `<p class="note" style="margin-top:0">Upload the raw heat flow (HF) of a differential scanning calorimetry (DSC) scan (heating or cooling). For enthalpy recovery, add the unaged reference and the heating scans after annealing, with their annealing times.</p>`}
         <div class="row" style="margin-top:6px"><button class="btn small" id="addRun">+ Add run</button><button class="btn small" id="exRuns">Load example data</button>${A.runs.length ? `<span class="spacer"></span><button class="btn small" id="csv1">Export normalized (.csv)</button>` : ""}</div>
         ${A.runs.length ? `<div class="row" style="margin-top:6px"><button class="btn small primary" id="save1" title="Saves each run's normalized C_p^N and T_f with its glass and liquid lines, and this session">Save to project</button><span class="note" style="margin:0">normalized runs, baselines and this session</span></div>` : ""}
       </div></div>
@@ -133,7 +133,7 @@
   }
   function renderRight1() {
     const r = A.runs[A.sel];
-    if (!r) { $("#right").innerHTML = `<div class="rhead"><h3>Heat-flow scans</h3></div>${empty("Add a run or load the example data (synthetic scans of selenium computed with the TL model).")}`; return; }
+    if (!r) { $("#right").innerHTML = `<div class="rhead"><h3>Heat-flow scans</h3></div>${empty("Add a run or load the example data (synthetic scans of selenium computed with the Takeda–Lucas model).")}`; return; }
     $("#right").innerHTML = `<div class="rhead"><h3>${esc(r.name)}</h3></div><div class="plots">${card("a1raw")}${card("a1cp")}${card("a1tf")}${card("a1all")}</div>`;
     const N = norm(r), c = col(A.sel), X = N.T.map(tU);
     const lo = N.T[0], hi = N.T[N.T.length - 1];
@@ -212,11 +212,11 @@
           <label class="f">Annealing T<sub>a</sub> (${uL()})<input type="number" id="recTa" value="${A.rec.Ta !== "" ? A.rec.Ta : (isFinite(S2.Ta) ? tIn(S2.Ta) : "")}" step="any" placeholder="needed for φ"></label>
           <label class="f">ΔC<sub>p</sub> (${R ? cpUnit(R) : ""})<input type="number" id="recDcp" value="${A.rec.dcp}" step="any" placeholder="${nf(S2.dcpAuto, 4)} (reference)"></label>
         </div>
-        <p class="note">Glass and liquid ranges are the reference run's (tab 1). ΔH = ∫ ΔHF dT / q is the enthalpy lost during annealing and recovered on heating. T<sub>f</sub> = T<sub>f</sub>′(reference) − ΔH/ΔC<sub>p</sub>; φ = 1 − ΔH/ΔH<sub>∞</sub> with ΔH<sub>∞</sub> = ΔC<sub>p</sub>(T<sub>f</sub>′ − T<sub>a</sub>).</p>
+        <p class="note">Glass and liquid ranges are the reference run's (tab 1). With ΔHF the heat-flow difference from the reference, ΔH = ∫ ΔHF dT / q is the enthalpy lost during annealing and recovered on heating. T<sub>f</sub> = T<sub>f</sub>′(reference) − ΔH/ΔC<sub>p</sub>; φ = 1 − ΔH/ΔH<sub>∞</sub> with ΔH<sub>∞</sub> = ΔC<sub>p</sub>(T<sub>f</sub>′ − T<sub>a</sub>).</p>
       </div></div>
       ${S2.res && S2.res.length ? `<div class="card"><h2>Results <span class="sub">reference T<sub>f</sub>′ = ${nf(tU(S2.NR.TfPrime), 5)} ${uL()}</span></h2><div class="body" style="overflow-x:auto">
         <table class="metrics"><tr><th>t<sub>a</sub> (s)</th><th>ΔH (${u})</th><th>ΔH/ΔC<sub>p</sub> (K)</th><th>T<sub>f</sub> from ΔH</th><th>T<sub>f</sub>′ (area)</th><th>φ</th></tr>${res}</table>
-        ${isFinite(S2.res[0] && S2.res[0].dHinf) ? `<p class="note">ΔH<sub>∞</sub> = ${nf(S2.res[0].dHinf, 4)} ${u}${S2.kww ? ` · KWW fit of φ(t<sub>a</sub>): τ = <b>${nf(S2.kww.tau, 4)} s</b>, β = <b>${nf(S2.kww.beta, 3)}</b>, ⟨τ⟩ = ${nf(S2.kww.meanTau, 4)} s` : " · a KWW fit needs at least three annealing times"}</p>` : `<p class="note">Enter T<sub>a</sub> to get φ(t<sub>a</sub>) and a KWW fit.</p>`}
+        ${isFinite(S2.res[0] && S2.res[0].dHinf) ? `<p class="note">ΔH<sub>∞</sub> = ${nf(S2.res[0].dHinf, 4)} ${u}${S2.kww ? ` · Kohlrausch–Williams–Watts (KWW) fit of φ(t<sub>a</sub>): τ = <b>${nf(S2.kww.tau, 4)} s</b>, β = <b>${nf(S2.kww.beta, 3)}</b>, ⟨τ⟩ = ${nf(S2.kww.meanTau, 4)} s` : " · a KWW fit needs at least three annealing times"}</p>` : `<p class="note">Enter T<sub>a</sub> to get φ(t<sub>a</sub>) and a KWW fit.</p>`}
         <div class="row" style="margin-top:6px"><button class="btn small primary" id="save2">Save to project</button><button class="btn small" id="csv2">Export results (.csv)</button><button class="btn small" id="csv2c">Export ΔHF curves (.csv)</button></div>
       </div></div>` : `<div class="card"><h2>Results</h2><div class="body"><p class="note" style="margin-top:0">Enter the annealing time t<sub>a</sub> of at least one heating scan above.</p></div></div>`}`;
   }
@@ -263,7 +263,7 @@
     let fitCard = "";
     if (v) {
       const F = vfit(v);
-      fitCard = `<div class="card"><h2>Stretched-exponential fit <span class="sub">${esc(v.name)}</span></h2><div class="body">
+      fitCard = `<div class="card"><h2>Stretched-exponential (Kohlrausch–Williams–Watts, KWW) fit <span class="sub">${esc(v.name)}</span></h2><div class="body">
         <div class="eqn">${esc(v.pu.split(" (")[0] || "V")}(t) = V∞ + (V₀ − V∞)·exp[−(t/τ)^β]</div>
         <div class="grid2" style="margin-top:8px"><label class="f">Equilibrium value V∞<select id="vinfMode"><option value="free" ${v.vinfMode !== "fixed" ? "selected" : ""}>fitted</option><option value="fixed" ${v.vinfMode === "fixed" ? "selected" : ""}>fixed at</option></select></label>
           <label class="f">V∞ value<input type="number" id="vinfVal" value="${v.vinf}" step="any" ${v.vinfMode === "fixed" ? "" : "disabled"}></label></div>
@@ -285,7 +285,7 @@
   }
   function renderRight3() {
     const v = A.vols[A.vsel];
-    if (!v) { $("#right").innerHTML = `<div class="rhead"><h3>Property relaxation</h3></div>${empty("Add a dataset or load the example (specific volume of selenium during annealing, computed with the TL model).")}`; return; }
+    if (!v) { $("#right").innerHTML = `<div class="rhead"><h3>Property relaxation</h3></div>${empty("Add a dataset or load the example (specific volume of selenium during annealing, computed with the Takeda–Lucas model).")}`; return; }
     $("#right").innerHTML = `<div class="rhead"><h3>${esc(v.name)}</h3></div><div class="plots">${card("a3v")}${card("a3phi")}${card("a3r")}</div>`;
     const F = vfit(v), c = col(A.vsel), tmax = Math.max(...v.t), tmin = Math.min(...v.t.filter(t => t > 0));
     const tt = A.logt ? logspace(tmin, tmax, 200) : Array.from({ length: 200 }, (_, k) => tmax * k / 199);

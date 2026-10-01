@@ -33,7 +33,7 @@
   <p>GARASU contains four tools. The red bar on the left of every page switches between them, on the web and in the desktop app; the icon at its top returns to the home page.</p>
   <table>
     <tr><th style="width:18%">Tool</th><th>Use it to…</th></tr>
-    <tr><td><b>Learn</b></td><td>understand the experiments (annealing, Kovacs jumps, DSC, enthalpy recovery, MDSC) and the models (TNM, MAP / RelaxPy, Takeda–Lucas), with live simulations on every topic.</td></tr>
+    <tr><td><b>Learn</b></td><td>understand the experiments (annealing, Kovacs jumps, differential scanning calorimetry or DSC, enthalpy recovery, modulated DSC or MDSC) and the three models described below, with live simulations on every topic.</td></tr>
     <tr><td><b>Lab</b></td><td>try a cool–heat scan, an anneal or a T-jump interactively and compare the three models side by side.</td></tr>
     <tr><td><b>Fitter</b></td><td>program any thermal history, load your data, then compute with chosen parameters or fit the parameters, with uncertainties.</td></tr>
     <tr><td><b>Data Analysis</b></td><td>turn raw DSC heat flow into normalized C<sub>p</sub>, fictive temperatures and recovered enthalpy, and fit volume (or density, length…) relaxation during annealing.</td></tr>
@@ -42,8 +42,8 @@
   <table>
     <tr><th style="width:26%">Model</th><th>In one line</th></tr>
     <tr><td><b>Takeda–Lucas (TL)</b></td><td>Heterogeneous domains, each with its own Vogel temperature and local fictive temperature <i>T</i><sub>f,i</sub>; the spread of <i>T</i><sub>f,i</sub> persists in equilibrium, giving temperature-dependent nonexponentiality and enthalpy fluctuation (J. Chem. Phys. 160, 174504, 2024).</td></tr>
-    <tr><td><b>Tool–Narayanaswamy–Moynihan (TNM)</b></td><td>One fictive temperature for the whole sample, nonlinearity <i>x</i> and a stretched-exponential (KWW) kernel.</td></tr>
-    <tr><td><b>MAP / RelaxPy</b></td><td>Mauro–Allan–Potuzak nonequilibrium viscosity with Prony-series components (Wilkinson, Mauro &amp; Mauro, SoftwareX 2018).</td></tr>
+    <tr><td><b>Tool–Narayanaswamy–Moynihan (TNM)</b></td><td>One fictive temperature for the whole sample, nonlinearity <i>x</i> and a stretched-exponential Kohlrausch–Williams–Watts (KWW) kernel.</td></tr>
+    <tr><td><b>Mauro–Allan–Potuzak (MAP) / RelaxPy</b></td><td>Nonequilibrium viscosity with Prony-series components (Wilkinson, Mauro &amp; Mauro, SoftwareX 2018).</td></tr>
   </table>
   <div class="box"><b class="t">Your data stay on your computer</b><p>All calculations run locally, in your browser or in the desktop app. Nothing you load is uploaded anywhere.</p></div>
   <div class="box warn"><b class="t">Beta software</b><p>GARASU is in beta: features, defaults and occasionally results may change between versions. Record the version number (bottom of the home page in the desktop app) with your results.</p></div>
@@ -79,7 +79,7 @@
   </div>
   <h3>2.3 Updates</h3>
   <p>The desktop app checks for a new version when it starts and every six hours; you can also check with <b>GARASU → Check for Updates…</b> (Mac) or <b>Help → Check for Updates…</b> (Windows). A new version downloads in the background and the app offers <b>Restart now</b> to install it.</p>
-  <div class="box"><p>If macOS cannot install an update in place, the app says so and offers <b>Download</b>, which opens the release page: install the new DMG as in 2.2. The web version needs no updates.</p></div>
+  <div class="box"><p>If macOS cannot install an update in place, the app says so and offers <b>Download</b>, which opens the release page: install the new disk image (.dmg) as in 2.2. The web version needs no updates.</p></div>
   <h3>2.4 One window for every tool</h3>
   <p>The desktop app opens a single window on the home page. The bar on the left switches tools inside that window, and each tool stays as you left it: a computed Fitter run is still there after a visit to Learn. Shortcuts: <span class="kbd">⌘/Ctrl 1</span> Learn, <span class="kbd">2</span> Lab, <span class="kbd">3</span> Fitter, <span class="kbd">4</span> Data Analysis, <span class="kbd">⌘/Ctrl 0</span> home. The version number is shown at the bottom of the home page.</p>
 </section>
@@ -128,7 +128,7 @@
   <p>The Lab (formerly Explorer) is a quick, always-live playground: change a number and the plots update. Use it to build intuition; use the Fitter for your own histories and data.</p>
   <figure><img src="img/lab.png" alt=""><figcaption><b>Figure 5.1.</b> Lab: models and material on the left, protocol below; tabs on the right.</figcaption></figure>
   <ul>
-    <li><b>Models</b>: tick TL, TNM and/or RelaxPy. <b>Material preset</b> loads the TL parameters of Table I of the JCP 2024 paper; <i>T</i><sub>g</sub> and <i>m</i> are shared by the models unless unlinked in their sections.</li>
+    <li><b>Models</b>: tick TL, TNM and/or RelaxPy. <b>Material preset</b> loads the TL parameters of Table I of Takeda &amp; Lucas, <i>J. Chem. Phys.</i> 2024; <i>T</i><sub>g</sub> and <i>m</i> are shared by the models unless unlinked in their sections.</li>
     <li><b>Thermal history</b>: choose a protocol (cool → heat, slow cool, anneal, Kovacs T-jump) or build segments with <b>+ Ramp</b>, <b>+ Hold</b>, <b>+ T-jump</b>.</li>
     <li><b>Tabs</b>: Calorimetry (C<sub>p</sub>, <i>T</i><sub>f</sub>), Relaxation dynamics, Distributions (TL relaxation-time distributions and β<sub>KWW</sub>(T)), Time history, Parameters.</li>
     <li><b>Run</b> / <b>auto</b>: untick <b>auto</b> to update only when you click <b>Run</b>. <b>Pin</b> keeps a run for comparison; <b>CSV</b> exports the curves.</li>
@@ -180,14 +180,14 @@
   <ul>
     <li>Choose <b>Takeda–Lucas</b>, <b>TNM</b> or <b>RelaxPy (MAP)</b>.</li>
     <li>Type values. Ticked parameters are <b>free</b> in a fit and move between <b>min</b> and <b>max</b>; unticked ones stay fixed. <span class="ui">Bounds around values</span> sets sensible bounds.</li>
-    <li>TL: <b>Preset</b> loads Table I of the JCP 2024 paper; <b>N</b> is the number of domains (200 is accurate). <i>f</i> is fitted on its 0.01 grid.</li>
+    <li>TL: <b>Preset</b> loads Table I of Takeda &amp; Lucas, <i>J. Chem. Phys.</i> 2024; <b>N</b> is the number of domains (200 is accurate). <i>f</i> is fitted on its 0.01 grid.</li>
     <li>TNM: choose the exact KWW summation or the Prony kernel for display (fits always use Prony).</li>
     <li>MAP: <span class="ui">RelaxPy example glass</span>; A can follow from continuity at T<sub>g</sub>, and p = 0.3082·m (RelaxPy default).</li>
   </ul>
 
   <h3>6.4 Step 4 · Compute and fit</h3>
   <h4>Compute with chosen parameters</h4>
-  <p>Forward calculation, no fitting. Check or adjust the values and click <span class="ui">Compute</span>. With data, the agreement (R², RMSE per dataset) is shown.</p>
+  <p>Forward calculation, no fitting. Check or adjust the values and click <span class="ui">Compute</span>. With data, the agreement (R² and root-mean-square error, RMSE, per dataset) is shown.</p>
   <figure><img src="img/fit_step4_computed.png" alt=""><figcaption><b>Figure 6.4.</b> Result of <b>Compute</b>: temperature program and T<sub>f</sub>, normalized C<sub>p</sub> on each ramp, relaxation during holds, and relaxation time.</figcaption></figure>
   <h4>Extra results for the TL model</h4>
   <ul>
@@ -205,7 +205,7 @@
     <li>Set <b>Max model runs</b> and the <b>Weighting</b> (each dataset equal, or each point equal).</li>
     <li>Click <span class="ui">Run fit</span>. <span class="ui">Stop</span> ends early; <span class="ui">Undo fit</span> restores the previous values.</li>
   </ol>
-  <p>The result lists each parameter with ±1 standard error, flags parameters <i>at bound</i> or <i>poorly determined</i>, and gives R², reduced χ², AIC and BIC. In the correlation matrix, |r| &gt; 0.95 (bold) means two parameters trade off and are not separately determined by your data.</p>
+  <p>The result lists each parameter with ±1 standard error, flags parameters <i>at bound</i> or <i>poorly determined</i>, and gives R², reduced χ², and the Akaike and Bayesian information criteria (AIC, BIC). In the correlation matrix, |r| &gt; 0.95 (bold) means two parameters trade off and are not separately determined by your data.</p>
   <h4>Exports</h4>
   <p><span class="ui">Export report (.json)</span> (parameters, errors, statistics, history), <span class="ui">Model vs data (.csv)</span>, <span class="ui">Simulation (.csv)</span> (t, T, T<sub>f</sub>, τ, τ<sub>eq</sub>, segment), and <b>Export ▾</b> on each plot. <span class="ui">Save to project</span> stores the whole result in the open project (section 8.3).</p>
 
@@ -229,7 +229,7 @@
     <li>Click <span class="ui">Add run</span>.</li>
   </ol>
   <figure><img src="img/an_tab1.png" alt=""><figcaption><b>Figure 7.2.</b> Normalization of the reference heating scan. Blue band: glass range; orange band: liquid range; dashed: the fitted baselines.</figcaption></figure>
-  <p><b>Normalization.</b> Enter a <b>glass range</b> and a <b>liquid range</b> (or <span class="ui">Auto ranges</span>). A straight line is fitted to the heat flow in each range and extrapolated, giving</p>
+  <p><b>Normalization.</b> Enter a <b>glass range</b> and a <b>liquid range</b> (or <span class="ui">Auto ranges</span>). A straight line is fitted to the heat flow (HF) in each range and extrapolated, giving</p>
   <p class="eq">C<sub>p</sub><sup>N</sup> = (HF − HF<sub>g</sub>) / (HF<sub>l</sub> − HF<sub>g</sub>) = dT<sub>f</sub>/dT,&nbsp;&nbsp;&nbsp; T<sub>f</sub>(T) = T* − ∫<sub>T</sub><sup>T*</sup> C<sub>p</sub><sup>N</sup> dT′</p>
   <p>with T* at the start of the liquid range (Moynihan's area matching). The card reports the limiting fictive temperature <b>T<sub>f</sub>′</b>, the <b>midpoint</b> (C<sub>p</sub><sup>N</sup> = 0.5) and <b>ΔC<sub>p</sub></b> at T<sub>f</sub>′. <span class="ui">Apply to all runs</span> copies the ranges; <span class="ui">Export normalized (.csv)</span> saves T, HF, C<sub>p</sub><sup>N</sup>, T<sub>f</sub> for every run; <span class="ui">Save to project</span> stores them, with both baselines, in the open project (section 8.2).</p>
   <div class="box tip"><b class="t">Choosing the ranges</b><ul><li>Glass range: well below the transition, where the scan is straight; avoid the start-up transient.</li><li>Liquid range: above the overshoot, where the scan is straight again.</li><li>For comparisons (cooling rates, aging series), use the same ranges for all runs.</li></ul></div>
@@ -351,7 +351,7 @@
     <tr><td>A plot shows “Could not draw …”.</td><td>The rest of the page still works. Check the inputs of that part (e.g. a range with fewer than two points) and report it if it persists.</td></tr>
     <tr><td>A hold shows no relaxation.</td><td>The hold is above T<sub>g</sub>: the liquid equilibrates within milliseconds. Put the hold below T<sub>g</sub>.</td></tr>
     <tr><td>Mac: “cannot be opened / cannot verify the developer”.</td><td>System Settings → Privacy &amp; Security → <b>Open Anyway</b> (once per computer).</td></tr>
-    <tr><td>Mac: “Restart now” does nothing, or the version does not change.</td><td>Download the latest DMG and replace the app (section 2.2). Versions before 1.1.6 cannot update themselves.</td></tr>
+    <tr><td>Mac: “Restart now” does nothing, or the version does not change.</td><td>Download the latest disk image (.dmg) and replace the app (section 2.2). Versions before 1.1.6 cannot update themselves.</td></tr>
     <tr><td>Windows: “Windows protected your PC”.</td><td><b>More info → Run anyway</b> (first install only).</td></tr>
     <tr><td>TL map or β<sub>KWW</sub> plot missing.</td><td>Very long histories (above ~60 000 steps with 200 domains) do not keep every T<sub>f,i</sub>. Use a coarser ΔT step or fewer hold points.</td></tr>
     <tr><td>A fitted parameter is “at bound”.</td><td>Widen its bounds in step 3, or fix it if the data cannot determine it.</td></tr>
@@ -367,6 +367,23 @@
 <!-- 11 -->
 <section class="chapter">
   <h2>11 · Reference</h2>
+  <h3>Abbreviations</h3>
+  <table class="abbr">
+    <tr><th style="width:16%">Abbreviation</th><th>Meaning</th></tr>
+    <tr><td>AIC, BIC</td><td>Akaike and Bayesian information criteria (fit quality penalized by the number of parameters; lower is better)</td></tr>
+    <tr><td>DSC</td><td>differential scanning calorimetry</td></tr>
+    <tr><td>HF, HF<sub>g</sub>, HF<sub>l</sub></td><td>heat flow; extrapolated glass and liquid heat-flow lines</td></tr>
+    <tr><td>KWW</td><td>Kohlrausch–Williams–Watts (stretched exponential, exp[−(t/τ)<sup>β</sup>])</td></tr>
+    <tr><td>LM</td><td>Levenberg–Marquardt (local least-squares fitting)</td></tr>
+    <tr><td>MAP</td><td>Mauro–Allan–Potuzak nonequilibrium viscosity model (implemented in RelaxPy)</td></tr>
+    <tr><td>MDSC</td><td>modulated (temperature-modulated) differential scanning calorimetry, also TMDSC</td></tr>
+    <tr><td>MYEGA</td><td>Mauro–Yue–Ellison–Gupta–Allan viscosity equation</td></tr>
+    <tr><td>OTP, PVAc</td><td><i>o</i>-terphenyl, poly(vinyl acetate) (material presets)</td></tr>
+    <tr><td>RMSE, SE</td><td>root-mean-square error, standard error</td></tr>
+    <tr><td>TL</td><td>Takeda–Lucas heterogeneous model</td></tr>
+    <tr><td>TNM</td><td>Tool–Narayanaswamy–Moynihan model</td></tr>
+    <tr><td>VFT</td><td>Vogel–Fulcher–Tammann equation</td></tr>
+  </table>
   <h3>Model parameters</h3>
   <table>
     <tr><th style="width:16%">Model</th><th style="width:22%">Parameter</th><th>Meaning</th></tr>
@@ -381,7 +398,7 @@
     <tr><td>x</td><td>nonlinearity (0–1)</td></tr>
     <tr><td>β</td><td>KWW stretching exponent</td></tr>
     <tr><td rowspan="9">MAP / RelaxPy</td><td>T<sub>g</sub></td><td>η(T<sub>g</sub>) = 10¹² Pa·s</td></tr>
-    <tr><td>m</td><td>fragility (MYEGA)</td></tr>
+    <tr><td>m</td><td>fragility in the Mauro–Yue–Ellison–Gupta–Allan (MYEGA) viscosity equation</td></tr>
     <tr><td>log<sub>10</sub> η<sub>∞</sub></td><td>high-temperature viscosity limit</td></tr>
     <tr><td>A, B, C</td><td>nonequilibrium viscosity branch; A from continuity at T<sub>g</sub> by default</td></tr>
     <tr><td>p</td><td>ergodicity exponent (default 0.3082·m)</td></tr>

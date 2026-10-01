@@ -976,7 +976,7 @@ const ENGINE = (function () {
         { k: 'Tg', label: 'T_g', unit: 'K', v: 308.13, lo: 250, hi: 370, free: true, tip: 'τ(T_g) = 100 s' },
         { k: 'm', label: 'm', unit: '', v: 64.14, lo: 15, hi: 150, free: true, tip: 'Δh/R = m ln10 T_g' },
         { k: 'x', label: 'x', unit: '', v: 0.5, lo: 0.05, hi: 1, free: true, tip: 'nonlinearity' },
-        { k: 'beta', label: 'β', unit: '', v: 0.55, lo: 0.15, hi: 1, free: true, tip: 'KWW stretching' },
+        { k: 'beta', label: 'β', unit: '', v: 0.55, lo: 0.15, hi: 1, free: true, tip: 'Kohlrausch–Williams–Watts (KWW) stretching exponent' },
       ],
       fixed: { kernel: 'prony' },
     },
@@ -1022,7 +1022,7 @@ const ENGINE = (function () {
   /* ---------------- data kinds ---------------- */
   const KINDS = {
     cp_norm: { label: 'DSC — normalized C_p (dT_f/dT) vs T', axis: 'T', segs: ['ramp'], ylab: 'C_p,norm', scaleOpt: true },
-    cp_raw:  { label: 'DSC — C_p or heat flow vs T (glass/liquid baselines fitted)', axis: 'T', segs: ['ramp'], ylab: 'C_p or HF' },
+    cp_raw:  { label: 'DSC — C_p or heat flow vs T (glass/liquid baselines fitted)', axis: 'T', segs: ['ramp'], ylab: 'C_p or heat flow' },
     H_T:     { label: 'Enthalpy vs T (H = a + b·T + ΔC_p·T_f fitted)', axis: 'T', segs: ['ramp', 'mdsc'], ylab: 'H' },
     V_T:     { label: 'Volume / density / length vs T (dilatometry)', axis: 'T', segs: ['ramp', 'mdsc'], ylab: 'V' },
     tf_T:    { label: 'Fictive temperature T_f vs T', axis: 'T', segs: ['ramp', 'mdsc'], ylab: 'T_f (K)' },
@@ -1504,7 +1504,7 @@ function renderStepper() {
   const h = S.hist;
   $("#st1").textContent = h ? `${S.segs.length} segments · ${h.T.length.toLocaleString()} steps · ${E.fmtTime(h.t[h.t.length - 1])}` : (S.histErr || "—");
   const nd = S.datasets.filter(d => d.enabled).length; $("#st2").textContent = S.datasets.length ? `${nd} of ${S.datasets.length} datasets active` : "none (simulation only)";
-  $("#st3").textContent = `${MODEL_NAMES[S.model]} · ${freeList(S.model).length} free parameters`;
+  $("#st3").textContent = `${({ TL: "Takeda–Lucas", TNM: "Tool–Narayanaswamy–Moynihan", RP: "RelaxPy" })[S.model] || MODEL_NAMES[S.model]} · ${freeList(S.model).length} free parameters`; $("#st3").title = E.MODELDEFS[S.model].name;
   const CR = curRes(); $("#st4").textContent = CR ? `${CR.kind === "fit" ? "fitted" : "computed"}${CR.perDs.length ? ` · R² ${CR.R2tot.toFixed(4)}` : ""}` : (S.sim ? "simulated" : "not run");
   $$(".step").forEach(b => b.classList.toggle("done", (+b.dataset.step === 1 && !!h) || (+b.dataset.step === 2 && nd > 0) || (+b.dataset.step === 4 && !!curRes())));
 }
@@ -1702,7 +1702,7 @@ function segRes(i) {
 function renderLeft1() {
   const h = S.hist, tot = h ? h.t[h.t.length - 1] : 0;
   $("#left").innerHTML = `
-  <div class="card"><h2>Start <span class="sub">system equilibrated: T_f = T₀</span></h2><div class="body"><div class="grid2">
+  <div class="card"><h2>Start <span class="sub">system equilibrated: T<sub>f</sub> = T₀</span></h2><div class="body"><p class="note" style="margin:0 0 10px">Build the temperature program of your experiment: a differential scanning calorimetry (DSC) scan, an anneal, a T-jump or a modulated DSC (MDSC) run.</p><div class="grid2">
     <label class="f">Start temperature T₀ (${uL()})<input type="number" id="T0" value="${tIn(S.T0)}" step="any"></label>
     <label class="f">Insert template<select id="tpl"><option value="">— choose —</option>${Object.entries(TEMPLATES).map(([k, t]) => `<option value="${k}">${t.name}</option>`).join("")}</select></label>
   </div><p class="note">Templates are placed around the current model T<sub>g</sub> (${nf(tU(S.P[S.model].v.Tg), 5)} ${uL()}) and replace the segment list.</p></div></div>
@@ -1887,10 +1887,11 @@ function commitEditor() {
 }
 
 /* ================= STEP 3: model & parameters ================= */
+const PRESET_LABEL = { OTP: "o-Terphenyl (OTP)", PVAc: "Poly(vinyl acetate) (PVAc)" };
 const TL_PRESETS = { "Glycerol": [189.73, 52.25, -25.40, 0.64, 0.82], "Selenium": [308.13, 64.14, -23.41, 0.59, 1], "B₂O₃": [559.66, 36.28, -15.39, 0.60, 1], "OTP": [246.15, 106.16, -25.48, 0.59, 1], "PVAc": [313.06, 92.36, -37.87, 0.52, 0.85], "D-sorbitol": [265.7, 88.76, -35.61, 0.57, 1] };
 function renderLeft3() {
   const m = S.model, def = E.MODELDEFS[m], Pm = S.P[m];
-  const desc = { TL: "heterogeneous Adam–Gibbs domains with a T_v distribution (JCP 2024)", TNM: "single fictive temperature, KWW kernel, nonlinearity x", RP: "MAP nonequilibrium viscosity with Prony-series T_f components" };
+  const desc = { TL: "heterogeneous Adam–Gibbs domains with a T_v distribution (Takeda & Lucas, J. Chem. Phys. 2024)", TNM: "single fictive temperature, Kohlrausch–Williams–Watts (KWW) kernel, nonlinearity x", RP: "Mauro–Allan–Potuzak (MAP) nonequilibrium viscosity with Prony-series T_f components" };
   const rows = def.params.map(q => { const fr = Pm.free[q.k]; const auto = (m === "RP" && ((q.k === "A" && Pm.opt.Aauto) || (q.k === "pexp" && Pm.opt.pauto)));
     return `<tr class="${fr ? "" : "fixed"}"><td><input type="checkbox" data-pf="${q.k}" ${fr ? "checked" : ""} ${auto ? "disabled" : ""} title="Free in the fit"></td>
       <td class="nm" title="${esc(q.tip || "")}">${q.label}${pUnit(q) ? ` <span class="note">(${pUnit(q)})</span>` : ""}${q.discrete ? ` <span class="note">step ${q.discrete}</span>` : ""}</td>
@@ -1901,7 +1902,7 @@ function renderLeft3() {
     ${Object.keys(E.MODELDEFS).map(k => `<label class="mcard ${k === m ? "sel" : ""}"><input type="radio" name="model" value="${k}" ${k === m ? "checked" : ""}><b>${E.MODELDEFS[k].name}</b><span>${desc[k]}</span></label>`).join("")}
   </div></div>
   <div class="card"><h2>Parameters <span class="sub">tick = free in the fit</span></h2><div class="body">
-    <div class="row" style="margin-bottom:6px">${m === "TL" ? `<select id="tlPreset"><option value="">Preset (Table I, JCP 2024)…</option>${Object.keys(TL_PRESETS).map(k => `<option>${k}</option>`).join("")}</select>` : ""}
+    <div class="row" style="margin-bottom:6px">${m === "TL" ? `<select id="tlPreset"><option value="">Preset (Table I, Takeda & Lucas 2024)…</option>${Object.keys(TL_PRESETS).map(k => `<option value="${k}">${PRESET_LABEL[k] || k}</option>`).join("")}</select>` : ""}
       ${m === "RP" ? `<button class="btn small" id="rpExample">RelaxPy example glass</button>` : ""}
       <button class="btn small" id="autoB" title="Set min/max around the current values">Bounds around values</button></div>
     <table class="pt"><tr><th></th><th>parameter</th><th>value</th><th>min</th><th>max</th></tr>${rows}</table>
@@ -1971,19 +1972,19 @@ function resultsHTML(R) {
     return `<tr><td class="nm">${q.label}${ABS_T.has(q.k) ? ` <span class="note">(${uL()})</span>` : ""}</td><td class="num">${nf(pShow(q.k, v), 6)}</td><td class="num">${fr ? (isFinite(se) ? "± " + nf(se, 2) : (q.discrete ? "grid" : "–")) : "fixed"}</td><td class="num">${fr ? `[${nf(pShow(q.k, fr.lo))}, ${nf(pShow(q.k, fr.hi))}]` : ""}</td><td>${atB ? '<span class="flag">at bound</span>' : ""}${fr && isFinite(se) && Math.abs(se) > Math.abs(v) && v !== 0 ? '<span class="flag">poorly determined</span>' : ""}</td></tr>`; }).join("");
   const dsRows = R.perDs.map(d => `<tr><td>${esc(d.name)}</td><td class="num">${d.nValid}/${d.n}</td><td class="num">${d.R2.toFixed(4)}</td><td class="num">${nf(d.rmse, 3)}</td><td style="font-size:11px">${d.lin ? d.lin.names.map((n, k) => d.lin.b[k] ? `${n}=${nf(d.lin.b[k], 3)}` : "").filter(Boolean).join(", ") : ""}</td></tr>`).join("");
   const exportRow = `<div class="row" style="margin-top:8px">${window.GP ? `<button class="btn small primary" id="saveFit" title="Saves the model against the data, all parameters, quality, the baselines of the data and this session">Save to project</button>` : ""}<button class="btn small" id="expRep">Export report (.json)</button>${R.perDs.length ? `<button class="btn small" id="expCurves">Model vs data (.csv)</button>` : ""}<button class="btn small" id="csvSim">Simulation (.csv)</button></div>`;
-  if (!isFit && !R.perDs.length) return `<div class="card"><h2>Result</h2><div class="body"><p class="note" style="margin:0">Simulation computed. Add data in step 2 to see R², RMSE and residuals.</p>${exportRow}</div></div>`;
+  if (!isFit && !R.perDs.length) return `<div class="card"><h2>Result</h2><div class="body"><p class="note" style="margin:0">Simulation computed. Add data in step 2 to see R², the root-mean-square error (RMSE) and residuals.</p>${exportRow}</div></div>`;
   const qualityCard = `<div class="card"><h2>${isFit ? "Quality of fit" : "Agreement with data"}</h2><div class="body" style="overflow-x:auto">
-    <table class="metrics"><tr><th>dataset</th><th>N</th><th>R²</th><th>RMSE</th><th>linear coefficients</th></tr>${dsRows}</table>
+    <table class="metrics"><tr><th>dataset</th><th>N</th><th>R²</th><th><abbr title="root-mean-square error">RMSE</abbr></th><th>linear coefficients</th></tr>${dsRows}</table>
     <div class="summary" style="grid-template-columns:repeat(3,1fr);margin-top:8px">
       <div class="stat"><b>${R.R2tot.toFixed(4)}</b><span>overall R² (weighted)</span></div><div class="stat"><b>${nf(R.chi2red, 3)}</b><span>reduced χ² (weighted)</span></div><div class="stat"><b>${R.k}</b><span>${isFit ? "fitted parameters (incl. linear)" : "linear coefficients solved"}</span></div>
-      <div class="stat"><b>${nf(R.aic, 5)}</b><span>AIC</span></div><div class="stat"><b>${nf(R.bic, 5)}</b><span>BIC</span></div><div class="stat"><b>${isFit ? R.nev : nf(R.secs * 1000, 3) + " ms"}</b><span>${isFit ? `model runs · ${nf(R.secs, 3)} s` : "compute time"}</span></div>
+      <div class="stat"><b>${nf(R.aic, 5)}</b><span>Akaike information criterion (AIC)</span></div><div class="stat"><b>${nf(R.bic, 5)}</b><span>Bayesian information criterion (BIC)</span></div><div class="stat"><b>${isFit ? R.nev : nf(R.secs * 1000, 3) + " ms"}</b><span>${isFit ? `model runs · ${nf(R.secs, 3)} s` : "compute time"}</span></div>
     </div>
     ${R.nOut ? `<p class="note" style="color:var(--warn)">${R.nOut} data points fall outside the simulated range of their segment${isFit ? " and were penalized" : ""} — check segment limits.</p>` : ""}
     ${exportRow}
   </div></div>`;
   if (!isFit) return qualityCard;
   return `<div class="card"><h2>Parameters <span class="sub">${MODEL_NAMES[R.model]} · ±1 standard error</span></h2><div class="body" style="overflow-x:auto">
-    <table class="metrics"><tr><th>parameter</th><th>value</th><th>SE</th><th>range</th><th></th></tr>${rows}</table>
+    <table class="metrics"><tr><th>parameter</th><th>value</th><th><abbr title="standard error">SE</abbr></th><th>range</th><th></th></tr>${rows}</table>
     ${U && U.singular ? `<p class="note" style="color:var(--warn)">The Jacobian is singular — some free parameters are not identifiable from these data.</p>` : ""}</div></div>
   ${qualityCard}`;
 }
@@ -2004,7 +2005,7 @@ function renderRight4() {
     ${simOverviewHTML("o4")}`;
   act.forEach((d, j) => plotDataset("p4d" + j, d, S.datasets.indexOf(d), true));
   if (R) {
-    P("p4conv", { title: "Convergence", xlabel: "model runs", ylabel: "weighted SSE", ylog: true, series: [{ name: "best so far", x: R.trace.map(p => p[0]), y: R.trace.map(p => p[1]), color: css("--c1"), w: 2 }], xshort: "runs", yshort: "SSE" });
+    P("p4conv", { title: "Convergence", xlabel: "model runs", ylabel: "weighted sum of squared residuals", ylog: true, series: [{ name: "best so far", x: R.trace.map(p => p[0]), y: R.trace.map(p => p[1]), color: css("--c1"), w: 2 }], xshort: "runs", yshort: "SSE" });
     const U = R.unc, el = $("#corr");
     if (U && U.corr) { const lab = k => E.MODELDEFS[R.model].params.find(p => p.k === k).label;
       el.innerHTML = `<table class="corr"><tr><th></th>${U.names.map(n => `<th>${lab(n)}</th>`).join("")}</tr>${U.names.map((n, a) => `<tr><th>${lab(n)}</th>${U.corr[a].map((c, b) => { const v = Math.abs(c); const bg = a === b ? "var(--soft)" : `color-mix(in srgb, ${c > 0 ? "var(--c1)" : "var(--c2)"} ${Math.round(v * 70)}%, transparent)`; return `<td style="background:${bg};${v > 0.95 && a !== b ? "font-weight:700" : ""}">${a === b ? "1" : c.toFixed(2)}</td>`; }).join("")}</tr>`).join("")}</table><p class="note">|r| &gt; 0.95 (bold) means the two parameters trade off and are not separately determined by these data.</p>`; }
@@ -2022,7 +2023,7 @@ function runFit() {
     const tEnd = performance.now() + 35; let s;
     while (performance.now() < tEnd) { if (S.job.stop) break; s = g.next(); if (s.done) break; S.job.last = s.value; }
     const last = S.job.last;
-    if (!S.job.stop && !(s && s.done)) { const bar = $("#fBar"); if (bar) bar.style.width = Math.min(100, 100 * last.nev / S.opts.maxEval) + "%"; const st = $("#fStat"); if (st) st.textContent = `${last.phase} · ${last.nev} model runs · weighted SSE ${nf(last.fbest, 4)}`; setTimeout(tick, 0); return; }
+    if (!S.job.stop && !(s && s.done)) { const bar = $("#fBar"); if (bar) bar.style.width = Math.min(100, 100 * last.nev / S.opts.maxEval) + "%"; const st = $("#fStat"); if (st) st.textContent = `${last.phase} · ${last.nev} model runs · weighted sum of squares ${nf(last.fbest, 4)}`; setTimeout(tick, 0); return; }
     const res = s && s.done ? s.value : { best: last.best, fbest: last.fbest, nev: last.nev, trace: [[0, last.fbest], [last.nev, last.fbest]] };
     finishFit(model, free, act, res, S.job.stop ? "Stopped early." : "Fit finished.");
   };

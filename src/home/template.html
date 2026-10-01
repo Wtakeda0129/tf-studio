@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GARASU Beta · Glass Aging, Relaxation And Simulation Utility</title>
-<meta name="description" content="GARASU — simulate and fit glass relaxation with the heterogeneous Takeda–Lucas model, TNM and RelaxPy, for DSC, MDSC, enthalpy, volume and annealing data. Runs in your browser.">
+<meta name="description" content="GARASU (Glass Aging, Relaxation And Simulation Utility) simulates and fits glass relaxation with the heterogeneous Takeda–Lucas model, the Tool–Narayanaswamy–Moynihan model and the Mauro–Allan–Potuzak model (RelaxPy), for differential scanning calorimetry, modulated calorimetry, enthalpy, volume and annealing data. Runs in your browser.">
 <link rel="icon" type="image/png" href="favicon.png">
 <style>
 :root{--bg:#F3F1EC;--panel:#ffffff;--ink:#22252A;--muted:#6E6C66;--line:#E1D9CC;--accent:#7A2632;--soft:#F7F4EE}
@@ -54,7 +54,7 @@ body.desktop .desktop-only{display:inline-flex}
 <header class="top"><div class="wrap"><h1>GARASU</h1><span class="sub">Glass Aging, Relaxation And Simulation Utility</span><span class="beta" title="Beta: still in development">Beta</span></div></header>
 <section class="hero">
   <div class="wrap">
-    <p class="lead">Every glass carries the <b>thermal fingerprint</b> of how it was made, written in its fictive temperature. GARASU simulates and fits that history, using the heterogeneous <b>Takeda–Lucas</b> model alongside <b>TNM</b> and <b>RelaxPy</b>, for DSC, MDSC, enthalpy, volume and annealing data.</p>
+    <p class="lead">Every glass carries the <b>thermal fingerprint</b> of how it was made, written in its fictive temperature. GARASU simulates and fits that history, using the heterogeneous <b>Takeda–Lucas (TL)</b> model alongside the <b>Tool–Narayanaswamy–Moynihan (TNM)</b> model and <b>RelaxPy</b>, an implementation of the <b>Mauro–Allan–Potuzak (MAP)</b> model. It handles differential scanning calorimetry (DSC), modulated DSC (MDSC), enthalpy, volume and annealing data.</p>
     <div class="cta">
       <a class="btn primary" href="learn.html" data-tool="learn">Start learning</a>
       <a class="btn" href="analysis.html" data-tool="analysis">Analyze data</a>
@@ -77,13 +77,13 @@ body.desktop .desktop-only{display:inline-flex}
     <a class="tool" href="analysis.html" data-tool="analysis">
       <div class="name">Data Analysis<span class="tag">Your data</span></div>
       <p>Turn raw DSC heat flow and relaxation data into normalized curves, fictive temperatures and enthalpy.</p>
-      <ul><li>Glass and liquid baselines → C<sub>p</sub><sup>N</sup>, T<sub>f</sub>(T), T<sub>f</sub>′ for heating and cooling scans</li><li>Heating after annealing: aligned scans, ΔHF, recovered ΔH(t<sub>a</sub>), φ and a KWW fit</li><li>Volume / density / length during annealing: stretched-exponential fit</li></ul>
+      <ul><li>Glass and liquid baselines → C<sub>p</sub><sup>N</sup>, T<sub>f</sub>(T), T<sub>f</sub>′ for heating and cooling scans</li><li>Heating after annealing: aligned scans, heat-flow difference ΔHF, recovered enthalpy ΔH(t<sub>a</sub>), relaxation function φ and a Kohlrausch–Williams–Watts (KWW) fit</li><li>Volume / density / length during annealing: stretched-exponential fit</li></ul>
       <div class="go">Open Data Analysis</div>
     </a>
     <a class="tool" href="fitter.html" data-tool="fitter">
       <div class="name">Fitter<span class="tag">Step by step</span></div>
       <p>Program any thermal history, load your measurements, then compute with chosen parameters or fit them.</p>
-      <ul><li>Ramps, anneals with log-spaced times, T-jumps, MDSC modulation</li><li>DSC, MDSC C<sub>p</sub>′/C<sub>p</sub>″, enthalpy, volume, T<sub>f</sub>, annealing data</li><li>Bounded local / global fits, errors, correlations, AIC/BIC</li></ul>
+      <ul><li>Ramps, anneals with log-spaced times, T-jumps, MDSC modulation</li><li>DSC, MDSC C<sub>p</sub>′/C<sub>p</sub>″, enthalpy, volume, T<sub>f</sub>, annealing data</li><li>Bounded local / global fits, errors, correlations, Akaike and Bayesian information criteria (AIC, BIC)</li></ul>
       <div class="go">Open Fitter</div>
     </a>
   </div>
@@ -94,8 +94,8 @@ body.desktop .desktop-only{display:inline-flex}
   <h2>Models</h2>
   <div class="grid3">
     <div class="box"><b>Takeda–Lucas (TL)</b><span>Heterogeneous Adam–Gibbs domains with a distribution of T<sub>v</sub>; temperature-dependent nonexponentiality and enthalpy fluctuation.</span></div>
-    <div class="box"><b>Tool–Narayanaswamy–Moynihan</b><span>Single fictive temperature with nonlinearity x and a KWW kernel (exact summation or Prony series).</span></div>
-    <div class="box"><b>RelaxPy (MAP)</b><span>Mauro–Allan–Potuzak nonequilibrium viscosity with Prony-series fictive-temperature components.</span></div>
+    <div class="box"><b>Tool–Narayanaswamy–Moynihan (TNM)</b><span>Single fictive temperature with nonlinearity x and a KWW kernel (exact summation or Prony series).</span></div>
+    <div class="box"><b>RelaxPy (MAP)</b><span>Mauro–Allan–Potuzak (MAP) nonequilibrium viscosity with Prony-series fictive-temperature components.</span></div>
   </div>
 
   <h2 id="refs">References</h2>
