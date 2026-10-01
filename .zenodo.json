@@ -7,13 +7,10 @@
       "name": "Takeda, Wataru",
       "affiliation": "Department of Materials Science and Engineering, University of Arizona",
       "orcid": "0000-0002-2002-8751"
-    }
-  ],
-  "contributors": [
+    },
     {
       "name": "Lucas, Pierre",
-      "affiliation": "Department of Materials Science and Engineering, University of Arizona",
-      "type": "Supervisor"
+      "affiliation": "Department of Materials Science and Engineering, University of Arizona"
     }
   ],
   "license": "MIT",

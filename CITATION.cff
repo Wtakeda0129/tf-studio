@@ -7,6 +7,9 @@ authors:
     given-names: Wataru
     orcid: "https://orcid.org/0000-0002-2002-8751"
     affiliation: "Department of Materials Science and Engineering, University of Arizona"
+  - family-names: Lucas
+    given-names: Pierre
+    affiliation: "Department of Materials Science and Engineering, University of Arizona"
 version: 1.5.1
 doi: 10.5281/zenodo.23091595
 date-released: 2026-10-01
