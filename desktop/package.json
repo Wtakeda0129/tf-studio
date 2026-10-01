@@ -1,7 +1,7 @@
 {
   "name": "tf-studio",
   "productName": "GARASU",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "GARASU (Glass Aging, Relaxation And Simulation Utility): compute and fit glass relaxation dynamics with structural relaxation models",
   "author": "Wataru Takeda (University of Arizona, Lucas group)",
   "license": "UNLICENSED",
