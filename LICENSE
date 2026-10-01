@@ -19,9 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
--------------------------------------------------------------------------------
-Bundled third-party components keep their own licenses:
-  - KaTeX (site/vendor/katex): MIT License
-  - Source Sans 3 and Source Serif 4 fonts (site/vendor/fonts): SIL Open Font
-    License 1.1, see site/vendor/fonts/OFL-*.txt

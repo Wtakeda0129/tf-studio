@@ -68,5 +68,5 @@ If GARASU contributes to your work, please cite the Takeda–Lucas papers above 
 
 ## License
 
-GARASU is released under the [MIT License](LICENSE). Copyright © 2026 Arizona Board of Regents on behalf of the University of Arizona. Bundled KaTeX is MIT-licensed; the Source Sans 3 and Source Serif 4 fonts are under the SIL Open Font License 1.1.
+GARASU is released under the [MIT License](LICENSE). Copyright © 2026 Arizona Board of Regents on behalf of the University of Arizona. Bundled KaTeX (MIT) and the Source Sans 3 / Source Serif 4 fonts (SIL Open Font License 1.1) keep their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
