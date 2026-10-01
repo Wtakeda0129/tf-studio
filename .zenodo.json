@@ -5,7 +5,8 @@
   "creators": [
     {
       "name": "Takeda, Wataru",
-      "affiliation": "Department of Materials Science and Engineering, University of Arizona"
+      "affiliation": "Department of Materials Science and Engineering, University of Arizona",
+      "orcid": "0000-0002-2002-8751"
     }
   ],
   "contributors": [
@@ -17,10 +18,33 @@
   ],
   "license": "MIT",
   "access_right": "open",
-  "keywords": ["glass transition", "structural relaxation", "fictive temperature", "differential scanning calorimetry", "enthalpy recovery", "Takeda-Lucas model", "TNM model"],
+  "keywords": [
+    "glass transition",
+    "structural relaxation",
+    "fictive temperature",
+    "differential scanning calorimetry",
+    "enthalpy recovery",
+    "Takeda-Lucas model",
+    "TNM model"
+  ],
   "related_identifiers": [
-    { "identifier": "10.1063/5.0196812", "relation": "isSupplementTo", "scheme": "doi", "resource_type": "publication-article" },
-    { "identifier": "10.1039/d6ma00442c", "relation": "isSupplementTo", "scheme": "doi", "resource_type": "publication-article" },
-    { "identifier": "https://wtakeda-research.github.io/GARASU/", "relation": "isDocumentedBy", "scheme": "url" }
-  ]
+    {
+      "identifier": "10.1063/5.0196812",
+      "relation": "isSupplementTo",
+      "scheme": "doi",
+      "resource_type": "publication-article"
+    },
+    {
+      "identifier": "10.1039/d6ma00442c",
+      "relation": "isSupplementTo",
+      "scheme": "doi",
+      "resource_type": "publication-article"
+    },
+    {
+      "identifier": "https://wtakeda-research.github.io/GARASU/",
+      "relation": "isDocumentedBy",
+      "scheme": "url"
+    }
+  ],
+  "version": "1.5.1"
 }
